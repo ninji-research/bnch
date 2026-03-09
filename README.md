@@ -20,4 +20,4 @@ Notes:
 - Final binaries are stripped consistently, and the report shows actual linkage from the finished binary.
 - Floating-point checks use canonical fixed precision so formatting differences do not create false mismatches.
 - The suite only keeps benchmarks aligned closely enough to compare directly.
-- The report stays lean by default: settings, weights, benchmark notes, entry summary, ranking, results, and mismatches.
+- The report stays lean by default: settings, weights, benchmark notes, entry summary, overall ranking, category ranks, results, and mismatches.

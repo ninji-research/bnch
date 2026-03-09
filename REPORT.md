@@ -50,55 +50,65 @@
 
 | Rank | Entry             | Score  |
 | ---- | ----------------- | ------ |
-| 1    | c (clang)         | 0.8274 |
-| 2    | c (gcc)           | 0.7727 |
-| 3    | nim (clang)       | 0.6760 |
-| 4    | nim (gcc)         | 0.6488 |
-| 5    | ocaml (native)    | 0.6384 |
-| 6    | rust (rustc/llvm) | 0.6176 |
-| 7    | moonbit (native)  | 0.3651 |
+| 1    | c (clang)         | 0.8011 |
+| 2    | c (gcc)           | 0.7655 |
+| 3    | nim (clang)       | 0.6813 |
+| 4    | nim (gcc)         | 0.6445 |
+| 5    | ocaml (native)    | 0.6413 |
+| 6    | rust (rustc/llvm) | 0.5990 |
+| 7    | moonbit (native)  | 0.3558 |
+
+| Entry             | Overall | Speed | Memory | Build | Size |
+| ----------------- | ------- | ----- | ------ | ----- | ---- |
+| c (clang)         | 1       | 5     | 4      | 1     | 1    |
+| c (gcc)           | 2       | 2     | 3      | 2     | 2    |
+| nim (clang)       | 3       | 1     | 7      | 5     | 3    |
+| nim (gcc)         | 4       | 3     | 6      | 6     | 4    |
+| ocaml (native)    | 5       | 6     | 2      | 3     | 7    |
+| rust (rustc/llvm) | 6       | 4     | 5      | 7     | 6    |
+| moonbit (native)  | 7       | 7     | 1      | 4     | 5    |
 
 | Benchmark    | Entry             | Input    | Output                                                                   | Build Time (s) | Run Time (s) | Peak Memory (MiB) | Binary Size (KiB) | Status |
 | ------------ | ----------------- | -------- | ------------------------------------------------------------------------ | -------------- | ------------ | ----------------- | ----------------- | ------ |
-| binarytrees  | c (gcc)           | 21       | stretch tree of depth 22	 check: 8388607 / 2097152	 trees of depth 4	... | 0.2400         | 15.2296      | 257.78            | 18.17             | ok     |
-| binarytrees  | c (clang)         | 21       | stretch tree of depth 22	 check: 8388607 / 2097152	 trees of depth 4	... | 0.0894         | 16.3591      | 257.90            | 5.72              | ok     |
-| binarytrees  | rust (rustc/llvm) | 21       | stretch tree of depth 22	 check: 8388607 / 2097152	 trees of depth 4	... | 2.6860         | 20.1532      | 449.21            | 304.27            | ok     |
-| binarytrees  | nim (gcc)         | 21       | stretch tree of depth 22	 check: 8388607 / 2097152	 trees of depth 4	... | 1.5229         | 9.4152       | 456.96            | 38.52             | ok     |
-| binarytrees  | nim (clang)       | 21       | stretch tree of depth 22	 check: 8388607 / 2097152	 trees of depth 4	... | 1.2121         | 9.0907       | 456.74            | 26.38             | ok     |
-| binarytrees  | ocaml (native)    | 21       | stretch tree of depth 22	 check: 8388607 / 2097152	 trees of depth 4	... | 0.1689         | 5.3645       | 208.26            | 1006.33           | ok     |
-| binarytrees  | moonbit (native)  | 21       | stretch tree of depth 22	 check: 8388607 / 2097152	 trees of depth 4	... | 0.6244         | 6.8884       | 161.96            | 200.94            | ok     |
-| fannkuch     | c (gcc)           | 10       | 2628 / Pfannkuchen(10) = 28                                              | 0.1140         | 0.0915       | 24.82             | 14.20             | ok     |
-| fannkuch     | c (clang)         | 10       | 2628 / Pfannkuchen(10) = 28                                              | 0.1038         | 0.0839       | 24.82             | 6.71              | ok     |
-| fannkuch     | rust (rustc/llvm) | 10       | 2628 / Pfannkuchen(10) = 28                                              | 2.6215         | 0.0771       | 24.82             | 305.47            | ok     |
-| fannkuch     | nim (gcc)         | 10       | 2628 / Pfannkuchen(10) = 28                                              | 1.3011         | 0.0856       | 24.82             | 34.46             | ok     |
-| fannkuch     | nim (clang)       | 10       | 2628 / Pfannkuchen(10) = 28                                              | 1.0429         | 0.0688       | 24.95             | 25.07             | ok     |
-| fannkuch     | ocaml (native)    | 10       | 2628 / Pfannkuchen(10) = 28                                              | 0.1261         | 0.1214       | 24.95             | 1009.77           | ok     |
-| fannkuch     | moonbit (native)  | 10       | 2628 / Pfannkuchen(10) = 28                                              | 0.5196         | 1.1181       | 24.95             | 203.75            | ok     |
-| mandelbrot   | c (gcc)           | 512      | sha256:e41a9386e912a316                                                  | 0.0942         | 0.0143       | 24.82             | 14.14             | ok     |
-| mandelbrot   | c (clang)         | 512      | sha256:e41a9386e912a316                                                  | 0.0895         | 0.0143       | 24.82             | 5.81              | ok     |
-| mandelbrot   | rust (rustc/llvm) | 512      | sha256:e41a9386e912a316                                                  | 2.5783         | 0.0148       | 24.82             | 304.67            | ok     |
-| mandelbrot   | nim (gcc)         | 512      | sha256:e41a9386e912a316                                                  | 1.3045         | 0.0139       | 24.82             | 34.46             | ok     |
-| mandelbrot   | nim (clang)       | 512      | sha256:e41a9386e912a316                                                  | 1.0826         | 0.0137       | 24.82             | 24.16             | ok     |
-| mandelbrot   | ocaml (native)    | 512      | sha256:e41a9386e912a316                                                  | 0.1378         | 0.0163       | 24.82             | 1005.27           | ok     |
-| mandelbrot   | moonbit (native)  | 512      | sha256:e41a9386e912a316                                                  | 0.5921         | 0.0944       | 24.82             | 200.56            | ok     |
-| nbody        | c (gcc)           | 10000000 | -0.169075164 / -0.169077842                                              | 0.1205         | 0.4667       | 24.95             | 14.15             | ok     |
-| nbody        | c (clang)         | 10000000 | -0.169075164 / -0.169077842                                              | 0.1053         | 0.4117       | 24.95             | 8.78              | ok     |
-| nbody        | rust (rustc/llvm) | 10000000 | -0.169075164 / -0.169077842                                              | 2.8054         | 0.3658       | 24.95             | 329.12            | ok     |
-| nbody        | nim (gcc)         | 10000000 | -0.169075164 / -0.169077842                                              | 1.3984         | 0.5383       | 24.95             | 34.46             | ok     |
-| nbody        | nim (clang)       | 10000000 | -0.169075164 / -0.169077842                                              | 1.2048         | 0.5490       | 24.95             | 28.04             | ok     |
-| nbody        | ocaml (native)    | 10000000 | -0.169075164 / -0.169077842                                              | 0.1832         | 0.6614       | 24.95             | 1006.45           | ok     |
-| nbody        | moonbit (native)  | 10000000 | -0.169075164 / -0.169077842                                              | 0.6627         | 6.5594       | 24.95             | 208.26            | ok     |
-| spectralnorm | c (gcc)           | 5500     | 1.274224153                                                              | 0.1876         | 0.9203       | 24.82             | 14.16             | ok     |
-| spectralnorm | c (clang)         | 5500     | 1.274224153                                                              | 0.1412         | 1.4181       | 24.82             | 8.99              | ok     |
-| spectralnorm | rust (rustc/llvm) | 5500     | 1.274224153                                                              | 2.9861         | 1.6316       | 24.82             | 329.27            | ok     |
-| spectralnorm | nim (gcc)         | 5500     | 1.274224153                                                              | 1.4226         | 1.5108       | 24.82             | 34.46             | ok     |
-| spectralnorm | nim (clang)       | 5500     | 1.274224153                                                              | 1.2014         | 1.4694       | 24.82             | 24.81             | ok     |
-| spectralnorm | ocaml (native)    | 5500     | 1.274224153                                                              | 0.1550         | 4.8185       | 24.82             | 1009.95           | ok     |
-| spectralnorm | moonbit (native)  | 5500     | 1.274224153                                                              | 0.6010         | 21.6747      | 24.82             | 205.51            | ok     |
-| startup      | c (gcc)           | -        | ok                                                                       | 0.0828         | 0.0009       | 24.95             | 14.13             | ok     |
-| startup      | c (clang)         | -        | ok                                                                       | 0.0635         | 0.0007       | 24.95             | 4.55              | ok     |
-| startup      | rust (rustc/llvm) | -        | ok                                                                       | 2.6483         | 0.0010       | 24.95             | 300.38            | ok     |
-| startup      | nim (gcc)         | -        | ok                                                                       | 0.7804         | 0.0006       | 24.95             | 26.29             | ok     |
-| startup      | nim (clang)       | -        | ok                                                                       | 0.5196         | 0.0010       | 24.95             | 5.88              | ok     |
-| startup      | ocaml (native)    | -        | ok                                                                       | 0.0870         | 0.0011       | 24.95             | 409.35            | ok     |
-| startup      | moonbit (native)  | -        | ok                                                                       | 0.5110         | 0.0009       | 24.95             | 160.05            | ok     |
+| binarytrees  | c (gcc)           | 21       | stretch tree of depth 22	 check: 8388607 / 2097152	 trees of depth 4	... | 0.2058         | 14.2758      | 258.04            | 18.17             | ok     |
+| binarytrees  | c (clang)         | 21       | stretch tree of depth 22	 check: 8388607 / 2097152	 trees of depth 4	... | 0.0876         | 15.7424      | 258.16            | 5.72              | ok     |
+| binarytrees  | rust (rustc/llvm) | 21       | stretch tree of depth 22	 check: 8388607 / 2097152	 trees of depth 4	... | 2.5365         | 19.5952      | 449.59            | 304.27            | ok     |
+| binarytrees  | nim (gcc)         | 21       | stretch tree of depth 22	 check: 8388607 / 2097152	 trees of depth 4	... | 1.3746         | 8.5041       | 456.80            | 38.52             | ok     |
+| binarytrees  | nim (clang)       | 21       | stretch tree of depth 22	 check: 8388607 / 2097152	 trees of depth 4	... | 1.1426         | 7.8075       | 457.95            | 26.38             | ok     |
+| binarytrees  | ocaml (native)    | 21       | stretch tree of depth 22	 check: 8388607 / 2097152	 trees of depth 4	... | 0.1321         | 4.3497       | 208.28            | 1006.33           | ok     |
+| binarytrees  | moonbit (native)  | 21       | stretch tree of depth 22	 check: 8388607 / 2097152	 trees of depth 4	... | 0.5069         | 6.2518       | 162.02            | 200.94            | ok     |
+| fannkuch     | c (gcc)           | 10       | 2628 / Pfannkuchen(10) = 28                                              | 0.1925         | 0.0942       | 23.21             | 14.20             | ok     |
+| fannkuch     | c (clang)         | 10       | 2628 / Pfannkuchen(10) = 28                                              | 0.1521         | 0.0957       | 23.21             | 6.71              | ok     |
+| fannkuch     | rust (rustc/llvm) | 10       | 2628 / Pfannkuchen(10) = 28                                              | 3.4994         | 0.0794       | 23.21             | 305.47            | ok     |
+| fannkuch     | nim (gcc)         | 10       | 2628 / Pfannkuchen(10) = 28                                              | 1.2487         | 0.0791       | 23.21             | 34.46             | ok     |
+| fannkuch     | nim (clang)       | 10       | 2628 / Pfannkuchen(10) = 28                                              | 0.9745         | 0.0644       | 23.21             | 25.07             | ok     |
+| fannkuch     | ocaml (native)    | 10       | 2628 / Pfannkuchen(10) = 28                                              | 0.1689         | 0.1204       | 23.21             | 1009.77           | ok     |
+| fannkuch     | moonbit (native)  | 10       | 2628 / Pfannkuchen(10) = 28                                              | 0.5254         | 1.0859       | 23.21             | 203.75            | ok     |
+| mandelbrot   | c (gcc)           | 512      | sha256:e41a9386e912a316                                                  | 0.0821         | 0.0134       | 23.21             | 14.14             | ok     |
+| mandelbrot   | c (clang)         | 512      | sha256:e41a9386e912a316                                                  | 0.0714         | 0.0136       | 23.21             | 5.81              | ok     |
+| mandelbrot   | rust (rustc/llvm) | 512      | sha256:e41a9386e912a316                                                  | 2.3074         | 0.0148       | 23.21             | 304.67            | ok     |
+| mandelbrot   | nim (gcc)         | 512      | sha256:e41a9386e912a316                                                  | 1.1814         | 0.0140       | 23.21             | 34.46             | ok     |
+| mandelbrot   | nim (clang)       | 512      | sha256:e41a9386e912a316                                                  | 0.9928         | 0.0138       | 23.21             | 24.16             | ok     |
+| mandelbrot   | ocaml (native)    | 512      | sha256:e41a9386e912a316                                                  | 0.1275         | 0.0165       | 23.21             | 1005.27           | ok     |
+| mandelbrot   | moonbit (native)  | 512      | sha256:e41a9386e912a316                                                  | 0.6092         | 0.0919       | 23.21             | 200.56            | ok     |
+| nbody        | c (gcc)           | 10000000 | -0.169075164 / -0.169077842                                              | 0.1052         | 0.4590       | 23.21             | 14.15             | ok     |
+| nbody        | c (clang)         | 10000000 | -0.169075164 / -0.169077842                                              | 0.0945         | 0.4027       | 23.21             | 8.78              | ok     |
+| nbody        | rust (rustc/llvm) | 10000000 | -0.169075164 / -0.169077842                                              | 2.3788         | 0.3603       | 23.21             | 329.12            | ok     |
+| nbody        | nim (gcc)         | 10000000 | -0.169075164 / -0.169077842                                              | 1.1574         | 0.5042       | 23.21             | 34.46             | ok     |
+| nbody        | nim (clang)       | 10000000 | -0.169075164 / -0.169077842                                              | 1.0063         | 0.4892       | 23.21             | 28.04             | ok     |
+| nbody        | ocaml (native)    | 10000000 | -0.169075164 / -0.169077842                                              | 0.1286         | 0.6161       | 23.21             | 1006.45           | ok     |
+| nbody        | moonbit (native)  | 10000000 | -0.169075164 / -0.169077842                                              | 0.4986         | 6.0775       | 23.21             | 208.26            | ok     |
+| spectralnorm | c (gcc)           | 5500     | 1.274224153                                                              | 0.1442         | 0.8589       | 23.21             | 14.16             | ok     |
+| spectralnorm | c (clang)         | 5500     | 1.274224153                                                              | 0.1310         | 1.3515       | 23.21             | 8.99              | ok     |
+| spectralnorm | rust (rustc/llvm) | 5500     | 1.274224153                                                              | 2.6208         | 1.5418       | 23.21             | 329.27            | ok     |
+| spectralnorm | nim (gcc)         | 5500     | 1.274224153                                                              | 1.4645         | 1.4220       | 23.21             | 34.46             | ok     |
+| spectralnorm | nim (clang)       | 5500     | 1.274224153                                                              | 1.1214         | 1.4745       | 23.21             | 24.81             | ok     |
+| spectralnorm | ocaml (native)    | 5500     | 1.274224153                                                              | 0.1269         | 4.4997       | 23.21             | 1009.95           | ok     |
+| spectralnorm | moonbit (native)  | 5500     | 1.274224153                                                              | 0.5319         | 21.8463      | 23.21             | 205.51            | ok     |
+| startup      | c (gcc)           | -        | ok                                                                       | 0.0680         | 0.0007       | 23.21             | 14.13             | ok     |
+| startup      | c (clang)         | -        | ok                                                                       | 0.0645         | 0.0008       | 23.21             | 4.55              | ok     |
+| startup      | rust (rustc/llvm) | -        | ok                                                                       | 2.3900         | 0.0008       | 23.21             | 300.38            | ok     |
+| startup      | nim (gcc)         | -        | ok                                                                       | 0.6594         | 0.0005       | 23.21             | 26.29             | ok     |
+| startup      | nim (clang)       | -        | ok                                                                       | 0.4386         | 0.0006       | 23.21             | 5.88              | ok     |
+| startup      | ocaml (native)    | -        | ok                                                                       | 0.0742         | 0.0011       | 23.21             | 409.35            | ok     |
+| startup      | moonbit (native)  | -        | ok                                                                       | 0.4456         | 0.0008       | 23.21             | 160.05            | ok     |

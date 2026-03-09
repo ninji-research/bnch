@@ -161,6 +161,7 @@ def version_line(command: list[str]) -> str:
 def version_or_dash(command: list[str]) -> str:
     return version_line(command) if tool(command[0]) else "-"
 
+
 def cpu_count() -> int:
     return os.cpu_count() or 1
 
@@ -469,6 +470,18 @@ def scored_benchmarks(results: list[Result], benchmarks: list[BenchmarkSpec], ac
 
 def scores(results: list[Result], benchmarks: list[BenchmarkSpec]) -> dict[str, float]:
     valid_benchmarks = scored_benchmarks(results, benchmarks)
+    return metric_scores(results, valid_benchmarks, METRIC_WEIGHTS)
+
+
+def metric_scores(
+    results: list[Result],
+    benchmarks: list[BenchmarkSpec],
+    metrics: dict[str, float] | Iterable[str],
+) -> dict[str, float]:
+    metric_weights = metrics if isinstance(metrics, dict) else {metric: 1.0 for metric in metrics}
+    metric_names = tuple(metric_weights)
+    if not metric_names:
+        return {}
     by_benchmark: dict[str, list[Result]] = {}
     for result in results:
         if result.status == "ok":
@@ -479,7 +492,7 @@ def scores(results: list[Result], benchmarks: list[BenchmarkSpec]) -> dict[str, 
         for result in results
         if all(
             any(item.entry == result.entry and item.benchmark == spec.name and item.status == "ok" for item in results)
-            for spec in valid_benchmarks
+            for spec in benchmarks
         )
     }
     if not complete_entries:
@@ -487,15 +500,15 @@ def scores(results: list[Result], benchmarks: list[BenchmarkSpec]) -> dict[str, 
 
     totals = {entry: 0.0 for entry in complete_entries}
     total_weight = 0.0
-    for spec in valid_benchmarks:
+    for spec in benchmarks:
         rows = [row for row in by_benchmark.get(spec.name, []) if row.entry in complete_entries]
         if not rows:
             continue
-        for metric, metric_weight in METRIC_WEIGHTS.items():
+        for metric in metric_names:
             best = min(metric_value(row, metric) for row in rows)
             if best <= 0:
                 continue
-            weight = spec.weight * metric_weight
+            weight = spec.weight * metric_weights[metric]
             total_weight += weight
             for row in rows:
                 totals[row.entry] += weight * (best / metric_value(row, metric))
@@ -552,6 +565,37 @@ def ranking_rows(score_map: dict[str, float], active_entries: list[EntrySpec]) -
     labels = {entry.key: entry.label for entry in active_entries}
     ordered = sorted(score_map.items(), key=lambda item: item[1], reverse=True)
     return [[str(index), labels[key], f"{score:.4f}"] for index, (key, score) in enumerate(ordered, start=1)]
+
+
+def category_ranking_rows(results: list[Result], benchmarks: list[BenchmarkSpec], active_entries: list[EntrySpec]) -> list[list[str]]:
+    valid_benchmarks = scored_benchmarks(results, benchmarks)
+    score_map = scores(results, benchmarks)
+    metric_maps = {
+        "Speed": metric_scores(results, valid_benchmarks, ("exec_time",)),
+        "Memory": metric_scores(results, valid_benchmarks, ("peak_mem",)),
+        "Build": metric_scores(results, valid_benchmarks, ("build_time",)),
+        "Size": metric_scores(results, valid_benchmarks, ("bin_size",)),
+    }
+    labels = {entry.key: entry.label for entry in active_entries}
+    ranks_by_metric: dict[str, dict[str, int]] = {}
+    for metric, metric_map in metric_maps.items():
+        ordered = sorted(metric_map.items(), key=lambda item: item[1], reverse=True)
+        ranks_by_metric[metric] = {entry: index for index, (entry, _) in enumerate(ordered, start=1)}
+
+    rows: list[list[str]] = []
+    overall_order = sorted(score_map.items(), key=lambda item: item[1], reverse=True)
+    for overall_rank, (entry_key, _) in enumerate(overall_order, start=1):
+        rows.append(
+            [
+                labels[entry_key],
+                str(overall_rank),
+                str(ranks_by_metric["Speed"].get(entry_key, "-")),
+                str(ranks_by_metric["Memory"].get(entry_key, "-")),
+                str(ranks_by_metric["Build"].get(entry_key, "-")),
+                str(ranks_by_metric["Size"].get(entry_key, "-")),
+            ]
+        )
+    return rows
 
 
 def result_rows(results: list[Result], active_entries: list[EntrySpec]) -> list[list[str]]:
@@ -665,6 +709,8 @@ def render_report(
         content.extend(
             [
                 markdown_table(["Rank", "Entry", "Score"], ranking_rows(score_map, active_entries)),
+                "",
+                markdown_table(["Entry", "Overall", "Speed", "Memory", "Build", "Size"], category_ranking_rows(results, benchmarks, active_entries)),
                 "",
             ]
         )
