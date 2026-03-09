@@ -1,8 +1,7 @@
 # Benchmarks
 
-- Runner: [run.py](~/bnch/run.py)
-- Report: [REPORT.md](~/bnch/REPORT.md)
-- Binaries: [bin](~/bnch/bin)
+- Runner: [run.py](/run.py)
+- Report: [REPORT.md](/REPORT.md)
 
 Commands:
 ```bash
