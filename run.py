@@ -13,18 +13,19 @@ import tempfile
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Iterable
-
-
 ROOT = Path(__file__).resolve().parent
 SRC = ROOT / "src"
+FIXTURES = ROOT / "fixtures"
 BIN = ROOT / "bin"
 BUILD = ROOT / ".build"
+GO_CACHE = BUILD / "go-cache"
 DEFAULT_REPORT = ROOT / "REPORT.md"
 FIXED_ENV = {
     "LC_ALL": "C",
     "LANG": "C",
     "TZ": "UTC",
+    "CGO_ENABLED": "0",
+    "GOCACHE": str(GO_CACHE),
 }
 
 METRIC_WEIGHTS = {
@@ -46,6 +47,8 @@ SUMMARY_METRICS: tuple[tuple[str, str], ...] = (
 class BenchmarkSpec:
     name: str
     args: tuple[str, ...]
+    stdin_fixture: str | None
+    input_label: str
     weight: float
     check: str
     algorithm: str
@@ -105,12 +108,13 @@ def failed_result(
 
 
 BENCHMARKS: tuple[BenchmarkSpec, ...] = (
-    BenchmarkSpec("binarytrees", ("21",), 1.00, "exact", "bottom-up binary tree construction and checksum", "O(nodes built)", "O(max tree size)", "exact multiline text", "Same tree/check workload; memory-management costs remain language-native."),
-    BenchmarkSpec("mandelbrot", ("512",), 1.00, "exact", "scalar Mandelbrot escape-time bitmap checksum", "O(size^2 * iter)", "O(1)", "exact integer checksum", "Input size is set to 512 because all retained implementations agree there exactly."),
-    BenchmarkSpec("spectralnorm", ("5500",), 1.00, "float_9", "power method on implicit matrix", "O(n^2 * iterations)", "O(n)", "one float rounded to 9 decimals", "Correctness compares canonical 9-decimal output, not raw printer differences."),
-    BenchmarkSpec("fannkuch", ("10",), 1.00, "exact", "fannkuch-redux permutation flips", "O(n! * n)", "O(n)", "exact two-line text", "Same permutation-generation strategy across entries."),
-    BenchmarkSpec("nbody", ("10000000",), 1.00, "float_9_lines", "5-body symplectic advance and energy", "O(iterations * bodies^2)", "O(1)", "two floats rounded to 9 decimals", "Correctness compares canonical 9-decimal energies line-by-line."),
-    BenchmarkSpec("startup", (), 0.25, "exact", "process startup and hello-world print", "O(1)", "O(1)", "exact single line", "Useful signal for runtime/toolchain startup, but intentionally low ranking impact."),
+    BenchmarkSpec("binarytrees", ("21",), None, "21", 1.00, "exact", "bottom-up binary tree construction and checksum", "O(nodes built)", "O(max tree size)", "exact multiline text", "Same tree/check workload; memory-management costs remain language-native."),
+    BenchmarkSpec("mandelbrot", ("512",), None, "512", 1.00, "exact", "scalar Mandelbrot escape-time bitmap checksum", "O(size^2 * iter)", "O(1)", "exact integer checksum", "Input size is set to 512 because all retained implementations agree there exactly."),
+    BenchmarkSpec("spectralnorm", ("5500",), None, "5500", 1.00, "float_9", "power method on implicit matrix", "O(n^2 * iterations)", "O(n)", "one float rounded to 9 decimals", "Correctness compares canonical 9-decimal output, not raw printer differences."),
+    BenchmarkSpec("fannkuch", ("10",), None, "10", 1.00, "exact", "fannkuch-redux permutation flips", "O(n! * n)", "O(n)", "exact two-line text", "Same permutation-generation strategy across entries."),
+    BenchmarkSpec("nbody", ("10000000",), None, "10000000", 1.00, "float_9_lines", "5-body symplectic advance and energy", "O(iterations * bodies^2)", "O(1)", "two floats rounded to 9 decimals", "Correctness compares canonical 9-decimal energies line-by-line."),
+    BenchmarkSpec("knucleotide", (), "knucleotide/knucleotide-250000.fasta", "fixture:knucleotide-250000.fasta", 1.00, "exact", "FASTA parsing plus k-mer frequency and occurrence counting", "O(n)", "O(unique k-mers + input)", "exact multiline text", "Uses one committed deterministic FASTA fixture and processes only the >THREE section."),
+    BenchmarkSpec("startup", (), None, "-", 0.25, "exact", "process startup and hello-world print", "O(1)", "O(1)", "exact single line", "Useful signal for runtime/toolchain startup, but intentionally low ranking impact."),
 )
 
 
@@ -127,17 +131,22 @@ def sh(command: list[str], cwd: Path | None = None, capture: bool = True) -> sub
     )
 
 
-def timed(command: list[str], cwd: Path | None = None) -> tuple[subprocess.CompletedProcess[str], float, int]:
+def timed(command: list[str], cwd: Path | None = None, stdin_text: str | None = None) -> tuple[subprocess.CompletedProcess[str], float, int]:
     env = os.environ.copy()
     env.update(FIXED_ENV)
     with tempfile.NamedTemporaryFile("w+", encoding="utf-8") as stdout_file, tempfile.NamedTemporaryFile(
         "w+", encoding="utf-8"
-    ) as stderr_file:
+    ) as stderr_file, tempfile.NamedTemporaryFile("w+", encoding="utf-8") as stdin_file:
+        if stdin_text is not None:
+            stdin_file.write(stdin_text)
+            stdin_file.flush()
+            stdin_file.seek(0)
         start = time.perf_counter()
         proc = subprocess.Popen(
             command,
             cwd=str(cwd) if cwd else None,
             env=env,
+            stdin=stdin_file if stdin_text is not None else None,
             stdout=stdout_file,
             stderr=stderr_file,
             text=True,
@@ -179,6 +188,8 @@ def entries() -> list[EntrySpec]:
         active.append(EntrySpec("c__gcc", "c (gcc)", "c", "gcc", "native"))
     if tool("clang"):
         active.append(EntrySpec("c__clang", "c (clang)", "c", "clang", "native"))
+    if tool("go"):
+        active.append(EntrySpec("go__gc", "go (gc)", "go", "go", "native"))
     if tool("rustc"):
         active.append(EntrySpec("rust__llvm", "rust (rustc/llvm)", "rust", "rustc", "llvm"))
     if tool("nim") and tool("gcc"):
@@ -196,6 +207,8 @@ def source_path(benchmark: str, entry: EntrySpec) -> Path:
     root = SRC / benchmark
     if entry.language == "c":
         return root / f"{benchmark}.c"
+    if entry.language == "go":
+        return root / f"{benchmark}.go"
     if entry.language == "rust":
         return root / f"{benchmark}.rs"
     if entry.language == "nim":
@@ -209,6 +222,16 @@ def source_path(benchmark: str, entry: EntrySpec) -> Path:
 
 def benchmark_args(spec: BenchmarkSpec) -> tuple[str, ...]:
     return spec.args
+
+
+def benchmark_input_text(spec: BenchmarkSpec) -> str | None:
+    if spec.stdin_fixture is None:
+        return None
+    return (FIXTURES / spec.stdin_fixture).read_text(encoding="utf-8")
+
+
+def benchmark_input_label(spec: BenchmarkSpec) -> str:
+    return spec.input_label
 
 
 def build_command(spec: BenchmarkSpec, entry: EntrySpec, binary: Path, build_dir: Path, build_jobs: int) -> list[str]:
@@ -247,6 +270,19 @@ def build_command(spec: BenchmarkSpec, entry: EntrySpec, binary: Path, build_dir
             "strip=symbols",
             "-o",
             str(binary),
+        ]
+    if entry.language == "go":
+        return [
+            "go",
+            "build",
+            "-p",
+            str(build_jobs),
+            "-trimpath",
+            "-buildvcs=false",
+            "-ldflags=-s -w -buildid=",
+            "-o",
+            str(binary),
+            str(source),
         ]
     if entry.language == "nim":
         cmd = [
@@ -331,6 +367,7 @@ def clean_dirs() -> None:
         if path.exists():
             shutil.rmtree(path)
         path.mkdir(parents=True, exist_ok=True)
+    GO_CACHE.mkdir(parents=True, exist_ok=True)
 
 
 def cleanup_source_tree() -> None:
@@ -352,11 +389,6 @@ def cleanup_source_tree() -> None:
             shutil.rmtree(path, ignore_errors=True)
         elif path.is_file() and path.suffix in removable_suffixes:
             path.unlink(missing_ok=True)
-
-
-def format_input(args: Iterable[str]) -> str:
-    text = " ".join(args)
-    return text if text else "-"
 
 
 def normalize_output(text: str) -> str:
@@ -545,11 +577,12 @@ def environment_rows(run_args: argparse.Namespace, active_entries: list[EntrySpe
         ["runs", str(run_args.runs)],
         ["warmup", str(run_args.warmup)],
         ["build_jobs", str(run_args.build_jobs)],
-        ["link_policy", "dynamic (uniform default; moon native exposes no static toggle here)"],
+        ["link_policy", "toolchain-default release mode (mixed linkage; see entry metadata)"],
         ["entries", str(len(active_entries))],
         ["benchmarks", str(len(benchmarks))],
         ["gcc", version_or_dash(["gcc", "--version"])],
         ["clang", version_or_dash(["clang", "--version"])],
+        ["go", version_or_dash(["go", "version"])],
         ["rustc", version_or_dash(["rustc", "--version"])],
         ["nim", version_or_dash(["nim", "--version"])],
         ["ocamlopt", version_or_dash(["ocamlopt", "-version"])],
@@ -796,9 +829,10 @@ def build_and_run(spec: BenchmarkSpec, entry: EntrySpec, run_args: argparse.Name
     command = build_command(spec, entry, binary, build_dir, run_args.build_jobs)
     build_cwd = source if entry.language == "moonbit" else None
 
+    stdin_text = benchmark_input_text(spec)
     build_proc, build_time, _ = timed(command, cwd=build_cwd)
     if build_proc.returncode != 0:
-        return failed_result(spec, entry, format_input(benchmark_args(spec)), "build-fail", build_time, binary)
+        return failed_result(spec, entry, benchmark_input_label(spec), "build-fail", build_time, binary)
 
     if entry.language == "moonbit":
         built = find_moonbit_binary(build_dir)
@@ -813,14 +847,14 @@ def build_and_run(spec: BenchmarkSpec, entry: EntrySpec, run_args: argparse.Name
     output = "-"
 
     for _ in range(run_args.warmup):
-        warm_proc, _, _ = timed([str(binary), *args])
+        warm_proc, _, _ = timed([str(binary), *args], stdin_text=stdin_text)
         if warm_proc.returncode != 0:
-            return failed_result(spec, entry, format_input(args), "run-fail", build_time, binary)
+            return failed_result(spec, entry, benchmark_input_label(spec), "run-fail", build_time, binary)
 
     for _ in range(run_args.runs):
-        run_proc, exec_time, peak_kib = timed([str(binary), *args])
+        run_proc, exec_time, peak_kib = timed([str(binary), *args], stdin_text=stdin_text)
         if run_proc.returncode != 0:
-            return failed_result(spec, entry, format_input(args), "run-fail", build_time, binary)
+            return failed_result(spec, entry, benchmark_input_label(spec), "run-fail", build_time, binary)
         output = normalize_output(run_proc.stdout)
         exec_times.append(exec_time)
         peak_kibs.append(peak_kib)
@@ -828,7 +862,7 @@ def build_and_run(spec: BenchmarkSpec, entry: EntrySpec, run_args: argparse.Name
     return Result(
         benchmark=spec.name,
         entry=entry.key,
-        input_text=format_input(args),
+        input_text=benchmark_input_label(spec),
         raw_output=output,
         output_text=compact_output(spec.name, output),
         reference_text="-",
