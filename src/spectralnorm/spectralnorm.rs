@@ -38,11 +38,11 @@ fn main() {
         eval_ata_times_u(&v, &mut u, &mut w);
     }
 
-    let mut vBv = 0.0;
+    let mut v_bv = 0.0;
     let mut vv = 0.0;
     for i in 0..n {
-        vBv += u[i] * v[i];
+        v_bv += u[i] * v[i];
         vv += v[i] * v[i];
     }
-    println!("{:.9}", (vBv / vv).sqrt());
+    println!("{:.9}", (v_bv / vv).sqrt());
 }

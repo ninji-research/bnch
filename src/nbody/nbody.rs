@@ -3,15 +3,12 @@ fn main() {
     let mut bodies = [
         Body::sun(), Body::jupiter(), Body::saturn(), Body::uranus(), Body::neptune()
     ];
-    let mut energy = 0.0;
     offset_momentum(&mut bodies);
-    energy = calculate_energy(&bodies);
-    println!("{:.9}", energy);
+    println!("{:.9}", calculate_energy(&bodies));
     for _ in 0..n {
         advance(&mut bodies, 0.01);
     }
-    energy = calculate_energy(&bodies);
-    println!("{:.9}", energy);
+    println!("{:.9}", calculate_energy(&bodies));
 }
 
 struct Body {

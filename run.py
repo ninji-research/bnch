@@ -4,14 +4,11 @@ from __future__ import annotations
 
 import argparse
 import hashlib
-import math
 import os
-import shlex
 import shutil
 import stat
 import subprocess
 import sys
-import textwrap
 import tempfile
 import time
 from dataclasses import dataclass
@@ -24,6 +21,11 @@ SRC = ROOT / "src"
 BIN = ROOT / "bin"
 BUILD = ROOT / ".build"
 DEFAULT_REPORT = ROOT / "REPORT.md"
+FIXED_ENV = {
+    "LC_ALL": "C",
+    "LANG": "C",
+    "TZ": "UTC",
+}
 
 METRIC_WEIGHTS = {
     "exec_time": 0.60,
@@ -53,7 +55,6 @@ class EntrySpec:
     language: str
     compiler: str
     backend: str
-    linker: str
 
 
 @dataclass
@@ -65,12 +66,35 @@ class Result:
     output_text: str
     reference_text: str
     status: str
-    build_command: str
     build_time: float
     exec_time: float
     peak_mem_kib: int
     bin_size: int
     binary_path: Path
+
+
+def failed_result(
+    spec: BenchmarkSpec,
+    entry: EntrySpec,
+    input_text: str,
+    status: str,
+    build_time: float,
+    binary: Path,
+) -> Result:
+    return Result(
+        benchmark=spec.name,
+        entry=entry.key,
+        input_text=input_text,
+        raw_output="",
+        output_text="-",
+        reference_text="-",
+        status=status,
+        build_time=build_time,
+        exec_time=0.0,
+        peak_mem_kib=0,
+        bin_size=binary.stat().st_size if binary.exists() else 0,
+        binary_path=binary,
+    )
 
 
 BENCHMARKS: tuple[BenchmarkSpec, ...] = (
@@ -85,9 +109,7 @@ BENCHMARKS: tuple[BenchmarkSpec, ...] = (
 
 def sh(command: list[str], cwd: Path | None = None, capture: bool = True) -> subprocess.CompletedProcess[str]:
     env = os.environ.copy()
-    env["LC_ALL"] = "C"
-    env["LANG"] = "C"
-    env["TZ"] = "UTC"
+    env.update(FIXED_ENV)
     return subprocess.run(
         command,
         cwd=str(cwd) if cwd else None,
@@ -100,9 +122,7 @@ def sh(command: list[str], cwd: Path | None = None, capture: bool = True) -> sub
 
 def timed(command: list[str], cwd: Path | None = None) -> tuple[subprocess.CompletedProcess[str], float, int]:
     env = os.environ.copy()
-    env["LC_ALL"] = "C"
-    env["LANG"] = "C"
-    env["TZ"] = "UTC"
+    env.update(FIXED_ENV)
     with tempfile.NamedTemporaryFile("w+", encoding="utf-8") as stdout_file, tempfile.NamedTemporaryFile(
         "w+", encoding="utf-8"
     ) as stderr_file:
@@ -141,15 +161,6 @@ def version_line(command: list[str]) -> str:
 def version_or_dash(command: list[str]) -> str:
     return version_line(command) if tool(command[0]) else "-"
 
-
-def ocaml_config_value(key: str) -> str:
-    proc = sh(["ocamlopt", "-config"])
-    for line in proc.stdout.splitlines():
-        if line.startswith(f"{key}:"):
-            return line.split(":", 1)[1].strip()
-    return ""
-
-
 def cpu_count() -> int:
     return os.cpu_count() or 1
 
@@ -157,19 +168,19 @@ def cpu_count() -> int:
 def entries() -> list[EntrySpec]:
     active: list[EntrySpec] = []
     if tool("gcc"):
-        active.append(EntrySpec("c__gcc", "c (gcc)", "c", "gcc", "native", "default"))
+        active.append(EntrySpec("c__gcc", "c (gcc)", "c", "gcc", "native"))
     if tool("clang"):
-        active.append(EntrySpec("c__clang", "c (clang)", "c", "clang", "native", "lld"))
+        active.append(EntrySpec("c__clang", "c (clang)", "c", "clang", "native"))
     if tool("rustc"):
-        active.append(EntrySpec("rust__llvm", "rust (rustc/llvm)", "rust", "rustc", "llvm", "lld"))
+        active.append(EntrySpec("rust__llvm", "rust (rustc/llvm)", "rust", "rustc", "llvm"))
     if tool("nim") and tool("gcc"):
-        active.append(EntrySpec("nim__gcc", "nim (gcc)", "nim", "gcc", "c", "default"))
+        active.append(EntrySpec("nim__gcc", "nim (gcc)", "nim", "gcc", "c"))
     if tool("nim") and tool("clang"):
-        active.append(EntrySpec("nim__clang", "nim (clang)", "nim", "clang", "c", "lld"))
+        active.append(EntrySpec("nim__clang", "nim (clang)", "nim", "clang", "c"))
     if tool("ocamlopt"):
-        active.append(EntrySpec("ocaml__native", "ocaml (native)", "ocaml", "ocamlopt", "native", ocaml_config_value("c_compiler") or "default"))
+        active.append(EntrySpec("ocaml__native", "ocaml (native)", "ocaml", "ocamlopt", "native"))
     if tool("moon"):
-        active.append(EntrySpec("moonbit__native", "moonbit (native)", "moonbit", "moon", "native", "host"))
+        active.append(EntrySpec("moonbit__native", "moonbit (native)", "moonbit", "moon", "native"))
     return active
 
 
@@ -374,8 +385,6 @@ def canonical_output(spec: BenchmarkSpec, text: str) -> str:
         return normalized
     if spec.check == "float_9":
         return format_fixed(parse_first_float(normalized), 9)
-    if spec.check == "float_5":
-        return format_fixed(parse_first_float(normalized), 5)
     if spec.check == "float_9_lines":
         return "\n".join(format_fixed(parse_first_float(line), 9) for line in normalized.splitlines())
     raise ValueError(f"unsupported check type: {spec.check}")
@@ -680,7 +689,7 @@ def render_report(
     return "\n".join(content)
 
 
-def build_and_run(spec: BenchmarkSpec, entry: EntrySpec, run_args: argparse.Namespace) -> tuple[Result, str]:
+def build_and_run(spec: BenchmarkSpec, entry: EntrySpec, run_args: argparse.Namespace) -> Result:
     binary = BIN / f"{spec.name}__{entry.key}"
     build_dir = BUILD / f"{spec.name}__{entry.key}"
     build_dir.mkdir(parents=True, exist_ok=True)
@@ -688,30 +697,11 @@ def build_and_run(spec: BenchmarkSpec, entry: EntrySpec, run_args: argparse.Name
 
     source = source_path(spec.name, entry)
     command = build_command(spec, entry, binary, build_dir, run_args.build_jobs)
-    command_text = shlex.join(command)
     build_cwd = source if entry.language == "moonbit" else None
 
     build_proc, build_time, _ = timed(command, cwd=build_cwd)
     if build_proc.returncode != 0:
-        stderr = build_proc.stderr or build_proc.stdout or "build failed"
-        return (
-            Result(
-                benchmark=spec.name,
-                entry=entry.key,
-                input_text=format_input(benchmark_args(spec)),
-                raw_output="",
-                output_text="-",
-                reference_text="-",
-                status="build-fail",
-                build_command=command_text,
-                build_time=build_time,
-                exec_time=0.0,
-                peak_mem_kib=0,
-                bin_size=0,
-                binary_path=binary,
-            ),
-            command_text + " // " + textwrap.shorten(stderr.replace("\n", " "), width=160, placeholder="..."),
-        )
+        return failed_result(spec, entry, format_input(benchmark_args(spec)), "build-fail", build_time, binary)
 
     if entry.language == "moonbit":
         built = find_moonbit_binary(build_dir)
@@ -728,69 +718,29 @@ def build_and_run(spec: BenchmarkSpec, entry: EntrySpec, run_args: argparse.Name
     for _ in range(run_args.warmup):
         warm_proc, _, _ = timed([str(binary), *args])
         if warm_proc.returncode != 0:
-            stderr = warm_proc.stderr or warm_proc.stdout or "run failed"
-            return (
-                Result(
-                    benchmark=spec.name,
-                    entry=entry.key,
-                    input_text=format_input(args),
-                    raw_output="",
-                    output_text="-",
-                    reference_text="-",
-                    status="run-fail",
-                    build_command=command_text,
-                    build_time=build_time,
-                    exec_time=0.0,
-                    peak_mem_kib=0,
-                    bin_size=binary.stat().st_size if binary.exists() else 0,
-                    binary_path=binary,
-                ),
-                command_text + " // " + textwrap.shorten(stderr.replace("\n", " "), width=160, placeholder="..."),
-            )
+            return failed_result(spec, entry, format_input(args), "run-fail", build_time, binary)
 
     for _ in range(run_args.runs):
         run_proc, exec_time, peak_kib = timed([str(binary), *args])
         if run_proc.returncode != 0:
-            stderr = run_proc.stderr or run_proc.stdout or "run failed"
-            return (
-                Result(
-                    benchmark=spec.name,
-                    entry=entry.key,
-                    input_text=format_input(args),
-                    raw_output="",
-                    output_text="-",
-                    reference_text="-",
-                    status="run-fail",
-                    build_command=command_text,
-                    build_time=build_time,
-                    exec_time=0.0,
-                    peak_mem_kib=0,
-                    bin_size=binary.stat().st_size if binary.exists() else 0,
-                    binary_path=binary,
-                ),
-                command_text + " // " + textwrap.shorten(stderr.replace("\n", " "), width=160, placeholder="..."),
-            )
+            return failed_result(spec, entry, format_input(args), "run-fail", build_time, binary)
         output = normalize_output(run_proc.stdout)
         exec_times.append(exec_time)
         peak_kibs.append(peak_kib)
 
-    return (
-        Result(
-            benchmark=spec.name,
-            entry=entry.key,
-            input_text=format_input(args),
-            raw_output=output,
-            output_text=compact_output(spec.name, output),
-            reference_text="-",
-            status="ok",
-            build_command=command_text,
-            build_time=build_time,
-            exec_time=sum(exec_times) / len(exec_times),
-            peak_mem_kib=max(peak_kibs),
-            bin_size=binary.stat().st_size,
-            binary_path=binary,
-        ),
-        command_text,
+    return Result(
+        benchmark=spec.name,
+        entry=entry.key,
+        input_text=format_input(args),
+        raw_output=output,
+        output_text=compact_output(spec.name, output),
+        reference_text="-",
+        status="ok",
+        build_time=build_time,
+        exec_time=sum(exec_times) / len(exec_times),
+        peak_mem_kib=max(peak_kibs),
+        bin_size=binary.stat().st_size,
+        binary_path=binary,
     )
 
 
@@ -856,8 +806,7 @@ def main() -> int:
     results: list[Result] = []
     for spec in active_benchmarks:
         for entry in active_entries:
-            result, _ = build_and_run(spec, entry, args)
-            results.append(result)
+            results.append(build_and_run(spec, entry, args))
 
     apply_references(results, active_benchmarks)
     cleanup_source_tree()
