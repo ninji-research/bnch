@@ -84,6 +84,14 @@ class Result:
     binary_path: Path
 
 
+@dataclass(frozen=True)
+class SummaryData:
+    overall_scores: dict[str, float]
+    overall_order: list[str]
+    overall_ranks: dict[str, int]
+    metric_ranks: dict[str, dict[str, int]]
+
+
 def failed_result(
     spec: BenchmarkSpec,
     entry: EntrySpec,
@@ -637,30 +645,40 @@ def rank_positions(values: dict[str, float], reverse: bool = False, rel_tol: flo
     return ranks
 
 
-def summary_rows(results: list[Result], benchmarks: list[BenchmarkSpec], active_entries: list[EntrySpec]) -> list[list[str]]:
+def build_summary_data(results: list[Result], benchmarks: list[BenchmarkSpec]) -> SummaryData:
     valid_benchmarks = scored_benchmarks(results, benchmarks)
-    score_map = metric_scores(results, valid_benchmarks, METRIC_WEIGHTS)
+    overall_scores = metric_scores(results, valid_benchmarks, METRIC_WEIGHTS)
     metric_score_maps = {label: metric_scores(results, valid_benchmarks, {metric: 1.0}) for label, metric in SUMMARY_METRICS}
+    overall_order = [entry for entry, _ in sorted(overall_scores.items(), key=lambda item: item[1], reverse=True)]
+    return SummaryData(
+        overall_scores=overall_scores,
+        overall_order=overall_order,
+        overall_ranks=rank_positions(overall_scores, reverse=True),
+        metric_ranks={label: rank_positions(scores, reverse=True) for label, scores in metric_score_maps.items()},
+    )
+
+
+def summary_headers() -> list[str]:
+    return ["Overall", "Entry", "Score", *[label for label, _ in SUMMARY_METRICS]]
+
+
+def summary_rows(summary: SummaryData, active_entries: list[EntrySpec]) -> list[list[str]]:
     labels = {entry.key: entry.label for entry in active_entries}
-    ranks_by_metric = {label: rank_positions(metric_score_maps[label], reverse=True) for label, _ in SUMMARY_METRICS}
-    overall_ranks = rank_positions(score_map, reverse=True)
 
     rows: list[list[str]] = []
-    overall_order = sorted(score_map.items(), key=lambda item: item[1], reverse=True)
-    for entry_key, _ in overall_order:
+    for entry_key in summary.overall_order:
         metric_cells: list[str] = []
-        for label, metric in SUMMARY_METRICS:
-            rank = ranks_by_metric[label].get(entry_key)
-            score = metric_score_maps[label].get(entry_key)
-            if rank is None or score is None:
+        for label, _ in SUMMARY_METRICS:
+            rank = summary.metric_ranks[label].get(entry_key)
+            if rank is None:
                 metric_cells.append("-")
                 continue
-            metric_cells.append(f"{rank} ({fmt_normalized_score(score)})")
+            metric_cells.append(str(rank))
         rows.append(
             [
-                str(overall_ranks[entry_key]),
+                str(summary.overall_ranks[entry_key]),
                 labels[entry_key],
-                f"{score_map[entry_key]:.4f}",
+                fmt_normalized_score(summary.overall_scores[entry_key]),
                 *metric_cells,
             ]
         )
@@ -773,13 +791,13 @@ def render_report(
             ]
         )
 
-    score_map = scores(results, benchmarks)
-    if score_map:
+    summary = build_summary_data(results, benchmarks)
+    if summary.overall_scores:
         content.extend(
             [
-                markdown_table(["Overall", "Entry", "Normalized Score", "Speed", "Memory", "Build", "Size"], summary_rows(results, benchmarks, active_entries)),
+                markdown_table(summary_headers(), summary_rows(summary, active_entries)),
                 "",
-                "_Overall rank and per-metric columns use normalized per-benchmark scoring. Overall applies the configured metric weights; each per-metric column uses benchmark weights for that metric only._",
+                "_Overall score uses normalized per-benchmark scoring with the configured metric weights. Per-metric columns show rank only, using that metric's normalized score across the scored benchmarks._",
                 "",
             ]
         )
