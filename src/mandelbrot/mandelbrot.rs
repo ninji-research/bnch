@@ -1,13 +1,12 @@
 fn main() {
     let size = std::env::args().nth(1).and_then(|x| x.parse().ok()).unwrap_or(4000);
-    let inv_size = 2.0 / (size as f64);
     let mut sum: u32 = 0;
     for y in 0..size {
-        let ci = (y as f64) * inv_size - 1.0;
         for x in 0..size / 8 {
             let mut byte = 0;
             for b in 0..8 {
-                let cr = ((x * 8 + b) as f64) * inv_size - 1.5;
+                let ci = ((y as f64) * 2.0) / (size as f64) - 1.0;
+                let cr = (((x * 8 + b) as f64) * 2.0) / (size as f64) - 1.5;
                 let mut zr = 0.0;
                 let mut zi = 0.0;
                 let mut tr = 0.0;

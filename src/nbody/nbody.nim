@@ -58,7 +58,7 @@ proc offsetMomentum(bodies: var openArray[Body]) =
   bodies[0].vy = -py / SolarMass
   bodies[0].vz = -pz / SolarMass
 
-let n = if paramCount() > 0: parseInt(paramStr(1)) else: 50_000_000
+let n = if paramCount() > 0: parseInt(paramStr(1)) else: 10_000_000
 offsetMomentum(bodies)
 echo formatFloat(energy(bodies), ffDecimal, 9)
 for _ in 1..n: advance(bodies, 0.01)

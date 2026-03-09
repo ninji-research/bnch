@@ -23,14 +23,13 @@ ROOT = Path(__file__).resolve().parent
 SRC = ROOT / "src"
 BIN = ROOT / "bin"
 BUILD = ROOT / ".build"
-REPORT = ROOT / "REPORT.md"
+DEFAULT_REPORT = ROOT / "REPORT.md"
 
 METRIC_WEIGHTS = {
-    "exec_time": 0.50,
+    "exec_time": 0.60,
     "peak_mem": 0.20,
-    "build_time": 0.15,
+    "build_time": 0.10,
     "bin_size": 0.10,
-    "chars": 0.05,
 }
 
 
@@ -40,6 +39,11 @@ class BenchmarkSpec:
     args: tuple[str, ...]
     weight: float
     check: str
+    algorithm: str
+    time_complexity: str
+    space_complexity: str
+    output_contract: str
+    fairness_notes: str
 
 
 @dataclass(frozen=True)
@@ -66,19 +70,16 @@ class Result:
     exec_time: float
     peak_mem_kib: int
     bin_size: int
-    chars: int
     binary_path: Path
 
 
 BENCHMARKS: tuple[BenchmarkSpec, ...] = (
-    BenchmarkSpec("ackermann", ("3", "11"), 0.50, "exact"),
-    BenchmarkSpec("binarytrees", ("21",), 1.25, "exact"),
-    BenchmarkSpec("mandelbrot", ("4000",), 1.50, "exact"),
-    BenchmarkSpec("spectralnorm", ("5500",), 1.50, "float"),
-    BenchmarkSpec("fannkuch", ("10",), 1.00, "exact"),
-    BenchmarkSpec("nbody", ("10000000",), 1.50, "float"),
-    BenchmarkSpec("picalc", ("50000000",), 1.25, "pi"),
-    BenchmarkSpec("startup", (), 0.50, "exact"),
+    BenchmarkSpec("binarytrees", ("21",), 1.00, "exact", "bottom-up binary tree construction and checksum", "O(nodes built)", "O(max tree size)", "exact multiline text", "Same tree/check workload; memory-management costs remain language-native."),
+    BenchmarkSpec("mandelbrot", ("512",), 1.00, "exact", "scalar Mandelbrot escape-time bitmap checksum", "O(size^2 * iter)", "O(1)", "exact integer checksum", "Input size is set to 512 because all retained implementations agree there exactly."),
+    BenchmarkSpec("spectralnorm", ("5500",), 1.00, "float_9", "power method on implicit matrix", "O(n^2 * iterations)", "O(n)", "one float rounded to 9 decimals", "Correctness compares canonical 9-decimal output, not raw printer differences."),
+    BenchmarkSpec("fannkuch", ("10",), 1.00, "exact", "fannkuch-redux permutation flips", "O(n! * n)", "O(n)", "exact two-line text", "Same permutation-generation strategy across entries."),
+    BenchmarkSpec("nbody", ("10000000",), 1.00, "float_9_lines", "5-body symplectic advance and energy", "O(iterations * bodies^2)", "O(1)", "two floats rounded to 9 decimals", "Correctness compares canonical 9-decimal energies line-by-line."),
+    BenchmarkSpec("startup", (), 0.25, "exact", "process startup and hello-world print", "O(1)", "O(1)", "exact single line", "Useful signal for runtime/toolchain startup, but intentionally low ranking impact."),
 )
 
 
@@ -137,6 +138,10 @@ def version_line(command: list[str]) -> str:
     return text[0].strip() if text else ""
 
 
+def version_or_dash(command: list[str]) -> str:
+    return version_line(command) if tool(command[0]) else "-"
+
+
 def ocaml_config_value(key: str) -> str:
     proc = sh(["ocamlopt", "-config"])
     for line in proc.stdout.splitlines():
@@ -183,23 +188,11 @@ def source_path(benchmark: str, entry: EntrySpec) -> Path:
     raise ValueError(f"unsupported language: {entry.language}")
 
 
-def source_chars(source: Path, entry: EntrySpec) -> int:
-    if entry.language == "moonbit":
-        total = 0
-        for path in sorted(source.rglob("*.mbt")):
-            total += len(path.read_text(encoding="utf-8"))
-        return total
-    return len(source.read_text(encoding="utf-8"))
-
-
-def benchmark_args(spec: BenchmarkSpec, entry: EntrySpec, workers: int) -> tuple[str, ...]:
-    if spec.name == "picalc":
-        thread_count = 1 if entry.language == "moonbit" else max(1, workers)
-        return spec.args + (str(thread_count),)
+def benchmark_args(spec: BenchmarkSpec) -> tuple[str, ...]:
     return spec.args
 
 
-def build_command(spec: BenchmarkSpec, entry: EntrySpec, binary: Path, build_dir: Path, jobs: int) -> list[str]:
+def build_command(spec: BenchmarkSpec, entry: EntrySpec, binary: Path, build_dir: Path, build_jobs: int) -> list[str]:
     source = source_path(spec.name, entry)
     if entry.language == "c":
         cmd = [
@@ -291,7 +284,7 @@ def build_command(spec: BenchmarkSpec, entry: EntrySpec, binary: Path, build_dir
             "native",
             "--frozen",
             "--jobs",
-            str(jobs),
+            str(build_jobs),
             "--target-dir",
             str(build_dir),
             "--quiet",
@@ -371,13 +364,20 @@ def parse_first_float(text: str) -> float:
     raise ValueError(f"no float in output: {text!r}")
 
 
-def compare_output(spec: BenchmarkSpec, reference: str, output: str) -> bool:
+def format_fixed(value: float, digits: int) -> str:
+    return f"{value:.{digits}f}"
+
+
+def canonical_output(spec: BenchmarkSpec, text: str) -> str:
+    normalized = normalize_output(text)
     if spec.check == "exact":
-        return output == reference
-    if spec.check == "float":
-        return math.isclose(parse_first_float(output), parse_first_float(reference), rel_tol=0.0, abs_tol=1e-9)
-    if spec.check == "pi":
-        return abs(parse_first_float(output) - math.pi) <= 0.01
+        return normalized
+    if spec.check == "float_9":
+        return format_fixed(parse_first_float(normalized), 9)
+    if spec.check == "float_5":
+        return format_fixed(parse_first_float(normalized), 5)
+    if spec.check == "float_9_lines":
+        return "\n".join(format_fixed(parse_first_float(line), 9) for line in normalized.splitlines())
     raise ValueError(f"unsupported check type: {spec.check}")
 
 
@@ -406,22 +406,32 @@ def fmt_kib(value: int) -> str:
     return f"{value / 1024.0:.2f}"
 
 
-def comment_text(path: Path) -> str:
-    proc = sh(["readelf", "-p", ".comment", str(path)])
+def strip_binary(path: Path) -> float:
+    if not path.exists() or not tool("strip"):
+        return 0.0
+    start = time.perf_counter()
+    proc = sh(["strip", "--strip-all", str(path)])
+    end = time.perf_counter()
+    return end - start if proc.returncode == 0 else 0.0
+
+
+def actual_linkage(path: Path) -> str:
+    proc = sh(["readelf", "-lW", str(path)])
     if proc.returncode != 0:
         return "-"
-    lines: list[str] = []
-    for raw in proc.stdout.splitlines():
-        line = raw.strip()
-        if "]" not in line:
-            continue
-        lines.append(line.split("]", 1)[1].strip())
-    unique: list[str] = []
-    for line in lines:
-        if line and line not in unique:
-            unique.append(line)
-    text = " | ".join(unique)
-    return text if text else "-"
+    return "dynamic" if " INTERP " in proc.stdout else "static"
+
+
+def stripped_state(path: Path) -> str:
+    proc = sh(["file", str(path)])
+    if proc.returncode != 0:
+        return "-"
+    text = proc.stdout.strip()
+    if "not stripped" in text:
+        return "no"
+    if "stripped" in text:
+        return "yes"
+    return "-"
 
 
 def metric_value(result: Result, metric: str) -> float:
@@ -433,12 +443,23 @@ def metric_value(result: Result, metric: str) -> float:
         return result.build_time
     if metric == "bin_size":
         return float(result.bin_size)
-    if metric == "chars":
-        return float(result.chars)
     raise ValueError(metric)
 
 
+def scored_benchmarks(results: list[Result], benchmarks: list[BenchmarkSpec], active_entries: list[str] | None = None) -> list[BenchmarkSpec]:
+    allowed_entries = set(active_entries) if active_entries is not None else None
+    usable: list[BenchmarkSpec] = []
+    for spec in benchmarks:
+        rows = [row for row in results if row.benchmark == spec.name]
+        if allowed_entries is not None:
+            rows = [row for row in rows if row.entry in allowed_entries]
+        if rows and all(row.status == "ok" for row in rows):
+            usable.append(spec)
+    return usable
+
+
 def scores(results: list[Result], benchmarks: list[BenchmarkSpec]) -> dict[str, float]:
+    valid_benchmarks = scored_benchmarks(results, benchmarks)
     by_benchmark: dict[str, list[Result]] = {}
     for result in results:
         if result.status == "ok":
@@ -449,7 +470,7 @@ def scores(results: list[Result], benchmarks: list[BenchmarkSpec]) -> dict[str, 
         for result in results
         if all(
             any(item.entry == result.entry and item.benchmark == spec.name and item.status == "ok" for item in results)
-            for spec in benchmarks
+            for spec in valid_benchmarks
         )
     }
     if not complete_entries:
@@ -457,7 +478,7 @@ def scores(results: list[Result], benchmarks: list[BenchmarkSpec]) -> dict[str, 
 
     totals = {entry: 0.0 for entry in complete_entries}
     total_weight = 0.0
-    for spec in benchmarks:
+    for spec in valid_benchmarks:
         rows = [row for row in by_benchmark.get(spec.name, []) if row.entry in complete_entries]
         if not rows:
             continue
@@ -478,21 +499,17 @@ def environment_rows(run_args: argparse.Namespace, active_entries: list[EntrySpe
     return [
         ["runs", str(run_args.runs)],
         ["warmup", str(run_args.warmup)],
-        ["workers", str(run_args.workers)],
+        ["build_jobs", str(run_args.build_jobs)],
+        ["link_policy", "dynamic (uniform default; moon native exposes no static toggle here)"],
         ["entries", str(len(active_entries))],
         ["benchmarks", str(len(benchmarks))],
-        ["cpu_count", str(cpu_count())],
-        ["gcc", version_line(["gcc", "--version"]) if tool("gcc") else "-"],
-        ["clang", version_line(["clang", "--version"]) if tool("clang") else "-"],
-        ["rustc", version_line(["rustc", "--version"]) if tool("rustc") else "-"],
-        ["nim", version_line(["nim", "--version"]) if tool("nim") else "-"],
-        ["ocamlopt", version_line(["ocamlopt", "-version"]) if tool("ocamlopt") else "-"],
-        ["moon", version_line(["moon", "version"]) if tool("moon") else "-"],
-        ["ld.lld", version_line(["ld.lld", "--version"]) if tool("ld.lld") else "-"],
-        ["as", version_line(["as", "--version"]) if tool("as") else "-"],
-        ["ocaml c_compiler", ocaml_config_value("c_compiler") if tool("ocamlopt") else "-"],
-        ["ocaml native_pack_linker", ocaml_config_value("native_pack_linker") if tool("ocamlopt") else "-"],
-        ["ocaml flambda", ocaml_config_value("flambda") if tool("ocamlopt") else "-"],
+        ["gcc", version_or_dash(["gcc", "--version"])],
+        ["clang", version_or_dash(["clang", "--version"])],
+        ["rustc", version_or_dash(["rustc", "--version"])],
+        ["nim", version_or_dash(["nim", "--version"])],
+        ["ocamlopt", version_or_dash(["ocamlopt", "-version"])],
+        ["moon", version_or_dash(["moon", "version"])],
+        ["strip", version_or_dash(["strip", "--version"])],
     ]
 
 
@@ -507,17 +524,16 @@ def entry_rows(active_entries: list[EntrySpec], results: list[Result]) -> list[l
     rows: list[list[str]] = []
     for entry in active_entries:
         sample = sample_for_entry.get(entry.key)
-        binary = str(sample.binary_path) if sample else "-"
-        comment = comment_text(sample.binary_path) if sample and sample.binary_path.exists() else "-"
+        linkage = actual_linkage(sample.binary_path) if sample and sample.binary_path.exists() else "-"
+        stripped = stripped_state(sample.binary_path) if sample and sample.binary_path.exists() else "-"
         rows.append(
             [
                 entry.label,
                 entry.compiler,
                 entry.backend,
-                entry.linker,
-                binary,
-                sample.build_command if sample else "-",
-                comment,
+                linkage,
+                stripped,
+                fmt_kib(sample.bin_size) if sample else "-",
             ]
         )
     return rows
@@ -539,13 +555,28 @@ def result_rows(results: list[Result], active_entries: list[EntrySpec]) -> list[
                 next(entry.label for entry in active_entries if entry.key == result.entry),
                 result.input_text,
                 result.output_text,
-                result.reference_text,
                 fmt_seconds(result.build_time),
                 fmt_seconds(result.exec_time),
                 fmt_mib(result.peak_mem_kib),
                 fmt_kib(result.bin_size),
-                str(result.chars),
-                str(result.binary_path),
+                result.status,
+            ]
+        )
+    return rows
+
+
+def mismatch_rows(results: list[Result], active_entries: list[EntrySpec]) -> list[list[str]]:
+    labels = {entry.key: entry.label for entry in active_entries}
+    rows: list[list[str]] = []
+    for result in results:
+        if result.status == "ok":
+            continue
+        rows.append(
+            [
+                result.benchmark,
+                labels.get(result.entry, result.entry),
+                result.output_text,
+                result.reference_text,
                 result.status,
             ]
         )
@@ -555,6 +586,34 @@ def result_rows(results: list[Result], active_entries: list[EntrySpec]) -> list[
 def weight_rows(benchmarks: list[BenchmarkSpec]) -> list[list[str]]:
     rows = [[f"metric:{name}", f"{weight:.2f}"] for name, weight in METRIC_WEIGHTS.items()]
     rows.extend([["benchmark:" + spec.name, f"{spec.weight:.2f}"] for spec in benchmarks])
+    return rows
+
+
+def benchmark_rows(benchmarks: list[BenchmarkSpec]) -> list[list[str]]:
+    return [
+        [
+            spec.name,
+            spec.algorithm,
+            spec.time_complexity,
+            spec.space_complexity,
+            spec.output_contract,
+            spec.fairness_notes,
+        ]
+        for spec in benchmarks
+    ]
+
+
+def excluded_benchmark_rows(results: list[Result], benchmarks: list[BenchmarkSpec], active_entries: list[EntrySpec]) -> list[list[str]]:
+    valid = {spec.name for spec in scored_benchmarks(results, benchmarks, [entry.key for entry in active_entries])}
+    rows: list[list[str]] = []
+    for spec in benchmarks:
+        if spec.name in valid:
+            continue
+        statuses = sorted({row.status for row in results if row.benchmark == spec.name})
+        reason = "output divergence or build/run failure"
+        if statuses:
+            reason = ", ".join(statuses)
+        rows.append([spec.name, reason])
     return rows
 
 
@@ -572,11 +631,25 @@ def render_report(
         markdown_table(["Weight", "Value"], weight_rows(benchmarks)),
         "",
         markdown_table(
-            ["Entry", "Compiler", "Backend", "Linker", "Binary", "Build Command", ".comment"],
+            ["Benchmark", "Algorithm", "Time", "Space", "Output Contract", "Fairness Notes"],
+            benchmark_rows(benchmarks),
+        ),
+        "",
+        markdown_table(
+            ["Entry", "Compiler", "Backend", "Linkage", "Stripped", "Binary Size (KiB)"],
             entry_rows(active_entries, results),
         ),
         "",
     ]
+
+    excluded = excluded_benchmark_rows(results, benchmarks, active_entries)
+    if excluded:
+        content.extend(
+            [
+                markdown_table(["Excluded From Score", "Reason"], excluded),
+                "",
+            ]
+        )
 
     score_map = scores(results, benchmarks)
     if score_map:
@@ -589,10 +662,20 @@ def render_report(
 
     content.append(
         markdown_table(
-            ["Benchmark", "Entry", "Input", "Output", "Reference", "Build s", "Run s", "Peak MiB", "Size KiB", "Chars", "Binary", "Status"],
+            ["Benchmark", "Entry", "Input", "Output", "Build Time (s)", "Run Time (s)", "Peak Memory (MiB)", "Binary Size (KiB)", "Status"],
             result_rows(results, active_entries),
         )
     )
+    mismatches = mismatch_rows(results, active_entries)
+    if mismatches:
+        content.extend(
+            [
+                "",
+                "## Mismatches",
+                "",
+                markdown_table(["Benchmark", "Entry", "Output", "Reference", "Status"], mismatches),
+            ]
+        )
     content.append("")
     return "\n".join(content)
 
@@ -604,8 +687,7 @@ def build_and_run(spec: BenchmarkSpec, entry: EntrySpec, run_args: argparse.Name
     binary.parent.mkdir(parents=True, exist_ok=True)
 
     source = source_path(spec.name, entry)
-    chars = source_chars(source, entry)
-    command = build_command(spec, entry, binary, build_dir, run_args.workers)
+    command = build_command(spec, entry, binary, build_dir, run_args.build_jobs)
     command_text = shlex.join(command)
     build_cwd = source if entry.language == "moonbit" else None
 
@@ -616,7 +698,7 @@ def build_and_run(spec: BenchmarkSpec, entry: EntrySpec, run_args: argparse.Name
             Result(
                 benchmark=spec.name,
                 entry=entry.key,
-                input_text=format_input(benchmark_args(spec, entry, run_args.workers)),
+                input_text=format_input(benchmark_args(spec)),
                 raw_output="",
                 output_text="-",
                 reference_text="-",
@@ -626,7 +708,6 @@ def build_and_run(spec: BenchmarkSpec, entry: EntrySpec, run_args: argparse.Name
                 exec_time=0.0,
                 peak_mem_kib=0,
                 bin_size=0,
-                chars=chars,
                 binary_path=binary,
             ),
             command_text + " // " + textwrap.shorten(stderr.replace("\n", " "), width=160, placeholder="..."),
@@ -637,7 +718,9 @@ def build_and_run(spec: BenchmarkSpec, entry: EntrySpec, run_args: argparse.Name
         shutil.copy2(built, binary)
         binary.chmod(binary.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
 
-    args = benchmark_args(spec, entry, run_args.workers)
+    build_time += strip_binary(binary)
+
+    args = benchmark_args(spec)
     exec_times: list[float] = []
     peak_kibs: list[int] = []
     output = "-"
@@ -660,7 +743,6 @@ def build_and_run(spec: BenchmarkSpec, entry: EntrySpec, run_args: argparse.Name
                     exec_time=0.0,
                     peak_mem_kib=0,
                     bin_size=binary.stat().st_size if binary.exists() else 0,
-                    chars=chars,
                     binary_path=binary,
                 ),
                 command_text + " // " + textwrap.shorten(stderr.replace("\n", " "), width=160, placeholder="..."),
@@ -684,7 +766,6 @@ def build_and_run(spec: BenchmarkSpec, entry: EntrySpec, run_args: argparse.Name
                     exec_time=0.0,
                     peak_mem_kib=0,
                     bin_size=binary.stat().st_size if binary.exists() else 0,
-                    chars=chars,
                     binary_path=binary,
                 ),
                 command_text + " // " + textwrap.shorten(stderr.replace("\n", " "), width=160, placeholder="..."),
@@ -707,7 +788,6 @@ def build_and_run(spec: BenchmarkSpec, entry: EntrySpec, run_args: argparse.Name
             exec_time=sum(exec_times) / len(exec_times),
             peak_mem_kib=max(peak_kibs),
             bin_size=binary.stat().st_size,
-            chars=chars,
             binary_path=binary,
         ),
         command_text,
@@ -721,17 +801,17 @@ def apply_references(results: list[Result], benchmarks: list[BenchmarkSpec]) -> 
         if not rows:
             continue
         reference = rows[0].raw_output
+        canonical_reference = canonical_output(spec, reference)
         exact_references[spec.name] = reference
         for row in rows:
-            normalized = row.raw_output
-            row.reference_text = compact_output(spec.name, reference) if spec.check != "pi" else f"{math.pi:.5f}"
-            row.status = "ok" if compare_output(spec, reference, normalized) else "mismatch"
+            canonical = canonical_output(spec, row.raw_output)
+            row.output_text = compact_output(spec.name, canonical)
+            row.reference_text = compact_output(spec.name, canonical_reference)
+            row.status = "ok" if canonical == canonical_reference else "mismatch"
         for row in results:
             if row.benchmark == spec.name and row.status != "ok":
-                if spec.check == "pi":
-                    row.reference_text = f"{math.pi:.5f}"
-                elif spec.name in exact_references:
-                    row.reference_text = compact_output(spec.name, exact_references[spec.name])
+                if spec.name in exact_references:
+                    row.reference_text = compact_output(spec.name, canonical_reference)
 
 
 def selected_items(values: list[str] | None, available: list[str]) -> set[str]:
@@ -753,10 +833,10 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--runs", type=int, default=3)
     parser.add_argument("--warmup", type=int, default=1)
-    parser.add_argument("--workers", type=int, default=cpu_count())
+    parser.add_argument("--build-jobs", type=int, default=cpu_count())
+    parser.add_argument("--report-path", default=str(DEFAULT_REPORT))
     parser.add_argument("--entry", action="append")
     parser.add_argument("--benchmark", action="append")
-    parser.add_argument("--toolchain-report", action="store_true", help=argparse.SUPPRESS)
     return parser.parse_args()
 
 
@@ -770,6 +850,7 @@ def main() -> int:
     active_entries = [entry for entry in active_entries if entry.key in chosen_entries]
     chosen_benchmarks = selected_items(args.benchmark, [spec.name for spec in BENCHMARKS])
     active_benchmarks = [spec for spec in BENCHMARKS if spec.name in chosen_benchmarks]
+    report_path = Path(args.report_path).resolve()
 
     clean_dirs()
     results: list[Result] = []
@@ -780,7 +861,7 @@ def main() -> int:
 
     apply_references(results, active_benchmarks)
     cleanup_source_tree()
-    REPORT.write_text(render_report(args, active_entries, active_benchmarks, results), encoding="utf-8")
+    report_path.write_text(render_report(args, active_entries, active_benchmarks, results), encoding="utf-8")
     return 0
 
 

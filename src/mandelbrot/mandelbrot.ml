@@ -1,15 +1,14 @@
 let () =
   let size = if Array.length Sys.argv > 1 then int_of_string Sys.argv.(1) else 4000 in
-  let inv_size = 2.0 /. float_of_int size in
   let sum = ref 0 in
   let iter = 50 in
   let limit = 4.0 in
   for y = 0 to size - 1 do
-    let ci = (float_of_int y *. inv_size) -. 1.0 in
     for x = 0 to (size / 8) - 1 do
       let byte_val = ref 0 in
       for b = 0 to 7 do
-        let cr = (float_of_int (x * 8 + b) *. inv_size) -. 1.5 in
+        let ci = (float_of_int y *. 2.0) /. float_of_int size -. 1.0 in
+        let cr = (float_of_int (x * 8 + b) *. 2.0) /. float_of_int size -. 1.5 in
         let zr = ref 0.0 in
         let zi = ref 0.0 in
         let tr = ref 0.0 in

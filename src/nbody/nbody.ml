@@ -74,7 +74,7 @@ let offset_momentum bodies =
   bodies.(0).vz <- -. !pz /. solar_mass
 
 let () =
-  let n = if Array.length Sys.argv > 1 then int_of_string Sys.argv.(1) else 50_000_000 in
+  let n = if Array.length Sys.argv > 1 then int_of_string Sys.argv.(1) else 10_000_000 in
   offset_momentum bodies;
   Printf.printf "%.9f\n" (energy bodies);
   for _ = 1 to n do advance bodies 0.01 done;

@@ -93,12 +93,25 @@ fn offset_momentum(bodies : Array[Body]) -> Unit {
   bodies[0].vz = -pz / solar_mass
 }
 
+fn format_fixed(value : Double, digits : Int) -> String {
+  let negative = value < 0.0
+  let abs_value = if negative { -value } else { value }
+  let mut scale = 1
+  for i = 0; i < digits; i = i + 1 {
+    scale = scale * 10
+  }
+  let scaled = (abs_value * scale.to_double()).round().to_int()
+  let whole = scaled / scale
+  let frac = (scaled % scale).to_string().pad_start(digits, '0')
+  (if negative { "-" } else { "" }) + whole.to_string() + "." + frac
+}
+
 fn main {
   let n = arg_or(1, 10000000)
   offset_momentum(bodies)
-  println(energy(bodies).to_string())
+  println(format_fixed(energy(bodies), 9))
   for i = 1; i <= n; i = i + 1 {
     advance(bodies, 0.01)
   }
-  println(energy(bodies).to_string())
+  println(format_fixed(energy(bodies), 9))
 }

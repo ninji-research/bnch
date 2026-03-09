@@ -1,13 +1,14 @@
 import std/os, std/strutils
 proc main() =
   let size = if paramCount() > 0: parseInt(paramStr(1)) else: 4000
+  let invSize = 2.0 / size.float
   var sum = 0
   for y in 0 ..< size:
+    let ci = y.float * invSize - 1.0
     for x in 0 ..< (size div 8):
       var byteVal = 0
       for b in 0 .. 7:
-        let ci = (y.float * 2.0) / size.float - 1.0
-        let cr = ((x * 8 + b).float * 2.0) / size.float - 1.5
+        let cr = (x * 8 + b).float * invSize - 1.5
         var zr = 0.0
         var zi = 0.0
         var tr = 0.0

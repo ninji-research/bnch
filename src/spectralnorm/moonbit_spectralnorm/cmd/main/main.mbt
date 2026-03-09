@@ -38,6 +38,19 @@ fn eval_AtA_times_u(u : Array[Double], v : Array[Double], w : Array[Double]) -> 
   eval_At_times_u(w, v)
 }
 
+fn format_fixed(value : Double, digits : Int) -> String {
+  let negative = value < 0.0
+  let abs_value = if negative { -value } else { value }
+  let mut scale = 1
+  for i = 0; i < digits; i = i + 1 {
+    scale = scale * 10
+  }
+  let scaled = (abs_value * scale.to_double()).round().to_int()
+  let whole = scaled / scale
+  let frac = (scaled % scale).to_string().pad_start(digits, '0')
+  (if negative { "-" } else { "" }) + whole.to_string() + "." + frac
+}
+
 fn main {
   let n = arg_or(1, 5500)
   let u = Array::make(n, 1.0)
@@ -55,5 +68,5 @@ fn main {
   }
   
   let result = (vBv / vv).sqrt()
-  println(result.to_string())
+  println(format_fixed(result, 9))
 }

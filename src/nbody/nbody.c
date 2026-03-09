@@ -96,7 +96,7 @@ static void offset_momentum(Body *bodies, int count) {
 }
 
 int main(int argc, char **argv) {
-  long iterations = argc > 1 ? strtol(argv[1], NULL, 10) : 50000000L;
+  long iterations = argc > 1 ? strtol(argv[1], NULL, 10) : 10000000L;
   Body bodies[] = {
       {.x = 0.0, .y = 0.0, .z = 0.0, .vx = 0.0, .vy = 0.0, .vz = 0.0, .mass = SOLAR_MASS},
       make_body(4.84143144246472090e+00, -1.16032004402742839e+00,

@@ -1,5 +1,5 @@
 fn main() {
-    let n = std::env::args().nth(1).and_then(|x| x.parse().ok()).unwrap_or(50_000_000);
+    let n = std::env::args().nth(1).and_then(|x| x.parse().ok()).unwrap_or(10_000_000);
     let mut bodies = [
         Body::sun(), Body::jupiter(), Body::saturn(), Body::uranus(), Body::neptune()
     ];

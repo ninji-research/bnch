@@ -4,14 +4,15 @@
 
 int main(int argc, char **argv) {
     int size = argc > 1 ? atoi(argv[1]) : 4000;
+    double inv_size = 2.0 / (double)size;
     uint32_t sum = 0;
 
     for (int y = 0; y < size; ++y) {
+        double ci = (double)y * inv_size - 1.0;
         for (int x = 0; x < size / 8; ++x) {
             int byte = 0;
             for (int b = 0; b < 8; ++b) {
-                double ci = ((double)y * 2.0) / (double)size - 1.0;
-                double cr = ((double)(x * 8 + b) * 2.0) / (double)size - 1.5;
+                double cr = (double)(x * 8 + b) * inv_size - 1.5;
                 double zr = 0.0;
                 double zi = 0.0;
                 double tr = 0.0;

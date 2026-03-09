@@ -11,14 +11,13 @@ fn arg_or(index : Int, fallback : Int) -> Int {
 
 fn main {
   let size = arg_or(1, 4000)
-  let inv_size = 2.0 / size.to_double()
   let mut sum = 0
   for y = 0; y < size; y = y + 1 {
-    let ci = y.to_double() * inv_size - 1.0
     for x = 0; x < size / 8; x = x + 1 {
       let mut byte_val = 0
       for b = 0; b < 8; b = b + 1 {
-        let cr = (x * 8 + b).to_double() * inv_size - 1.5
+        let ci = y.to_double() * 2.0 / size.to_double() - 1.0
+        let cr = (x * 8 + b).to_double() * 2.0 / size.to_double() - 1.5
         let mut zr = 0.0
         let mut zi = 0.0
         let mut tr = 0.0
