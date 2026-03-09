@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import math
 import os
 import shutil
 import stat
@@ -617,65 +618,47 @@ def entry_rows(active_entries: list[EntrySpec], results: list[Result]) -> list[l
     return rows
 
 
-def weighted_metric_averages(
-    results: list[Result],
-    benchmarks: list[BenchmarkSpec],
-    metric: str,
-) -> dict[str, float]:
-    complete_entries = complete_entry_keys(results, benchmarks)
-    if not complete_entries:
-        return {}
+def fmt_normalized_score(value: float) -> str:
+    return f"{value:.4f}"
 
-    by_benchmark = ok_results_by_benchmark(results, complete_entries)
-    totals = {entry: 0.0 for entry in complete_entries}
-    total_weight = 0.0
-    for spec in benchmarks:
-        rows = by_benchmark.get(spec.name, [])
-        if not rows:
+
+def rank_positions(values: dict[str, float], reverse: bool = False, rel_tol: float = 1e-12, abs_tol: float = 1e-12) -> dict[str, int]:
+    ordered = sorted(values.items(), key=lambda item: item[1], reverse=reverse)
+    ranks: dict[str, int] = {}
+    last_value: float | None = None
+    last_rank = 0
+    for index, (entry, value) in enumerate(ordered, start=1):
+        if last_value is not None and math.isclose(value, last_value, rel_tol=rel_tol, abs_tol=abs_tol):
+            ranks[entry] = last_rank
             continue
-        total_weight += spec.weight
-        for row in rows:
-            totals[row.entry] += spec.weight * metric_value(row, metric)
-    if total_weight == 0:
-        return {}
-    return {entry: totals[entry] / total_weight for entry in complete_entries}
-
-
-def fmt_metric_average(metric: str, value: float) -> str:
-    if metric in {"exec_time", "build_time"}:
-        return f"{value:.4f}s"
-    if metric == "peak_mem":
-        return f"{value / 1024.0:.2f} MiB"
-    if metric == "bin_size":
-        return f"{value / 1024.0:.2f} KiB"
-    raise ValueError(metric)
+        ranks[entry] = index
+        last_rank = index
+        last_value = value
+    return ranks
 
 
 def summary_rows(results: list[Result], benchmarks: list[BenchmarkSpec], active_entries: list[EntrySpec]) -> list[list[str]]:
     valid_benchmarks = scored_benchmarks(results, benchmarks)
-    score_map = scores(results, benchmarks)
-    metric_scores_map = {label: metric_scores(results, valid_benchmarks, (metric,)) for label, metric in SUMMARY_METRICS}
-    metric_averages = {label: weighted_metric_averages(results, valid_benchmarks, metric) for label, metric in SUMMARY_METRICS}
+    score_map = metric_scores(results, valid_benchmarks, METRIC_WEIGHTS)
+    metric_score_maps = {label: metric_scores(results, valid_benchmarks, {metric: 1.0}) for label, metric in SUMMARY_METRICS}
     labels = {entry.key: entry.label for entry in active_entries}
-    ranks_by_metric: dict[str, dict[str, int]] = {}
-    for metric, metric_map in metric_scores_map.items():
-        ordered = sorted(metric_map.items(), key=lambda item: item[1], reverse=True)
-        ranks_by_metric[metric] = {entry: index for index, (entry, _) in enumerate(ordered, start=1)}
+    ranks_by_metric = {label: rank_positions(metric_score_maps[label], reverse=True) for label, _ in SUMMARY_METRICS}
+    overall_ranks = rank_positions(score_map, reverse=True)
 
     rows: list[list[str]] = []
     overall_order = sorted(score_map.items(), key=lambda item: item[1], reverse=True)
-    for overall_rank, (entry_key, _) in enumerate(overall_order, start=1):
+    for entry_key, _ in overall_order:
         metric_cells: list[str] = []
         for label, metric in SUMMARY_METRICS:
             rank = ranks_by_metric[label].get(entry_key)
-            average = metric_averages[label].get(entry_key)
-            if rank is None or average is None:
+            score = metric_score_maps[label].get(entry_key)
+            if rank is None or score is None:
                 metric_cells.append("-")
                 continue
-            metric_cells.append(f"{rank} ({fmt_metric_average(metric, average)})")
+            metric_cells.append(f"{rank} ({fmt_normalized_score(score)})")
         rows.append(
             [
-                str(overall_rank),
+                str(overall_ranks[entry_key]),
                 labels[entry_key],
                 f"{score_map[entry_key]:.4f}",
                 *metric_cells,
@@ -794,7 +777,9 @@ def render_report(
     if score_map:
         content.extend(
             [
-                markdown_table(["Overall", "Entry", "Score", "Speed", "Memory", "Build", "Size"], summary_rows(results, benchmarks, active_entries)),
+                markdown_table(["Overall", "Entry", "Normalized Score", "Speed", "Memory", "Build", "Size"], summary_rows(results, benchmarks, active_entries)),
+                "",
+                "_Overall rank and per-metric columns use normalized per-benchmark scoring. Overall applies the configured metric weights; each per-metric column uses benchmark weights for that metric only._",
                 "",
             ]
         )
