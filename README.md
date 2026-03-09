@@ -1,23 +1,32 @@
 # Benchmarks
 
-- Runner: [run.py](/run.py)
-- Report: [REPORT.md](/REPORT.md)
+`run.py` builds and benchmarks comparable implementations across the available toolchains in `src/`, then writes a markdown report to `REPORT.md`.
 
-Commands:
+## Run
+
 ```bash
 python3 run.py
-python3 run.py --runs 1 --warmup 0 --build-jobs 16
+python3 run.py --runs 1 --warmup 0
 python3 run.py --entry rust__llvm
 python3 run.py --benchmark mandelbrot
-python3 run.py --benchmark mandelbrot --report-path /tmp/mandelbrot-report.md
+python3 run.py --report-path /tmp/bnch.md
 ```
 
-Notes:
-- Entries are auto-detected from installed toolchains. Use `--entry` to filter them.
-- Active benchmarks are the retained suite defined in [run.py](/run.py).
-- `--build-jobs` controls build parallelism. It should not change benchmark behavior.
-- `--report-path` lets you write a targeted run somewhere else instead of overwriting the main report.
-- Final binaries are stripped consistently, and the report shows actual linkage from the finished binary.
-- Floating-point checks use canonical fixed precision so formatting differences do not create false mismatches.
-- The suite only keeps benchmarks aligned closely enough to compare directly.
-- The report stays lean by default: settings, weights, benchmark notes, entry summary, overall ranking, category ranks, results, and mismatches.
+## Behavior
+
+- Entries are enabled only when their toolchains are installed.
+- The suite uses the retained benchmark set defined in [run.py](/home/user/bnch/run.py).
+- Finished binaries are stripped before measurement; the report records observed linkage and stripped state from the built artifact.
+- Float outputs are canonicalized before comparison so formatting differences do not count as mismatches.
+- Only benchmarks where every active entry succeeds are included in scoring.
+
+## Report
+
+`REPORT.md` contains:
+
+- environment and scoring weights
+- benchmark notes
+- per-entry metadata, including startup binary size
+- one combined summary table with overall score plus per-metric rank and weighted raw average
+- per-benchmark results
+- mismatches, when present
