@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import functools
 import hashlib
 import math
 import os
@@ -14,6 +15,7 @@ import tempfile
 import time
 from dataclasses import dataclass
 from pathlib import Path
+
 ROOT = Path(__file__).resolve().parent
 SRC = ROOT / "src"
 FIXTURES = ROOT / "fixtures"
@@ -43,6 +45,30 @@ SUMMARY_METRICS: tuple[tuple[str, str], ...] = (
     ("Size", "bin_size"),
 )
 
+TOOL_VERSION_COMMANDS: tuple[tuple[str, list[str]], ...] = (
+    ("gcc", ["gcc", "--version"]),
+    ("clang", ["clang", "--version"]),
+    ("go", ["go", "version"]),
+    ("rustc", ["rustc", "--version"]),
+    ("nim", ["nim", "--version"]),
+    ("ocamlopt", ["ocamlopt", "-version"]),
+    ("moon", ["moon", "version"]),
+    ("strip", ["strip", "--version"]),
+)
+
+SOURCE_SUFFIXES = {
+    "c": ".c",
+    "go": ".go",
+    "rust": ".rs",
+    "nim": ".nim",
+    "ocaml": ".ml",
+}
+
+DIGEST_OUTPUT_BENCHMARKS = {"mandelbrot", "fasta", "revcomp"}
+ENTRY_TABLE_HEADERS = ["Entry", "Compiler", "Backend", "Linkage", "Stripped", "Binary Size Sample (KiB)"]
+RESULT_TABLE_HEADERS = ["Benchmark", "Entry", "Input", "Output", "Build Time (s)", "Run Time (s)", "Peak Memory (MiB)", "Binary Size (KiB)", "Status"]
+MISMATCH_TABLE_HEADERS = ["Benchmark", "Entry", "Output", "Reference", "Status"]
+
 
 @dataclass(frozen=True)
 class BenchmarkSpec:
@@ -68,6 +94,18 @@ class EntrySpec:
     backend: str
 
 
+ENTRY_CANDIDATES: tuple[tuple[tuple[str, ...], EntrySpec], ...] = (
+    (("gcc",), EntrySpec("c__gcc", "c (gcc)", "c", "gcc", "native")),
+    (("clang",), EntrySpec("c__clang", "c (clang)", "c", "clang", "native")),
+    (("go",), EntrySpec("go__gc", "go (gc)", "go", "go", "native")),
+    (("rustc",), EntrySpec("rust__llvm", "rust (rustc/llvm)", "rust", "rustc", "llvm")),
+    (("nim", "gcc"), EntrySpec("nim__gcc", "nim (gcc)", "nim", "gcc", "c")),
+    (("nim", "clang"), EntrySpec("nim__clang", "nim (clang)", "nim", "clang", "c")),
+    (("ocamlopt",), EntrySpec("ocaml__native", "ocaml (native)", "ocaml", "ocamlopt", "native")),
+    (("moon",), EntrySpec("moonbit__native", "moonbit (native)", "moonbit", "moon", "native")),
+)
+
+
 @dataclass
 class Result:
     benchmark: str
@@ -90,6 +128,18 @@ class SummaryData:
     overall_order: list[str]
     overall_ranks: dict[str, int]
     metric_ranks: dict[str, dict[str, int]]
+
+
+@dataclass(frozen=True)
+class Selection:
+    entries: list[EntrySpec]
+    benchmarks: list[BenchmarkSpec]
+
+
+@dataclass(frozen=True)
+class BuiltArtifact:
+    binary: Path
+    build_time: float
 
 
 def failed_result(
@@ -117,13 +167,14 @@ def failed_result(
 
 
 BENCHMARKS: tuple[BenchmarkSpec, ...] = (
-    BenchmarkSpec("binarytrees", ("21",), None, "21", 1.00, "exact", "bottom-up binary tree construction and checksum", "O(nodes built)", "O(max tree size)", "exact multiline text", "Same tree/check workload; memory-management costs remain language-native."),
+    BenchmarkSpec("binarytrees", ("20",), None, "20", 1.00, "exact", "bottom-up binary tree construction and checksum", "O(nodes built)", "O(max tree size)", "exact multiline text", "Same tree/check workload; memory-management costs remain language-native."),
+    BenchmarkSpec("fasta", ("250000",), None, "250000", 0.75, "exact", "deterministic FASTA generation with buffered text emission", "O(n)", "O(1)", "exact FASTA text", "Adds text generation and formatting without turning the suite into a library benchmark."),
     BenchmarkSpec("mandelbrot", ("512",), None, "512", 1.00, "exact", "scalar Mandelbrot escape-time bitmap checksum", "O(size^2 * iter)", "O(1)", "exact integer checksum", "Input size is set to 512 because all retained implementations agree there exactly."),
-    BenchmarkSpec("spectralnorm", ("5500",), None, "5500", 1.00, "float_9", "power method on implicit matrix", "O(n^2 * iterations)", "O(n)", "one float rounded to 9 decimals", "Correctness compares canonical 9-decimal output, not raw printer differences."),
+    BenchmarkSpec("spectralnorm", ("5000",), None, "5000", 1.00, "float_9", "power method on implicit matrix", "O(n^2 * iterations)", "O(n)", "one float rounded to 9 decimals", "Correctness compares canonical 9-decimal output, not raw printer differences."),
     BenchmarkSpec("fannkuch", ("10",), None, "10", 1.00, "exact", "fannkuch-redux permutation flips", "O(n! * n)", "O(n)", "exact two-line text", "Same permutation-generation strategy across entries."),
-    BenchmarkSpec("nbody", ("10000000",), None, "10000000", 1.00, "float_9_lines", "5-body symplectic advance and energy", "O(iterations * bodies^2)", "O(1)", "two floats rounded to 9 decimals", "Correctness compares canonical 9-decimal energies line-by-line."),
+    BenchmarkSpec("nbody", ("5000000",), None, "5000000", 1.00, "float_9_lines", "5-body symplectic advance and energy", "O(iterations * bodies^2)", "O(1)", "two floats rounded to 9 decimals", "Correctness compares canonical 9-decimal energies line-by-line."),
     BenchmarkSpec("knucleotide", (), "knucleotide/knucleotide-250000.fasta", "fixture:knucleotide-250000.fasta", 1.00, "exact", "FASTA parsing plus k-mer frequency and occurrence counting", "O(n)", "O(unique k-mers + input)", "exact multiline text", "Uses one committed deterministic FASTA fixture and processes only the >THREE section."),
-    BenchmarkSpec("startup", (), None, "-", 0.25, "exact", "process startup and hello-world print", "O(1)", "O(1)", "exact single line", "Useful signal for runtime/toolchain startup, but intentionally low ranking impact."),
+    BenchmarkSpec("revcomp", (), "knucleotide/knucleotide-250000.fasta", "fixture:knucleotide-250000.fasta", 0.75, "fasta_casefold", "FASTA parsing plus reverse-complement text transformation", "O(n)", "O(n)", "FASTA text with case-insensitive bases", "Adds streaming-style text transformation and output reshaping with the same committed fixture family."),
 )
 
 
@@ -173,6 +224,7 @@ def timed(command: list[str], cwd: Path | None = None, stdin_text: str | None = 
         return completed, end - start, usage.ru_maxrss
 
 
+@functools.cache
 def tool(name: str) -> str | None:
     return shutil.which(name)
 
@@ -192,38 +244,13 @@ def cpu_count() -> int:
 
 
 def entries() -> list[EntrySpec]:
-    active: list[EntrySpec] = []
-    if tool("gcc"):
-        active.append(EntrySpec("c__gcc", "c (gcc)", "c", "gcc", "native"))
-    if tool("clang"):
-        active.append(EntrySpec("c__clang", "c (clang)", "c", "clang", "native"))
-    if tool("go"):
-        active.append(EntrySpec("go__gc", "go (gc)", "go", "go", "native"))
-    if tool("rustc"):
-        active.append(EntrySpec("rust__llvm", "rust (rustc/llvm)", "rust", "rustc", "llvm"))
-    if tool("nim") and tool("gcc"):
-        active.append(EntrySpec("nim__gcc", "nim (gcc)", "nim", "gcc", "c"))
-    if tool("nim") and tool("clang"):
-        active.append(EntrySpec("nim__clang", "nim (clang)", "nim", "clang", "c"))
-    if tool("ocamlopt"):
-        active.append(EntrySpec("ocaml__native", "ocaml (native)", "ocaml", "ocamlopt", "native"))
-    if tool("moon"):
-        active.append(EntrySpec("moonbit__native", "moonbit (native)", "moonbit", "moon", "native"))
-    return active
+    return [entry for required_tools, entry in ENTRY_CANDIDATES if all(tool(name) for name in required_tools)]
 
 
 def source_path(benchmark: str, entry: EntrySpec) -> Path:
     root = SRC / benchmark
-    if entry.language == "c":
-        return root / f"{benchmark}.c"
-    if entry.language == "go":
-        return root / f"{benchmark}.go"
-    if entry.language == "rust":
-        return root / f"{benchmark}.rs"
-    if entry.language == "nim":
-        return root / f"{benchmark}.nim"
-    if entry.language == "ocaml":
-        return root / f"{benchmark}.ml"
+    if entry.language in SOURCE_SUFFIXES:
+        return root / f"{benchmark}{SOURCE_SUFFIXES[entry.language]}"
     if entry.language == "moonbit":
         return root / f"moonbit_{benchmark}"
     raise ValueError(f"unsupported language: {entry.language}")
@@ -236,11 +263,20 @@ def benchmark_args(spec: BenchmarkSpec) -> tuple[str, ...]:
 def benchmark_input_text(spec: BenchmarkSpec) -> str | None:
     if spec.stdin_fixture is None:
         return None
-    return (FIXTURES / spec.stdin_fixture).read_text(encoding="utf-8")
+    return fixture_text(spec.stdin_fixture)
+
+
+@functools.cache
+def fixture_text(relative_path: str) -> str:
+    return (FIXTURES / relative_path).read_text(encoding="utf-8")
 
 
 def benchmark_input_label(spec: BenchmarkSpec) -> str:
     return spec.input_label
+
+
+def entry_labels(active_entries: list[EntrySpec]) -> dict[str, str]:
+    return {entry.key: entry.label for entry in active_entries}
 
 
 def build_command(spec: BenchmarkSpec, entry: EntrySpec, binary: Path, build_dir: Path, build_jobs: int) -> list[str]:
@@ -398,6 +434,7 @@ def cleanup_source_tree() -> None:
             shutil.rmtree(path, ignore_errors=True)
         elif path.is_file() and path.suffix in removable_suffixes:
             path.unlink(missing_ok=True)
+    shutil.rmtree(ROOT / "__pycache__", ignore_errors=True)
 
 
 def normalize_output(text: str) -> str:
@@ -408,7 +445,7 @@ def normalize_output(text: str) -> str:
 def compact_output(benchmark: str, text: str) -> str:
     if not text:
         return "-"
-    if benchmark == "mandelbrot":
+    if benchmark in DIGEST_OUTPUT_BENCHMARKS or len(text) > 512:
         digest = hashlib.sha256(text.encode("utf-8")).hexdigest()[:16]
         return f"sha256:{digest}"
     one_line = text.replace("\n", " / ")
@@ -432,6 +469,11 @@ def canonical_output(spec: BenchmarkSpec, text: str) -> str:
     normalized = normalize_output(text)
     if spec.check == "exact":
         return normalized
+    if spec.check == "fasta_casefold":
+        lines = []
+        for line in normalized.splitlines():
+            lines.append(line if line.startswith(">") else line.upper())
+        return "\n".join(lines)
     if spec.check == "float_9":
         return format_fixed(parse_first_float(normalized), 9)
     if spec.check == "float_9_lines":
@@ -516,11 +558,6 @@ def scored_benchmarks(results: list[Result], benchmarks: list[BenchmarkSpec], ac
     return usable
 
 
-def scores(results: list[Result], benchmarks: list[BenchmarkSpec]) -> dict[str, float]:
-    valid_benchmarks = scored_benchmarks(results, benchmarks)
-    return metric_scores(results, valid_benchmarks, METRIC_WEIGHTS)
-
-
 def metric_scores(
     results: list[Result],
     benchmarks: list[BenchmarkSpec],
@@ -558,17 +595,6 @@ def metric_scores(
     return {entry: totals[entry] / total_weight for entry in complete_entries}
 
 
-def ok_results_by_benchmark(results: list[Result], entries: set[str] | None = None) -> dict[str, list[Result]]:
-    grouped: dict[str, list[Result]] = {}
-    for result in results:
-        if result.status != "ok":
-            continue
-        if entries is not None and result.entry not in entries:
-            continue
-        grouped.setdefault(result.benchmark, []).append(result)
-    return grouped
-
-
 def complete_entry_keys(results: list[Result], benchmarks: list[BenchmarkSpec]) -> set[str]:
     if not benchmarks:
         return set()
@@ -582,29 +608,20 @@ def complete_entry_keys(results: list[Result], benchmarks: list[BenchmarkSpec]) 
 
 
 def environment_rows(run_args: argparse.Namespace, active_entries: list[EntrySpec], benchmarks: list[BenchmarkSpec]) -> list[list[str]]:
-    return [
+    rows = [
         ["runs", str(run_args.runs)],
         ["warmup", str(run_args.warmup)],
         ["build_jobs", str(run_args.build_jobs)],
         ["link_policy", "toolchain-default release mode (mixed linkage; see entry metadata)"],
         ["entries", str(len(active_entries))],
         ["benchmarks", str(len(benchmarks))],
-        ["gcc", version_or_dash(["gcc", "--version"])],
-        ["clang", version_or_dash(["clang", "--version"])],
-        ["go", version_or_dash(["go", "version"])],
-        ["rustc", version_or_dash(["rustc", "--version"])],
-        ["nim", version_or_dash(["nim", "--version"])],
-        ["ocamlopt", version_or_dash(["ocamlopt", "-version"])],
-        ["moon", version_or_dash(["moon", "version"])],
-        ["strip", version_or_dash(["strip", "--version"])],
     ]
+    rows.extend([[name, version_or_dash(command)] for name, command in TOOL_VERSION_COMMANDS])
+    return rows
 
 
 def entry_rows(active_entries: list[EntrySpec], results: list[Result]) -> list[list[str]]:
     sample_for_entry: dict[str, Result] = {}
-    for result in results:
-        if result.status == "ok" and result.benchmark == "startup":
-            sample_for_entry[result.entry] = result
     for result in results:
         sample_for_entry.setdefault(result.entry, result)
 
@@ -663,7 +680,7 @@ def summary_headers() -> list[str]:
 
 
 def summary_rows(summary: SummaryData, active_entries: list[EntrySpec]) -> list[list[str]]:
-    labels = {entry.key: entry.label for entry in active_entries}
+    labels = entry_labels(active_entries)
 
     rows: list[list[str]] = []
     for entry_key in summary.overall_order:
@@ -687,12 +704,13 @@ def summary_rows(summary: SummaryData, active_entries: list[EntrySpec]) -> list[
 
 def result_rows(results: list[Result], active_entries: list[EntrySpec]) -> list[list[str]]:
     order = {entry.key: index for index, entry in enumerate(active_entries)}
+    labels = entry_labels(active_entries)
     rows: list[list[str]] = []
     for result in sorted(results, key=lambda item: (item.benchmark, order.get(item.entry, 999), item.entry)):
         rows.append(
             [
                 result.benchmark,
-                next(entry.label for entry in active_entries if entry.key == result.entry),
+                labels.get(result.entry, result.entry),
                 result.input_text,
                 result.output_text,
                 fmt_seconds(result.build_time),
@@ -706,7 +724,7 @@ def result_rows(results: list[Result], active_entries: list[EntrySpec]) -> list[
 
 
 def mismatch_rows(results: list[Result], active_entries: list[EntrySpec]) -> list[list[str]]:
-    labels = {entry.key: entry.label for entry in active_entries}
+    labels = entry_labels(active_entries)
     rows: list[list[str]] = []
     for result in results:
         if result.status == "ok":
@@ -763,10 +781,19 @@ def render_report(
     benchmarks: list[BenchmarkSpec],
     results: list[Result],
 ) -> str:
-    content = [
-        "# Benchmark Report",
+    content_sections = [
+        "## Environment",
         "",
         markdown_table(["Setting", "Value"], environment_rows(run_args, active_entries, benchmarks)),
+        "",
+        "## Entries",
+        "",
+        markdown_table(
+            ENTRY_TABLE_HEADERS,
+            entry_rows(active_entries, results),
+        ),
+        "",
+        "## Scoring Inputs",
         "",
         markdown_table(["Weight", "Value"], weight_rows(benchmarks)),
         "",
@@ -775,11 +802,11 @@ def render_report(
             benchmark_rows(benchmarks),
         ),
         "",
-        markdown_table(
-            ["Entry", "Compiler", "Backend", "Linkage", "Stripped", "Startup Binary Size (KiB)"],
-            entry_rows(active_entries, results),
-        ),
+    ]
+    content = [
+        "# Benchmark Report",
         "",
+        *content_sections,
     ]
 
     excluded = excluded_benchmark_rows(results, benchmarks, active_entries)
@@ -795,6 +822,8 @@ def render_report(
     if summary.overall_scores:
         content.extend(
             [
+                "## Summary",
+                "",
                 markdown_table(summary_headers(), summary_rows(summary, active_entries)),
                 "",
                 "_Overall score uses normalized per-benchmark scoring with the configured metric weights. Per-metric columns show rank only, using that metric's normalized score across the scored benchmarks._",
@@ -803,10 +832,11 @@ def render_report(
         )
 
     content.append(
-        markdown_table(
-            ["Benchmark", "Entry", "Input", "Output", "Build Time (s)", "Run Time (s)", "Peak Memory (MiB)", "Binary Size (KiB)", "Status"],
-            result_rows(results, active_entries),
-        )
+        "## Results"
+    )
+    content.append("")
+    content.append(
+        markdown_table(RESULT_TABLE_HEADERS, result_rows(results, active_entries))
     )
     mismatches = mismatch_rows(results, active_entries)
     if mismatches:
@@ -815,11 +845,34 @@ def render_report(
                 "",
                 "## Mismatches",
                 "",
-                markdown_table(["Benchmark", "Entry", "Output", "Reference", "Status"], mismatches),
+                markdown_table(MISMATCH_TABLE_HEADERS, mismatches),
             ]
         )
     content.append("")
     return "\n".join(content)
+
+
+def finalize_binary(entry: EntrySpec, binary: Path, build_dir: Path, build_time: float) -> BuiltArtifact:
+    if entry.language == "moonbit":
+        built = find_moonbit_binary(build_dir)
+        shutil.copy2(built, binary)
+        binary.chmod(binary.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
+    build_time += strip_binary(binary)
+    return BuiltArtifact(binary=binary, build_time=build_time)
+
+
+def run_binary(binary: Path, args: tuple[str, ...], stdin_text: str | None, repeats: int) -> tuple[list[float], list[int], str] | None:
+    exec_times: list[float] = []
+    peak_kibs: list[int] = []
+    output = "-"
+    for _ in range(repeats):
+        run_proc, exec_time, peak_kib = timed([str(binary), *args], stdin_text=stdin_text)
+        if run_proc.returncode != 0:
+            return None
+        output = normalize_output(run_proc.stdout)
+        exec_times.append(exec_time)
+        peak_kibs.append(peak_kib)
+    return exec_times, peak_kibs, output
 
 
 def build_and_run(spec: BenchmarkSpec, entry: EntrySpec, run_args: argparse.Namespace) -> Result:
@@ -837,30 +890,18 @@ def build_and_run(spec: BenchmarkSpec, entry: EntrySpec, run_args: argparse.Name
     if build_proc.returncode != 0:
         return failed_result(spec, entry, benchmark_input_label(spec), "build-fail", build_time, binary)
 
-    if entry.language == "moonbit":
-        built = find_moonbit_binary(build_dir)
-        shutil.copy2(built, binary)
-        binary.chmod(binary.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
-
-    build_time += strip_binary(binary)
+    artifact = finalize_binary(entry, binary, build_dir, build_time)
 
     args = benchmark_args(spec)
-    exec_times: list[float] = []
-    peak_kibs: list[int] = []
-    output = "-"
+    if run_args.warmup:
+        warmup = run_binary(artifact.binary, args, stdin_text, run_args.warmup)
+        if warmup is None:
+            return failed_result(spec, entry, benchmark_input_label(spec), "run-fail", artifact.build_time, artifact.binary)
 
-    for _ in range(run_args.warmup):
-        warm_proc, _, _ = timed([str(binary), *args], stdin_text=stdin_text)
-        if warm_proc.returncode != 0:
-            return failed_result(spec, entry, benchmark_input_label(spec), "run-fail", build_time, binary)
-
-    for _ in range(run_args.runs):
-        run_proc, exec_time, peak_kib = timed([str(binary), *args], stdin_text=stdin_text)
-        if run_proc.returncode != 0:
-            return failed_result(spec, entry, benchmark_input_label(spec), "run-fail", build_time, binary)
-        output = normalize_output(run_proc.stdout)
-        exec_times.append(exec_time)
-        peak_kibs.append(peak_kib)
+    measured = run_binary(artifact.binary, args, stdin_text, run_args.runs)
+    if measured is None:
+        return failed_result(spec, entry, benchmark_input_label(spec), "run-fail", artifact.build_time, artifact.binary)
+    exec_times, peak_kibs, output = measured
 
     return Result(
         benchmark=spec.name,
@@ -870,11 +911,11 @@ def build_and_run(spec: BenchmarkSpec, entry: EntrySpec, run_args: argparse.Name
         output_text=compact_output(spec.name, output),
         reference_text="-",
         status="ok",
-        build_time=build_time,
+        build_time=artifact.build_time,
         exec_time=sum(exec_times) / len(exec_times),
         peak_mem_kib=max(peak_kibs),
-        bin_size=binary.stat().st_size,
-        binary_path=binary,
+        bin_size=artifact.binary.stat().st_size,
+        binary_path=artifact.binary,
     )
 
 
@@ -898,53 +939,108 @@ def apply_references(results: list[Result], benchmarks: list[BenchmarkSpec]) -> 
                     row.reference_text = compact_output(spec.name, canonical_reference)
 
 
-def selected_items(values: list[str] | None, available: list[str]) -> set[str]:
+def parse_csv_args(values: list[str] | None) -> list[str]:
     if not values:
-        return set(available)
-    chosen: set[str] = set()
+        return []
+    chosen: list[str] = []
     for value in values:
         for item in value.split(","):
             item = item.strip()
             if item:
-                chosen.add(item)
-    unknown = sorted(chosen - set(available))
-    if unknown:
-        raise SystemExit(f"unknown selection: {', '.join(unknown)}")
+                chosen.append(item)
     return chosen
 
 
+def selected_keys(values: list[str] | None, available: list[str], kind: str) -> list[str]:
+    if not values:
+        return list(available)
+    requested = parse_csv_args(values)
+    unknown = sorted(set(requested) - set(available))
+    if unknown:
+        raise SystemExit(f"unknown {kind}: {', '.join(unknown)}")
+    ordered: list[str] = []
+    seen: set[str] = set()
+    for item in requested:
+        if item not in seen:
+            ordered.append(item)
+            seen.add(item)
+    return ordered
+
+
+def resolve_selection(run_args: argparse.Namespace, available_entries: list[EntrySpec]) -> Selection:
+    available_entry_keys = [entry.key for entry in available_entries]
+    selected_entry_keys = set(selected_keys(run_args.entry, available_entry_keys, "entry"))
+    chosen_entries = [entry for entry in available_entries if entry.key in selected_entry_keys]
+    if not chosen_entries:
+        raise SystemExit("no active entries selected")
+
+    available_benchmark_keys = [spec.name for spec in BENCHMARKS]
+    selected_benchmark_keys = set(selected_keys(run_args.benchmark, available_benchmark_keys, "benchmark"))
+    chosen_benchmarks = [spec for spec in BENCHMARKS if spec.name in selected_benchmark_keys]
+    if not chosen_benchmarks:
+        raise SystemExit("no benchmarks selected")
+
+    return Selection(entries=chosen_entries, benchmarks=chosen_benchmarks)
+
+
+def log_progress(index: int, total: int, spec: BenchmarkSpec, entry: EntrySpec) -> None:
+    print(f"[{index}/{total}] {spec.name} :: {entry.label}", file=sys.stderr, flush=True)
+
+
+def run_suite(run_args: argparse.Namespace, active_entries: list[EntrySpec], active_benchmarks: list[BenchmarkSpec]) -> list[Result]:
+    total = len(active_entries) * len(active_benchmarks)
+    results: list[Result] = []
+    current = 0
+    for spec in active_benchmarks:
+        for entry in active_entries:
+            current += 1
+            log_progress(current, total, spec, entry)
+            results.append(build_and_run(spec, entry, run_args))
+    return results
+
+
+def positive_int(value: str) -> int:
+    parsed = int(value)
+    if parsed <= 0:
+        raise argparse.ArgumentTypeError("must be a positive integer")
+    return parsed
+
+
+def non_negative_int(value: str) -> int:
+    parsed = int(value)
+    if parsed < 0:
+        raise argparse.ArgumentTypeError("must be a non-negative integer")
+    return parsed
+
+
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--runs", type=int, default=3)
-    parser.add_argument("--warmup", type=int, default=1)
-    parser.add_argument("--build-jobs", type=int, default=cpu_count())
-    parser.add_argument("--report-path", default=str(DEFAULT_REPORT))
-    parser.add_argument("--entry", action="append")
-    parser.add_argument("--benchmark", action="append")
+    parser = argparse.ArgumentParser(description="Build retained benchmark implementations and write a markdown report.")
+    parser.add_argument("--runs", type=positive_int, default=3, help="Measured runs per benchmark after warmup.")
+    parser.add_argument("--warmup", type=non_negative_int, default=1, help="Warmup runs before timing.")
+    parser.add_argument("--build-jobs", type=positive_int, default=cpu_count(), help="Parallel jobs used by supported build tools.")
+    parser.add_argument("--report-path", default=str(DEFAULT_REPORT), help="Output path for the generated markdown report.")
+    parser.add_argument("--entry", action="append", help="Entry key or comma-separated entry keys to include.")
+    parser.add_argument("--benchmark", action="append", help="Benchmark name or comma-separated benchmark names to include.")
     return parser.parse_args()
 
 
 def main() -> int:
     args = parse_args()
-    active_entries = entries()
-    if not active_entries:
+    available_entries = entries()
+    if not available_entries:
         raise SystemExit("no supported toolchains found")
 
-    chosen_entries = selected_items(args.entry, [entry.key for entry in active_entries])
-    active_entries = [entry for entry in active_entries if entry.key in chosen_entries]
-    chosen_benchmarks = selected_items(args.benchmark, [spec.name for spec in BENCHMARKS])
-    active_benchmarks = [spec for spec in BENCHMARKS if spec.name in chosen_benchmarks]
+    selection = resolve_selection(args, available_entries)
+    active_entries = selection.entries
+    active_benchmarks = selection.benchmarks
     report_path = Path(args.report_path).resolve()
 
     clean_dirs()
-    results: list[Result] = []
-    for spec in active_benchmarks:
-        for entry in active_entries:
-            results.append(build_and_run(spec, entry, args))
-
+    results = run_suite(args, active_entries, active_benchmarks)
     apply_references(results, active_benchmarks)
     cleanup_source_tree()
     report_path.write_text(render_report(args, active_entries, active_benchmarks, results), encoding="utf-8")
+    print(f"wrote {report_path}", file=sys.stderr)
     return 0
 
 
