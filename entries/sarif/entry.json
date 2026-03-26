@@ -1,0 +1,30 @@
+{
+  "language": "sarif",
+  "track": "experimental",
+  "benchmarks": ["mandelbrot", "fasta", "nbody", "revcomp", "spectralnorm", "knucleotide"],
+  "canonical_entry": "sarif__stage0",
+  "variants": [
+    {
+      "key": "sarif__stage0",
+      "label": "sarif (stage0/native)",
+      "compiler": "sarifc",
+      "backend": "native",
+      "required_tools": ["cargo", "rustc"]
+    }
+  ],
+  "build": {
+    "compiler": "sarifc",
+    "profile_label": "stage0-native",
+    "low_burden_optimizations": [
+      "native executable emitted through sarifc build",
+      "stdout result mode for benchmark output parity",
+      "retained benchmark inputs declared in per-benchmark specs"
+    ],
+    "profile": "optimized-native",
+    "strip": true
+  },
+  "policies": {
+    "threads": 1,
+    "external_deps": false
+  }
+}

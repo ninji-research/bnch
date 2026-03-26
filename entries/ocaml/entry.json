@@ -1,0 +1,28 @@
+{
+  "language": "ocaml",
+  "canonical_entry": "ocaml__native",
+  "variants": [
+    {
+      "key": "ocaml__native",
+      "label": "ocaml (native)",
+      "compiler": "ocamlopt",
+      "backend": "native",
+      "required_tools": ["ocamlopt"]
+    }
+  ],
+  "build": {
+    "compiler": "ocamlopt",
+    "profile_label": "native-release",
+    "low_burden_optimizations": [
+      "native-code release build with unsafe and nodynlink",
+      "C backend native tuning flags passed through ccopt",
+      "separate stripping step after build"
+    ],
+    "optimization": "native-release",
+    "strip": true
+  },
+  "policies": {
+    "threads": 1,
+    "external_deps": false
+  }
+}

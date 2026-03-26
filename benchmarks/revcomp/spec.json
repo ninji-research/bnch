@@ -1,0 +1,17 @@
+{
+  "id": "revcomp",
+  "order": 90,
+  "category": "text_streaming",
+  "input": {"kind": "fixture", "path": "fixtures/knucleotide/knucleotide-250000.fasta"},
+  "weight": 0.75,
+  "check": "fasta_casefold",
+  "algorithm": "FASTA parsing plus reverse-complement text transformation",
+  "time_complexity": "O(n)",
+  "space_complexity": "O(n)",
+  "output_contract": "FASTA text with case-insensitive bases",
+  "fairness_notes": "Adds streaming-style text transformation and output reshaping with the same committed fixture family.",
+  "capabilities": ["text_parsing", "streaming_transform", "buffered_io"],
+  "retained_for": "Keeps a transformation-oriented streaming workload in the suite instead of only generators and aggregators.",
+  "threads": 1,
+  "external_deps": false
+}

@@ -1,0 +1,17 @@
+{
+  "id": "sortuniq",
+  "order": 100,
+  "category": "sort_aggregate",
+  "input": {"kind": "fixture", "path": "fixtures/sortuniq/words-250000.txt"},
+  "weight": 1.0,
+  "check": "exact",
+  "algorithm": "line-oriented string sort and duplicate-count aggregation",
+  "time_complexity": "O(n log n)",
+  "space_complexity": "O(n)",
+  "output_contract": "exact word,count text",
+  "fairness_notes": "Uses one committed deterministic newline-word fixture, includes empty-line noise, and rewards lean sort-plus-aggregation implementations.",
+  "capabilities": ["sorting", "aggregation", "string_processing"],
+  "retained_for": "Captures global ordering cost and frequency aggregation without parser-heavy setup or join complexity.",
+  "threads": 1,
+  "external_deps": false
+}

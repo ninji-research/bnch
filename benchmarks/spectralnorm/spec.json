@@ -1,0 +1,17 @@
+{
+  "id": "spectralnorm",
+  "order": 60,
+  "category": "numeric_compute",
+  "input": {"kind": "args", "value": "5000"},
+  "weight": 1.0,
+  "check": "float_9",
+  "algorithm": "power method on implicit matrix",
+  "time_complexity": "O(n^2 * iterations)",
+  "space_complexity": "O(n)",
+  "output_contract": "one float rounded to 9 decimals",
+  "fairness_notes": "Correctness compares canonical 9-decimal output, not raw printer differences.",
+  "capabilities": ["numeric_compute", "floating_point", "vector_iteration"],
+  "retained_for": "Adds floating-point iterative linear-algebra style work with stable numeric comparison rules.",
+  "threads": 1,
+  "external_deps": false
+}

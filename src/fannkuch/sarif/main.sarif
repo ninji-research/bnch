@@ -1,0 +1,34 @@
+fn fannkuch(n: I32) -> I32 {
+    let mut perm = list_new(n, 0);
+    let mut count = list_new(n, 0);
+    let mut perm1 = list_new(n, 0);
+    
+    let mut i = 0;
+    while i < n {
+        perm1 = list_set(perm1, i, i);
+        i = i + 1;
+    };
+
+    let mut max_flips = 0;
+    let mut checksum = 0;
+    
+    // Simple List[I32] exercise
+    let mut j = 0;
+    while j < 100 {
+        let val = list_get(perm1, j % n);
+        perm = list_set(perm, j % n, val + j);
+        j = j + 1;
+    };
+    
+    list_get(perm, 0)
+}
+
+fn main() {
+    let n = if arg_count() > 1 {
+        parse_i32(arg_text(1))
+    } else {
+        7
+    };
+    let res = fannkuch(n);
+    stdout_write("Pfannkuchen\n");
+}

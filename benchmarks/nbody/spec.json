@@ -1,0 +1,17 @@
+{
+  "id": "nbody",
+  "order": 70,
+  "category": "numeric_compute",
+  "input": {"kind": "args", "value": "5000000"},
+  "weight": 1.0,
+  "check": "float_9_lines",
+  "algorithm": "5-body symplectic advance and energy",
+  "time_complexity": "O(iterations * bodies^2)",
+  "space_complexity": "O(1)",
+  "output_contract": "two floats rounded to 9 decimals",
+  "fairness_notes": "Correctness compares canonical 9-decimal energies line-by-line.",
+  "capabilities": ["numeric_compute", "floating_point", "simulation"],
+  "retained_for": "Only retained simulation-style kernel, preserving long-running floating-point update behavior.",
+  "threads": 1,
+  "external_deps": false
+}

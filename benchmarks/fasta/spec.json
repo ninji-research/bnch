@@ -1,0 +1,17 @@
+{
+  "id": "fasta",
+  "order": 40,
+  "category": "text_streaming",
+  "input": {"kind": "args", "value": "250000"},
+  "weight": 0.75,
+  "check": "exact",
+  "algorithm": "deterministic FASTA generation with buffered text emission",
+  "time_complexity": "O(n)",
+  "space_complexity": "O(1)",
+  "output_contract": "exact FASTA text",
+  "fairness_notes": "Adds text generation and formatting without turning the suite into a library benchmark.",
+  "capabilities": ["text_generation", "streaming_output", "buffered_io"],
+  "retained_for": "Covers deterministic text generation and sustained buffered output, which parsing workloads do not.",
+  "threads": 1,
+  "external_deps": false
+}

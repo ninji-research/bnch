@@ -1,0 +1,17 @@
+{
+  "id": "joinagg",
+  "order": 30,
+  "category": "join_aggregate",
+  "input": {"kind": "fixture", "path": "fixtures/joinagg/users-events-180000.txt"},
+  "weight": 1.0,
+  "check": "exact",
+  "algorithm": "sectioned CSV parse plus active-user sort-merge join and ordered aggregation",
+  "time_complexity": "O((u + e) log (u + e))",
+  "space_complexity": "O(u + e)",
+  "output_contract": "exact region,tier aggregate text",
+  "fairness_notes": "Uses one deterministic two-section fixture, keeps the join key and aggregate contract fixed, and adds a realistic relational join workload without external libraries.",
+  "capabilities": ["parsing", "join_processing", "aggregation", "sorting"],
+  "retained_for": "Only retained workload that exercises join logic, multi-table data shaping, and ordered aggregation together.",
+  "threads": 1,
+  "external_deps": false
+}

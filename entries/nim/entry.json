@@ -1,0 +1,36 @@
+{
+  "language": "nim",
+  "canonical_entry": "nim__clang",
+  "variants": [
+    {
+      "key": "nim__gcc",
+      "label": "nim (gcc)",
+      "compiler": "gcc",
+      "backend": "c",
+      "required_tools": ["nim", "gcc"]
+    },
+    {
+      "key": "nim__clang",
+      "label": "nim (clang)",
+      "compiler": "clang",
+      "backend": "c",
+      "required_tools": ["nim", "clang"]
+    }
+  ],
+  "build": {
+    "compiler": "nim+clang",
+    "profile_label": "native-lto-danger",
+    "low_burden_optimizations": [
+      "danger mode plus speed optimization",
+      "ORC memory manager",
+      "C compiler native tuning with LTO",
+      "lld when available, otherwise toolchain default linker"
+    ],
+    "optimization": "native-release",
+    "strip": true
+  },
+  "policies": {
+    "threads": 1,
+    "external_deps": false
+  }
+}

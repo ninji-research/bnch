@@ -1,0 +1,17 @@
+{
+  "id": "knucleotide",
+  "order": 80,
+  "category": "hash_map_string",
+  "input": {"kind": "fixture", "path": "fixtures/knucleotide/knucleotide-250000.fasta"},
+  "weight": 1.0,
+  "check": "exact",
+  "algorithm": "FASTA parsing plus k-mer frequency and occurrence counting",
+  "time_complexity": "O(n)",
+  "space_complexity": "O(unique k-mers + input)",
+  "output_contract": "exact multiline text",
+  "fairness_notes": "Uses one committed deterministic FASTA fixture and processes only the >THREE section.",
+  "capabilities": ["text_parsing", "hashing", "string_processing", "aggregation"],
+  "retained_for": "Primary hash-heavy and string-heavy benchmark; no other workload stresses this mix as directly.",
+  "threads": 1,
+  "external_deps": false
+}

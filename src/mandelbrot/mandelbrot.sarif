@@ -1,0 +1,55 @@
+fn bit_weight(offset: I32) -> I32 {
+    match offset {
+        0 => { 128 },
+        1 => { 64 },
+        2 => { 32 },
+        3 => { 16 },
+        4 => { 8 },
+        5 => { 4 },
+        6 => { 2 },
+        _ => { 1 },
+    }
+}
+
+fn main() -> I32 {
+    let size = 512;
+    let inv_size = 2.0 / 512.0;
+    let x_step = 8.0 * inv_size;
+    let mut sum = 0;
+    let mut y = 0;
+    let mut ci = 0.0 - 1.0;
+    while y < size {
+        let mut x = 0;
+        let mut x_base = 0.0 - 1.5;
+        while x < size / 8 {
+            let mut byte = 0;
+            let mut b = 0;
+            let mut cr = x_base;
+            while b < 8 {
+                let mut zr = 0.0;
+                let mut zi = 0.0;
+                let mut tr = 0.0;
+                let mut ti = 0.0;
+                let mut i = 0;
+                while i < 50 and tr + ti <= 4.0 {
+                    zi = 2.0 * zr * zi + ci;
+                    zr = tr - ti + cr;
+                    tr = zr * zr;
+                    ti = zi * zi;
+                    i = i + 1;
+                };
+                if tr + ti <= 4.0 {
+                    byte = byte + bit_weight(b);
+                };
+                cr = cr + inv_size;
+                b = b + 1;
+            };
+            sum = sum + byte;
+            x = x + 1;
+            x_base = x_base + x_step;
+        };
+        y = y + 1;
+        ci = ci + inv_size;
+    };
+    sum
+}

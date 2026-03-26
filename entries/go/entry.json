@@ -1,0 +1,28 @@
+{
+  "language": "go",
+  "canonical_entry": "go__gc",
+  "variants": [
+    {
+      "key": "go__gc",
+      "label": "go (gc)",
+      "compiler": "go",
+      "backend": "native",
+      "required_tools": ["go"]
+    }
+  ],
+  "build": {
+    "compiler": "go",
+    "profile_label": "trimpath-release",
+    "low_burden_optimizations": [
+      "optimized default Go compiler pipeline",
+      "trimpath and buildvcs disabled for cleaner reproducible artifacts",
+      "linker stripping and empty buildid for lean release binaries"
+    ],
+    "flags": ["-trimpath", "-buildvcs=false", "-ldflags=-s -w -buildid="],
+    "strip": true
+  },
+  "policies": {
+    "threads": 1,
+    "external_deps": false
+  }
+}

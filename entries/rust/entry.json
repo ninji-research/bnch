@@ -1,0 +1,28 @@
+{
+  "language": "rust",
+  "canonical_entry": "rust__llvm",
+  "variants": [
+    {
+      "key": "rust__llvm",
+      "label": "rust (rustc/llvm)",
+      "compiler": "rustc",
+      "backend": "llvm",
+      "required_tools": ["rustc"]
+    }
+  ],
+  "build": {
+    "compiler": "rustc",
+    "profile_label": "native-fat-lto",
+    "low_burden_optimizations": [
+      "target-cpu=native",
+      "fat LTO and single codegen unit",
+      "panic abort and symbol stripping for release binaries"
+    ],
+    "profile": "optimized-native",
+    "strip": true
+  },
+  "policies": {
+    "threads": 1,
+    "external_deps": false
+  }
+}

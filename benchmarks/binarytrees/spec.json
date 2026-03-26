@@ -1,0 +1,17 @@
+{
+  "id": "binarytrees",
+  "order": 10,
+  "category": "allocation_runtime",
+  "input": {"kind": "args", "value": "20"},
+  "weight": 1.0,
+  "check": "exact",
+  "algorithm": "bottom-up binary tree construction and checksum",
+  "time_complexity": "O(nodes built)",
+  "space_complexity": "O(max tree size)",
+  "output_contract": "exact multiline text",
+  "fairness_notes": "Same tree/check workload; memory-management costs remain language-native.",
+  "capabilities": ["allocation", "pointer_chasing", "tree_recursion"],
+  "retained_for": "Only benchmark centered on allocation-heavy pointer traversal and recursive tree construction.",
+  "threads": 1,
+  "external_deps": false
+}

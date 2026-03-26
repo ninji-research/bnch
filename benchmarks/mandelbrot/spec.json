@@ -1,0 +1,17 @@
+{
+  "id": "mandelbrot",
+  "order": 50,
+  "category": "numeric_compute",
+  "input": {"kind": "args", "value": "512"},
+  "weight": 1.0,
+  "check": "exact",
+  "algorithm": "scalar Mandelbrot escape-time bitmap checksum",
+  "time_complexity": "O(size^2 * iter)",
+  "space_complexity": "O(1)",
+  "output_contract": "exact integer checksum",
+  "fairness_notes": "Input size is set to 512 because all retained implementations agree there exactly.",
+  "capabilities": ["numeric_compute", "tight_loops", "branching"],
+  "retained_for": "Represents scalar numeric compute with tight loop and branch behavior distinct from floating-point iterative kernels.",
+  "threads": 1,
+  "external_deps": false
+}

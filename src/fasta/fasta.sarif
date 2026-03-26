@@ -1,0 +1,176 @@
+const WIDTH: I32 = 60;
+const CHUNK_LINES: I32 = 4096;
+const IM: I32 = 139968;
+const IA: I32 = 3877;
+const IC: I32 = 29573;
+
+const ALU: Text = "GGCCGGGCGCGGTGGCTCACGCCTGTAATCCCAGCACTTTGGGAGGCCGAGGCGGGCGGATCACCTGAGGTCAGGAGTTCGAGACCAGCCTGGCCAACATGGTGAAACCCCGTCTCTACTAAAAATACAAAAATTAGCCGGGCGTGGTGGCGCGCGCCTGTAATCCCAGCTACTCGGGAGGCTGAGGCAGGAGAATCGCTTGAACCCGGGAGGCGGAGGTTGCAGTGAGCCGAGATCGCGCCACTGCACTCCAGCCTGGGCGACAGAGCGAGACTCCGTCTCAAAAA";
+
+fn next_seed(seed: I32) -> I32 {
+    let value = seed * IA + IC;
+    value - (value / IM) * IM
+}
+
+fn cyclic_slice(source: Text, start: I32, length: I32) -> Text {
+    let end = start + length;
+    let source_len = text_len(source);
+    if end <= source_len {
+        text_slice(source, start, end)
+    } else {
+        text_concat(
+            text_slice(source, start, source_len),
+            text_slice(source, 0, end - source_len),
+        )
+    }
+}
+
+fn pick_iub_codepoint(seed: I32) -> I32 {
+    if seed < 37792 {
+        97
+    } else {
+        if seed < 54588 {
+            99
+        } else {
+            if seed < 71384 {
+                103
+            } else {
+                if seed < 109176 {
+                    116
+                } else {
+                    if seed < 111975 {
+                        66
+                    } else {
+                        if seed < 114774 {
+                            68
+                        } else {
+                            if seed < 117574 {
+                                72
+                            } else {
+                                if seed < 120373 {
+                                    75
+                                } else {
+                                    if seed < 123172 {
+                                        77
+                                    } else {
+                                        if seed < 125972 {
+                                            78
+                                        } else {
+                                            if seed < 128771 {
+                                                82
+                                            } else {
+                                                if seed < 131570 {
+                                                    83
+                                                } else {
+                                                    if seed < 134370 {
+                                                        86
+                                                    } else {
+                                                        if seed < 137169 {
+                                                            87
+                                                        } else {
+                                                            89
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+fn pick_homo_codepoint(seed: I32) -> I32 {
+    if seed < 42404 {
+        97
+    } else {
+        if seed < 70117 {
+            99
+        } else {
+            if seed < 97767 {
+                103
+            } else {
+                116
+            }
+        }
+    }
+}
+
+fn write_repeat_section(header: Text, source: Text, length: I32) {
+    stdout_write(header);
+    stdout_write("\n");
+    let source_len = text_len(source);
+    let mut chunk = text_builder_new();
+    let mut chunk_lines = 0;
+    let mut offset = 0;
+    let mut remaining = length;
+    while remaining > 0 {
+        let line_len = if remaining < WIDTH { remaining } else { WIDTH };
+        chunk = text_builder_append(chunk, cyclic_slice(source, offset, line_len));
+        chunk = text_builder_append(chunk, "\n");
+        chunk_lines = chunk_lines + 1;
+        if chunk_lines == CHUNK_LINES {
+            stdout_write(text_builder_finish(chunk));
+            chunk = text_builder_new();
+            chunk_lines = 0;
+        };
+        let next_offset = offset + line_len;
+        offset = next_offset - (next_offset / source_len) * source_len;
+        remaining = remaining - line_len;
+    };
+    stdout_write(text_builder_finish(chunk))
+}
+
+fn write_random_section(seed: I32, header: Text, length: I32, use_homo: Bool) -> I32 {
+    stdout_write(header);
+    stdout_write("\n");
+    let mut current_seed = seed;
+    let mut chunk = text_builder_new();
+    let mut chunk_lines = 0;
+    let mut remaining = length;
+    while remaining > 0 {
+        let line_len = if remaining < WIDTH { remaining } else { WIDTH };
+        let mut line = text_builder_new();
+        let mut i = 0;
+        while i < line_len {
+            current_seed = next_seed(current_seed);
+            line = text_builder_append_codepoint(
+                line,
+                if use_homo {
+                    pick_homo_codepoint(current_seed)
+                } else {
+                    pick_iub_codepoint(current_seed)
+                },
+            );
+            i = i + 1;
+        };
+        chunk = text_builder_append(chunk, text_builder_finish(line));
+        chunk = text_builder_append(chunk, "\n");
+        chunk_lines = chunk_lines + 1;
+        if chunk_lines == CHUNK_LINES {
+            stdout_write(text_builder_finish(chunk));
+            chunk = text_builder_new();
+            chunk_lines = 0;
+        };
+        remaining = remaining - line_len;
+    };
+    stdout_write(text_builder_finish(chunk));
+    current_seed
+}
+
+fn main() {
+    let n = if arg_count() > 1 {
+        parse_i32(arg_text(1))
+    } else {
+        250000
+    };
+    write_repeat_section(">ONE Homo sapiens alu", ALU, n * 2);
+    let iub_seed = write_random_section(42, ">TWO IUB ambiguity codes", n * 3, false);
+    let final_seed = write_random_section(iub_seed, ">THREE Homo sapiens frequency", n * 5, true);
+    let ignored_seed = final_seed;
+    let sink = ignored_seed;
+}

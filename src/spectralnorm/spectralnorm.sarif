@@ -1,0 +1,51 @@
+fn eval_a_times_u(u: List[F64], out_buffer: List[F64], n: I32) -> List[F64] {
+    let mut out = out_buffer;
+    repeat i in n {
+        let mut sum = 0.0;
+        let mut denom = ((i * (i + 1)) / 2) + i + 1;
+        repeat j in n {
+            sum = sum + (1.0 / f64_from_i32(denom)) * list_get(u, j);
+            denom = denom + i + j + 1;
+        };
+        out = list_set(out, i, sum);
+    };
+    out
+}
+
+fn eval_at_times_u(u: List[F64], out_buffer: List[F64], n: I32) -> List[F64] {
+    let mut out = out_buffer;
+    repeat i in n {
+        let mut sum = 0.0;
+        let mut denom = ((i * (i + 1)) / 2) + 1;
+        repeat j in n {
+            sum = sum + (1.0 / f64_from_i32(denom)) * list_get(u, j);
+            denom = denom + i + j + 2;
+        };
+        out = list_set(out, i, sum);
+    };
+    out
+}
+
+fn main() -> Text {
+    let n = if arg_count() > 1 { parse_i32(arg_text(1)) } else { 5000 };
+    let mut u = list_new(n, 1.0);
+    let mut v = list_new(n, 0.0);
+    let mut w = list_new(n, 0.0);
+    repeat 10 {
+        w = eval_a_times_u(u, w, n);
+        v = eval_at_times_u(w, v, n);
+        w = eval_a_times_u(v, w, n);
+        u = eval_at_times_u(w, u, n);
+    };
+
+    let mut v_bv = 0.0;
+    let mut vv = 0.0;
+    repeat i in n {
+        let ui = list_get(u, i);
+        let vi = list_get(v, i);
+        v_bv = v_bv + ui * vi;
+        vv = vv + vi * vi;
+    };
+
+    text_from_f64_fixed(sqrt(v_bv / vv), 9)
+}

@@ -1,0 +1,17 @@
+{
+  "id": "csvgroupby",
+  "order": 20,
+  "category": "parse_aggregate",
+  "input": {"kind": "fixture", "path": "fixtures/csvgroupby/orders-120000.csv"},
+  "weight": 1.0,
+  "check": "exact",
+  "algorithm": "CSV parse plus per-customer group-by aggregation",
+  "time_complexity": "O(n log k)",
+  "space_complexity": "O(k)",
+  "output_contract": "exact CSV summary text",
+  "fairness_notes": "Uses a committed deterministic CSV fixture with clean unquoted fields and sorted aggregate output.",
+  "capabilities": ["csv_parsing", "aggregation", "sorting"],
+  "retained_for": "Anchors real structured-text parsing plus aggregation with lighter state than the join workload.",
+  "threads": 1,
+  "external_deps": false
+}

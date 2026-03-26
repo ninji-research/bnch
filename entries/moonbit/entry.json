@@ -1,0 +1,28 @@
+{
+  "language": "moonbit",
+  "canonical_entry": "moonbit__native",
+  "variants": [
+    {
+      "key": "moonbit__native",
+      "label": "moonbit (native)",
+      "compiler": "moon",
+      "backend": "native",
+      "required_tools": ["moon"]
+    }
+  ],
+  "build": {
+    "compiler": "moon native",
+    "profile_label": "native-release",
+    "low_burden_optimizations": [
+      "native target release build",
+      "toolchain-managed stripping",
+      "frozen dependency graph for reproducible builds"
+    ],
+    "optimization": "release",
+    "strip": true
+  },
+  "policies": {
+    "threads": 1,
+    "external_deps": false
+  }
+}

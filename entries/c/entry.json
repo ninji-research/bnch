@@ -1,0 +1,36 @@
+{
+  "language": "c",
+  "canonical_entry": "c__clang",
+  "variants": [
+    {
+      "key": "c__gcc",
+      "label": "c (gcc)",
+      "compiler": "gcc",
+      "backend": "native",
+      "required_tools": ["gcc"]
+    },
+    {
+      "key": "c__clang",
+      "label": "c (clang)",
+      "compiler": "clang",
+      "backend": "native",
+      "required_tools": ["clang"]
+    }
+  ],
+  "build": {
+    "compiler": "clang",
+    "profile_label": "native-lto-release",
+    "low_burden_optimizations": [
+      "O3 plus LTO for whole-program release builds",
+      "native CPU tuning",
+      "frame-pointer omission and low-cost math errno cleanup",
+      "lld when available, otherwise toolchain default linker"
+    ],
+    "optimization": "release",
+    "strip": true
+  },
+  "policies": {
+    "threads": 1,
+    "external_deps": false
+  }
+}
