@@ -100,7 +100,7 @@ fn pick_homo_codepoint(seed: I32) -> I32 {
     }
 }
 
-fn write_repeat_section(header: Text, source: Text, length: I32) {
+fn write_repeat_section(header: Text, source: Text, length: I32) effects [alloc] {
     stdout_write(header);
     stdout_write("\n");
     let source_len = text_len(source);
@@ -125,7 +125,7 @@ fn write_repeat_section(header: Text, source: Text, length: I32) {
     stdout_write(text_builder_finish(chunk))
 }
 
-fn write_random_section(seed: I32, header: Text, length: I32, use_homo: Bool) -> I32 {
+fn write_random_section(seed: I32, header: Text, length: I32, use_homo: Bool) -> I32 effects [alloc] {
     stdout_write(header);
     stdout_write("\n");
     let mut current_seed = seed;
@@ -162,15 +162,17 @@ fn write_random_section(seed: I32, header: Text, length: I32, use_homo: Bool) ->
     current_seed
 }
 
-fn main() {
+fn main() effects [alloc] {
     let n = if arg_count() > 1 {
         parse_i32(arg_text(1))
     } else {
         250000
     };
-    write_repeat_section(">ONE Homo sapiens alu", ALU, n * 2);
+    let repeat_done = write_repeat_section(">ONE Homo sapiens alu", ALU, n * 2);
     let iub_seed = write_random_section(42, ">TWO IUB ambiguity codes", n * 3, false);
     let final_seed = write_random_section(iub_seed, ">THREE Homo sapiens frequency", n * 5, true);
     let ignored_seed = final_seed;
+    let ignored_repeat = repeat_done;
     let sink = ignored_seed;
+    let sink_repeat = ignored_repeat;
 }

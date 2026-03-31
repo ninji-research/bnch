@@ -632,7 +632,7 @@ class RunHelpersTest(unittest.TestCase):
     def test_live_sarif_manifest_stays_pinned_to_truthful_benchmark_coverage(self) -> None:
         specs = [entry for entry in run.entry_specs() if entry.language == "sarif"]
         self.assertEqual([entry.key for entry in specs], ["sarif__stage0"])
-        self.assertEqual(specs[0].track, "experimental")
+        self.assertEqual(specs[0].track, "main")
         self.assertEqual(specs[0].supported_benchmarks, live_sarif_supported_benchmarks())
 
     def test_ensure_consistent_outputs_accepts_equivalent_float_outputs(self) -> None:

@@ -23,14 +23,10 @@ The default run compares canonical entries in:
 - C
 - Go
 - Rust
+- Sarif
 - Nim
 - OCaml
 - MoonBit
-
-Experimental track:
-
-- Sarif currently has real experimental `mandelbrot`, `fasta`, `nbody`, `revcomp`, `spectralnorm`, and `knucleotide` entries. They stay excluded from the default suite until broader retained-benchmark coverage and the self-hosting/toolchain story are both stronger.
-- Sarif `fasta` uses the sibling Sarif toolchain's maintained text-builder/runtime support, `nbody` uses its maintained float/runtime-arg support, `revcomp` uses its maintained stdin-text/text-builder/runtime support, `spectralnorm` uses the maintained list-based float substrate, and `knucleotide` uses maintained typed-list plus stdin-text/text-builder support. They are gated by the experimental track policy and by Sarif toolchain availability on the current machine, not by missing source-level capabilities.
 
 The suite is single-threaded and uses release-style builds.
 
@@ -103,7 +99,7 @@ Include non-canonical variants:
 python3 run.py --all-entries
 ```
 
-Include experimental entries explicitly:
+Include experimental entries explicitly when a non-main lane exists:
 
 ```bash
 python3 run.py --experimental-entries
@@ -114,7 +110,7 @@ Sarif toolchain discovery uses `BNCH_SARIF_REPO` first when set, then sibling ch
 
 Single-entry experimental reports are marked non-comparative in both Markdown and JSON output. They are useful for validating one language entry end-to-end, but they do not support honest cross-language ranking claims.
 
-Run an honest overlap comparison for one entry against the rest of the suite:
+Run an honest overlap comparison for one narrower entry against the rest of the suite:
 
 ```bash
 python3 run.py --experimental-entries --compare-entry-overlap sarif__stage0

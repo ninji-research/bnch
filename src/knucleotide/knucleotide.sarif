@@ -24,14 +24,10 @@ fn trim_line_end(source: Text, end: I32) -> I32 {
     }
 }
 
-fn line_is_three_header(line: Text) -> Bool {
-    text_len(line) >= 6 and
-        text_byte(line, 0) == 62 and
-        text_byte(line, 1) == 84 and
-        text_byte(line, 2) == 72 and
-        text_byte(line, 3) == 82 and
-        text_byte(line, 4) == 69 and
-        text_byte(line, 5) == 69
+fn line_is_three_header(source: Text, start: I32, end: I32) -> Bool {
+    end - start >= 6 and
+        text_byte(source, start) == 62 and
+        text_eq_range(source, start + 1, start + 6, "THREE")
 }
 
 fn encode_base(byte: I32) -> I32 {
@@ -102,7 +98,7 @@ fn append_count_line_final(builder: TextBuilder, count: I32, label: Text) -> Tex
     text_builder_append(with_tab, label)
 }
 
-fn append_sorted_percent_lines_1(builder: TextBuilder, counts: List[I32], total: I32) -> TextBuilder {
+fn append_sorted_percent_lines_1(builder: TextBuilder, counts: List[I32], total: I32) -> TextBuilder effects [alloc] {
     let mut current = builder;
     let mut used = list_new(4, false);
     repeat step in 4 {
@@ -121,7 +117,7 @@ fn append_sorted_percent_lines_1(builder: TextBuilder, counts: List[I32], total:
     current
 }
 
-fn append_sorted_percent_lines_2(builder: TextBuilder, counts: List[I32], total: I32) -> TextBuilder {
+fn append_sorted_percent_lines_2(builder: TextBuilder, counts: List[I32], total: I32) -> TextBuilder effects [alloc] {
     let mut current = builder;
     let mut used = list_new(16, false);
     repeat step in 16 {
@@ -196,7 +192,7 @@ fn suffix_match_18(last18: List[I32]) -> Bool {
         list_get(last18, 17) == 3
 }
 
-fn main() -> Text {
+fn main() -> Text effects [alloc] {
     let input = stdin_text();
     let mut counts1 = list_new(4, 0);
     let mut counts2 = list_new(16, 0);
@@ -214,18 +210,17 @@ fn main() -> Text {
     while index < text_len(input) and not done {
         let line_end = find_line_end(input, index);
         let content_end = trim_line_end(input, line_end);
-        let line = text_slice(input, index, content_end);
-        if text_len(line) > 0 and text_byte(line, 0) == 62 {
+        if content_end > index and text_byte(input, index) == 62 {
             if in_three {
                 done = true;
             } else {
-                in_three = line_is_three_header(line);
+                in_three = line_is_three_header(input, index, content_end);
             };
         } else {
             if in_three {
-                let mut pos = 0;
-                while pos < text_len(line) {
-                    let code = encode_base(text_byte(line, pos));
+                let mut pos = index;
+                while pos < content_end {
+                    let code = encode_base(text_byte(input, pos));
                     if code >= 0 {
                         repeat i in 17 {
                             last18 = list_set(last18, i, list_get(last18, i + 1));

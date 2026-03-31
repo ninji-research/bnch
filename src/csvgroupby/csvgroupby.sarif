@@ -1,0 +1,141 @@
+struct OrderRow { customer: Text, qty: I32, cents: I32 }
+
+struct OrderList { rows: List[OrderRow], len: I32 }
+
+fn trim_line_end(source: Text, end: I32) -> I32 {
+    if end > 0 and text_byte(source, end - 1) == 13 {
+        end - 1
+    } else {
+        end
+    }
+}
+
+fn parse_order(source: Text, start: I32, end: I32) -> OrderRow {
+    let comma1 = text_find_byte_range(source, start, end, 44);
+    let comma2 = text_find_byte_range(source, comma1 + 1, end, 44);
+    let comma3 = text_find_byte_range(source, comma2 + 1, end, 44);
+    OrderRow {
+        customer: text_slice(source, start, comma1),
+        qty: parse_i32_range(source, comma2 + 1, comma3),
+        cents: parse_i32_range(source, comma3 + 1, end),
+    }
+}
+
+fn grow_rows(rows: List[OrderRow], len: I32) -> List[OrderRow] effects [alloc] {
+    let empty = OrderRow { customer: "", qty: 0, cents: 0 };
+    let next_cap = if list_len(rows) == 0 { 8 } else { list_len(rows) * 2 };
+    let mut grown = list_new(next_cap, empty);
+    let mut index = 0;
+    while index < len {
+        grown = list_set(grown, index, list_get(rows, index));
+        index = index + 1;
+    };
+    grown
+}
+
+fn push_row(rows: List[OrderRow], len: I32, row: OrderRow) -> List[OrderRow] effects [alloc] {
+    let target = if len == list_len(rows) {
+        grow_rows(rows, len)
+    } else {
+        rows
+    };
+    list_set(target, len, row)
+}
+
+fn swap_rows(rows: List[OrderRow], left: I32, right: I32) -> List[OrderRow] {
+    let left_row = list_get(rows, left);
+    let right_row = list_get(rows, right);
+    let swapped = list_set(rows, left, right_row);
+    list_set(swapped, right, left_row)
+}
+
+fn sort_rows(rows: List[OrderRow], lo: I32, hi: I32) -> List[OrderRow] effects [alloc] {
+    if hi - lo <= 1 {
+        rows
+    } else {
+        let pivot = list_get(rows, lo + ((hi - lo) / 2));
+        let mut current = rows;
+        let mut left = lo;
+        let mut right = hi - 1;
+        let mut done = false;
+        while done == false {
+            while text_cmp(list_get(current, left).customer, pivot.customer) < 0 {
+                left = left + 1;
+            };
+            while text_cmp(list_get(current, right).customer, pivot.customer) > 0 {
+                right = right - 1;
+            };
+            if left <= right {
+                current = swap_rows(current, left, right);
+                left = left + 1;
+                right = right - 1;
+            } else {
+                done = true;
+            };
+        };
+        if lo < right + 1 {
+            current = sort_rows(current, lo, right + 1);
+        };
+        if left < hi {
+            current = sort_rows(current, left, hi);
+        };
+        current
+    }
+}
+
+fn append_i32(builder: TextBuilder, value: I32) -> TextBuilder {
+    text_builder_append(builder, text_from_f64_fixed(f64_from_i32(value), 0))
+}
+
+fn collect_orders(input: Text) -> OrderList effects [alloc] {
+    let empty = OrderRow { customer: "", qty: 0, cents: 0 };
+    let mut rows = list_new(8, empty);
+    let mut len = 0;
+    let mut index = 0;
+    let mut skip_header = true;
+    while index < text_len(input) {
+        let line_end = text_find_byte_range(input, index, text_len(input), 10);
+        let content_end = trim_line_end(input, line_end);
+        if content_end > index {
+            if skip_header {
+                skip_header = false;
+            } else {
+                rows = push_row(rows, len, parse_order(input, index, content_end));
+                len = len + 1;
+            }
+        };
+        index = line_end + 1;
+    };
+    OrderList { rows: rows, len: len }
+}
+
+fn main() -> Text effects [alloc] {
+    let data = collect_orders(stdin_text());
+    let rows = sort_rows(data.rows, 0, data.len);
+    let mut builder = text_builder_new();
+    let mut index = 0;
+    while index < data.len {
+        let customer = list_get(rows, index).customer;
+        let mut count = 0;
+        let mut qty = 0;
+        let mut cents = 0;
+        while index < data.len and text_cmp(list_get(rows, index).customer, customer) == 0 {
+            let row = list_get(rows, index);
+            count = count + 1;
+            qty = qty + row.qty;
+            cents = cents + row.cents;
+            index = index + 1;
+        };
+        builder = text_builder_append(builder, customer);
+        builder = text_builder_append_codepoint(builder, 44);
+        builder = append_i32(builder, count);
+        builder = text_builder_append_codepoint(builder, 44);
+        builder = append_i32(builder, qty);
+        builder = text_builder_append_codepoint(builder, 44);
+        builder = append_i32(builder, cents);
+        if index < data.len {
+            builder = text_builder_append_codepoint(builder, 10);
+        };
+    };
+    text_builder_finish(builder)
+}

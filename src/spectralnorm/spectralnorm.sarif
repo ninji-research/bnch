@@ -26,7 +26,7 @@ fn eval_at_times_u(u: List[F64], out_buffer: List[F64], n: I32) -> List[F64] {
     out
 }
 
-fn main() -> Text {
+fn main() -> Text effects [alloc] {
     let n = if arg_count() > 1 { parse_i32(arg_text(1)) } else { 5000 };
     let mut u = list_new(n, 1.0);
     let mut v = list_new(n, 0.0);

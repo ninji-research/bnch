@@ -1,7 +1,18 @@
 {
   "language": "sarif",
-  "track": "experimental",
-  "benchmarks": ["mandelbrot", "fasta", "nbody", "revcomp", "spectralnorm", "knucleotide"],
+  "track": "main",
+  "benchmarks": [
+    "binarytrees",
+    "csvgroupby",
+    "joinagg",
+    "mandelbrot",
+    "fasta",
+    "nbody",
+    "revcomp",
+    "spectralnorm",
+    "knucleotide",
+    "sortuniq"
+  ],
   "canonical_entry": "sarif__stage0",
   "variants": [
     {

@@ -81,7 +81,7 @@ fn complement_codepoint(byte: I32) -> I32 {
     }
 }
 
-fn reverse_complement_range(source: Text, start: I32, end: I32) -> Text {
+fn reverse_complement_range(source: Text, start: I32, end: I32) -> Text effects [alloc] {
     let mut builder = text_builder_new();
     let mut line_len = 0;
     let mut index = end;
@@ -103,7 +103,7 @@ fn reverse_complement_range(source: Text, start: I32, end: I32) -> Text {
     text_builder_finish(builder)
 }
 
-fn flush_record(header: Text, source: Text, seq_start: I32, seq_end: I32) {
+fn flush_record(header: Text, source: Text, seq_start: I32, seq_end: I32) effects [alloc] {
     if text_len(header) > 0 {
         stdout_write(header);
         stdout_write("\n");
@@ -111,7 +111,7 @@ fn flush_record(header: Text, source: Text, seq_start: I32, seq_end: I32) {
     };
 }
 
-fn main() {
+fn main() effects [alloc] {
     let input = stdin_text();
     let mut header = "";
     let mut seq_start = 0;
@@ -121,7 +121,8 @@ fn main() {
         let content_end = trim_line_end(input, line_end);
         let line = text_slice(input, index, content_end);
         if text_len(line) > 0 and text_byte(line, 0) == 62 {
-            flush_record(header, input, seq_start, index);
+            let flushed = flush_record(header, input, seq_start, index);
+            let ignored_flush = flushed;
             header = line;
             if line_end < text_len(input) {
                 seq_start = line_end + 1;
@@ -135,5 +136,6 @@ fn main() {
             index = line_end;
         };
     };
-    flush_record(header, input, seq_start, text_len(input))
+    let final_flush = flush_record(header, input, seq_start, text_len(input));
+    let ignored_final_flush = final_flush;
 }

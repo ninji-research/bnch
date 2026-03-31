@@ -1,0 +1,114 @@
+struct WordList { words: List[Text], len: I32 }
+
+fn trim_line_end(source: Text, end: I32) -> I32 {
+    if end > 0 and text_byte(source, end - 1) == 13 {
+        end - 1
+    } else {
+        end
+    }
+}
+
+fn grow_words(words: List[Text], len: I32) -> List[Text] effects [alloc] {
+    let next_cap = if list_len(words) == 0 { 8 } else { list_len(words) * 2 };
+    let mut grown = list_new(next_cap, "");
+    let mut index = 0;
+    while index < len {
+        grown = list_set(grown, index, list_get(words, index));
+        index = index + 1;
+    };
+    grown
+}
+
+fn push_word(words: List[Text], len: I32, word: Text) -> List[Text] effects [alloc] {
+    let target = if len == list_len(words) {
+        grow_words(words, len)
+    } else {
+        words
+    };
+    list_set(target, len, word)
+}
+
+fn swap_words(words: List[Text], left: I32, right: I32) -> List[Text] {
+    let left_word = list_get(words, left);
+    let right_word = list_get(words, right);
+    let swapped = list_set(words, left, right_word);
+    list_set(swapped, right, left_word)
+}
+
+fn sort_words(words: List[Text], lo: I32, hi: I32) -> List[Text] effects [alloc] {
+    if hi - lo <= 1 {
+        words
+    } else {
+        let pivot = list_get(words, lo + ((hi - lo) / 2));
+        let mut current = words;
+        let mut left = lo;
+        let mut right = hi - 1;
+        let mut done = false;
+        while done == false {
+            while text_cmp(list_get(current, left), pivot) < 0 {
+                left = left + 1;
+            };
+            while text_cmp(list_get(current, right), pivot) > 0 {
+                right = right - 1;
+            };
+            if left <= right {
+                current = swap_words(current, left, right);
+                left = left + 1;
+                right = right - 1;
+            } else {
+                done = true;
+            };
+        };
+        if lo < right + 1 {
+            current = sort_words(current, lo, right + 1);
+        };
+        if left < hi {
+            current = sort_words(current, left, hi);
+        };
+        current
+    }
+}
+
+fn append_i32(builder: TextBuilder, value: I32) -> TextBuilder {
+    text_builder_append(builder, text_from_f64_fixed(f64_from_i32(value), 0))
+}
+
+fn collect_words(input: Text) -> WordList effects [alloc] {
+    let mut words = list_new(8, "");
+    let mut len = 0;
+    let mut index = 0;
+    while index < text_len(input) {
+        let line_end = text_find_byte_range(input, index, text_len(input), 10);
+        let content_end = trim_line_end(input, line_end);
+        let line = text_slice(input, index, content_end);
+        if text_len(line) > 0 {
+            words = push_word(words, len, line);
+            len = len + 1;
+        };
+        index = line_end + 1;
+    };
+    WordList { words: words, len: len }
+}
+
+fn main() -> Text effects [alloc] {
+    let data = collect_words(stdin_text());
+    let words = sort_words(data.words, 0, data.len);
+    let mut builder = text_builder_new();
+    let mut index = 0;
+    while index < data.len {
+        let word = list_get(words, index);
+        let mut count = 1;
+        index = index + 1;
+        while index < data.len and text_cmp(list_get(words, index), word) == 0 {
+            count = count + 1;
+            index = index + 1;
+        };
+        builder = text_builder_append(builder, word);
+        builder = text_builder_append_codepoint(builder, 44);
+        builder = append_i32(builder, count);
+        if index < data.len {
+            builder = text_builder_append_codepoint(builder, 10);
+        };
+    };
+    text_builder_finish(builder)
+}
