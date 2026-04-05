@@ -96,6 +96,7 @@ RESULT_TABLE_HEADERS = ["Benchmark", "Entry", "Input", "Output", "Build Time (s)
 MISMATCH_TABLE_HEADERS = ["Benchmark", "Entry", "Output", "Reference", "Status"]
 BENCHMARK_COVERAGE_HEADERS = ["Benchmark", "Category", "Base Wt", "Effective Wt", "Capabilities", "Unique Coverage", "Retained For"]
 BENCHMARK_TABLE_HEADERS = ["Benchmark", "Algorithm", "Time", "Space", "Output Contract", "Fairness Notes"]
+SOURCE_TABLE_HEADERS = ["Entry", "Benchmarks", "Source Lines", "Source Chars", "Norm Lines", "Norm Chars"]
 CATEGORY_LABELS = {
     "numeric_compute": "Numeric",
     "allocation_runtime": "Allocation",
@@ -199,6 +200,13 @@ class Selection:
 class BuiltArtifact:
     binary: Path
     build_time: float
+
+
+@dataclass(frozen=True)
+class SourceMetrics:
+    benchmarks: int
+    lines: int
+    chars: int
 
 
 @dataclass(frozen=True)
@@ -628,6 +636,26 @@ def sarif_bin_candidates() -> tuple[Path, ...]:
     return tuple(candidates)
 
 
+def sarif_binary_is_fresh(repo: Path, binary: Path) -> bool:
+    if not binary.is_file():
+        return False
+    try:
+        binary_mtime = binary.stat().st_mtime
+    except OSError:
+        return False
+    source_globs = ("Cargo.toml", "Cargo.lock", "build.rs", "*.rs", "*.c", "*.h")
+    for pattern in source_globs:
+        for path in repo.rglob(pattern):
+            if not path.is_file():
+                continue
+            try:
+                if path.stat().st_mtime > binary_mtime:
+                    return False
+            except OSError:
+                return False
+    return True
+
+
 def has_required_tools(entry: EntrySpec) -> bool:
     return all(tool(name) for name in entry.required_tools)
 
@@ -743,13 +771,17 @@ def has_lld() -> bool:
 
 
 def sarifc_driver_command() -> list[str]:
-    for candidate in sarif_bin_candidates():
-        if candidate.is_file() and os.access(candidate, os.X_OK):
-            return [str(candidate)]
     if tool("cargo") and tool("rustc"):
         for manifest in sarif_manifest_candidates():
             if manifest.is_file():
+                repo = manifest.parent
+                for candidate in (repo / "target" / "release" / "sarifc", repo / "target" / "debug" / "sarifc"):
+                    if os.access(candidate, os.X_OK) and sarif_binary_is_fresh(repo, candidate):
+                        return [str(candidate)]
                 return ["cargo", "run", "--quiet", "--manifest-path", str(manifest), "-p", "sarifc", "--"]
+    for candidate in sarif_bin_candidates():
+        if candidate.is_file() and os.access(candidate, os.X_OK):
+            return [str(candidate)]
     installed = tool("sarifc")
     if installed is not None:
         return [installed]
@@ -855,24 +887,40 @@ def build_command(spec: BenchmarkSpec, entry: EntrySpec, binary: Path, build_dir
     if entry.language == "moonbit":
         return [
             "moon",
-            "build",
+            "run",
+            "--build-only",
             "--release",
             "--strip",
             "--target",
             "native",
             "--frozen",
-            "--jobs",
-            str(build_jobs),
-            "--target-dir",
-            str(build_dir),
             "--quiet",
+            "cmd/main",
         ]
     if entry.language == "sarif":
         return [*sarifc_driver_command(), "build", str(source), "--print-main", "-o", str(binary)]
     raise ValueError(f"unsupported language: {entry.language}")
 
 
-def find_moonbit_binary(build_dir: Path) -> Path:
+def find_moonbit_binary(source_dir: Path, build_stdout: str) -> Path:
+    for line in reversed(build_stdout.splitlines()):
+        text = line.strip()
+        if not text.startswith("{"):
+            continue
+        try:
+            payload = json.loads(text)
+        except json.JSONDecodeError:
+            continue
+        if not isinstance(payload, dict):
+            continue
+        artifacts = payload.get("artifacts_path")
+        if isinstance(artifacts, list):
+            for artifact in artifacts:
+                if isinstance(artifact, str):
+                    path = Path(artifact)
+                    if path.exists():
+                        return path
+    build_dir = source_dir / "_build"
     candidates: list[Path] = []
     for path in build_dir.rglob("*"):
         if not path.is_file():
@@ -914,8 +962,13 @@ def cleanup_source_tree() -> None:
             shutil.rmtree(path, ignore_errors=True)
         elif path.is_file() and path.suffix in removable_suffixes:
             path.unlink(missing_ok=True)
-    for path in ROOT.rglob("__pycache__"):
-        shutil.rmtree(path, ignore_errors=True)
+    if ROOT.exists():
+        try:
+            pycache_dirs = list(ROOT.rglob("__pycache__"))
+        except FileNotFoundError:
+            pycache_dirs = []
+        for path in pycache_dirs:
+            shutil.rmtree(path, ignore_errors=True)
 
 
 def cleanup_generated_dirs() -> None:
@@ -1484,6 +1537,59 @@ def benchmark_rows(benchmarks: list[BenchmarkSpec]) -> list[list[str]]:
     ]
 
 
+def source_files_for_entry(benchmark: str, entry: EntrySpec) -> list[Path]:
+    source = source_path(benchmark, entry)
+    if entry.language == "moonbit":
+        return sorted(source.rglob("*.mbt"))
+    return [source]
+
+
+def count_source_metrics(path: Path) -> tuple[int, int]:
+    text = path.read_text(encoding="utf-8")
+    return len(text.splitlines()), len(text)
+
+
+def aggregate_source_metrics(active_entries: list[EntrySpec], benchmarks: list[BenchmarkSpec]) -> dict[str, SourceMetrics]:
+    metrics: dict[str, SourceMetrics] = {}
+    for entry in active_entries:
+        benchmark_count = 0
+        line_count = 0
+        char_count = 0
+        for spec in benchmarks:
+            files = source_files_for_entry(spec.name, entry)
+            if not files:
+                continue
+            benchmark_count += 1
+            for path in files:
+                lines, chars = count_source_metrics(path)
+                line_count += lines
+                char_count += chars
+        metrics[entry.key] = SourceMetrics(benchmarks=benchmark_count, lines=line_count, chars=char_count)
+    return metrics
+
+
+def source_metric_rows(active_entries: list[EntrySpec], benchmarks: list[BenchmarkSpec]) -> list[list[str]]:
+    labels = entry_labels(active_entries)
+    metrics = aggregate_source_metrics(active_entries, benchmarks)
+    complete = [entry.key for entry in active_entries if metrics.get(entry.key, SourceMetrics(0, 0, 0)).benchmarks == len(benchmarks)]
+    if not complete:
+        return []
+    best_lines = min(metrics[key].lines for key in complete if metrics[key].lines > 0)
+    best_chars = min(metrics[key].chars for key in complete if metrics[key].chars > 0)
+    ordered = sorted(complete, key=lambda key: (metrics[key].chars, metrics[key].lines, labels[key]))
+    return [
+        [
+            labels[key],
+            str(metrics[key].benchmarks),
+            str(metrics[key].lines),
+            str(metrics[key].chars),
+            f"{best_lines / metrics[key].lines:.4f}",
+            f"{best_chars / metrics[key].chars:.4f}",
+        ]
+        for key in ordered
+    ]
+
+
 def benchmark_payloads(benchmarks: list[BenchmarkSpec]) -> list[dict[str, object]]:
     effective_weights = category_benchmark_weights(benchmarks)
     return [
@@ -1570,6 +1676,9 @@ def render_report(
     content.extend(table_section("## Environment", ["Setting", "Value"], environment_rows(run_args, active_entries, benchmarks)))
     content.extend(table_section("## Entries", ENTRY_TABLE_HEADERS, entry_rows(active_entries, results)))
     content.extend(table_section("## Entry Policies", ENTRY_POLICY_HEADERS, entry_policy_rows(active_entries)))
+    source_rows = source_metric_rows(active_entries, benchmarks)
+    if source_rows:
+        content.extend(table_section("## Source Concision", SOURCE_TABLE_HEADERS, source_rows))
     content.extend(table_section("## Benchmark Coverage", BENCHMARK_COVERAGE_HEADERS, benchmark_coverage_rows(benchmarks)))
     content.extend(table_section("## Benchmarks", BENCHMARK_TABLE_HEADERS, benchmark_rows(benchmarks)))
 
@@ -1634,6 +1743,14 @@ def json_data(
         "comparative": comparative_report(summary),
         "comparative_note": comparative_report_note(summary),
         "entries": entry_payloads(active_entries),
+        "source_metrics": {
+            key: {
+                "benchmarks": value.benchmarks,
+                "source_lines": value.lines,
+                "source_chars": value.chars,
+            }
+            for key, value in aggregate_source_metrics(active_entries, benchmarks).items()
+        },
         "benchmarks": benchmark_payloads(benchmarks),
         "category_scores": category_summary.scores,
         "overall_scores": summary.overall_scores,
@@ -1670,9 +1787,16 @@ def json_data(
     }
 
 
-def finalize_binary(entry: EntrySpec, binary: Path, build_dir: Path, build_time: float) -> BuiltArtifact:
+def finalize_binary(
+    entry: EntrySpec,
+    binary: Path,
+    build_dir: Path,
+    build_time: float,
+    source: Path,
+    build_stdout: str,
+) -> BuiltArtifact:
     if entry.language == "moonbit":
-        built = find_moonbit_binary(build_dir)
+        built = find_moonbit_binary(source, build_stdout)
         binary.unlink(missing_ok=True)
         shutil.copy2(built, binary)
         binary.chmod(binary.stat().st_mode | stat.S_IXUSR | stat.S_IXGRP | stat.S_IXOTH)
@@ -1773,7 +1897,7 @@ def build_and_run(spec: BenchmarkSpec, entry: EntrySpec, run_args: argparse.Name
     if entry.language != "moonbit" and not binary.exists():
         return failed_result(spec, entry, benchmark_input_label(spec), "build-fail", build_time, binary)
 
-    artifact = finalize_binary(entry, binary, build_dir, build_time)
+    artifact = finalize_binary(entry, binary, build_dir, build_time, source, build_proc.stdout)
     if not artifact.binary.exists():
         return failed_result(spec, entry, benchmark_input_label(spec), "build-fail", artifact.build_time, artifact.binary)
     artifact_size = artifact.binary.stat().st_size

@@ -1,15 +1,13 @@
-fn bit_weight(offset: I32) -> I32 {
-    match offset {
-        0 => { 128 },
-        1 => { 64 },
-        2 => { 32 },
-        3 => { 16 },
-        4 => { 8 },
-        5 => { 4 },
-        6 => { 2 },
-        _ => { 1 },
-    }
-}
+fn bit_weight(offset: I32) -> I32 = match offset {
+    0 => { 128 },
+    1 => { 64 },
+    2 => { 32 },
+    3 => { 16 },
+    4 => { 8 },
+    5 => { 4 },
+    6 => { 2 },
+    _ => { 1 },
+};
 
 fn main() -> I32 {
     let size = 512;
@@ -36,20 +34,20 @@ fn main() -> I32 {
                     zr = tr - ti + cr;
                     tr = zr * zr;
                     ti = zi * zi;
-                    i = i + 1;
+                    i += 1;
                 };
                 if tr + ti <= 4.0 {
-                    byte = byte + bit_weight(b);
+                    byte += bit_weight(b);
                 };
-                cr = cr + inv_size;
-                b = b + 1;
+                cr += inv_size;
+                b += 1;
             };
-            sum = sum + byte;
-            x = x + 1;
-            x_base = x_base + x_step;
+            sum += byte;
+            x += 1;
+            x_base += x_step;
         };
-        y = y + 1;
-        ci = ci + inv_size;
+        y += 1;
+        ci += inv_size;
     };
     sum
 }

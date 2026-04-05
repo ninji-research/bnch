@@ -3,18 +3,20 @@ const TARGET_GGTA: Text = "GGTA";
 const TARGET_GGTATT: Text = "GGTATT";
 const TARGET_GGTATTTTAATT: Text = "GGTATTTTAATT";
 const TARGET_GGTATTTTAATTTATAGT: Text = "GGTATTTTAATTTATAGT";
-
-fn find_line_end(source: Text, start: I32) -> I32 {
-    if start >= text_len(source) {
-        start
-    } else {
-        if text_byte(source, start) == 10 {
-            start
-        } else {
-            find_line_end(source, start + 1)
-        }
-    }
-}
+const CODE_GGT: I32 = 43;
+const CODE_GGTA: I32 = 172;
+const CODE_GGTATT: I32 = 2767;
+const CODE_GGTATTTTAATT: I32 = 11337487;
+const CODE_GGTATTTTA_HI9: I32 = 177148;
+const CODE_GGTATTTTA_LO9: I32 = 64715;
+const POW2: I32 = 16;
+const POW6: I32 = 4096;
+const POW9: I32 = 262144;
+const POW12: I32 = 16777216;
+const DIV2: I32 = 4;
+const DIV6: I32 = 1024;
+const DIV9: I32 = 65536;
+const DIV12: I32 = 4194304;
 
 fn trim_line_end(source: Text, end: I32) -> I32 {
     if end > 0 and text_byte(source, end - 1) == 13 {
@@ -78,24 +80,29 @@ fn append_code_kmer(builder: TextBuilder, code: I32, len: I32) -> TextBuilder {
 }
 
 fn append_percent_line(builder: TextBuilder, code: I32, len: I32, count: I32, total: I32) -> TextBuilder {
-    let with_key = append_code_kmer(builder, code, len);
-    let with_space = text_builder_append_codepoint(with_key, 32);
+    let mut current = append_code_kmer(builder, code, len);
+    current += " ";
     let ratio = 100.0 * f64_from_i32(count) / f64_from_i32(total);
-    let with_value = text_builder_append(with_space, text_from_f64_fixed(ratio, 3));
-    text_builder_append_codepoint(with_value, 10)
+    current += text_from_f64_fixed(ratio, 3);
+    current += "\n";
+    current
 }
 
 fn append_count_line(builder: TextBuilder, count: I32, label: Text) -> TextBuilder {
-    let with_count = text_builder_append(builder, text_from_f64_fixed(f64_from_i32(count), 0));
-    let with_tab = text_builder_append_codepoint(with_count, 9);
-    let with_label = text_builder_append(with_tab, label);
-    text_builder_append_codepoint(with_label, 10)
+    let mut current = builder;
+    current += count;
+    current += "	";
+    current += label;
+    current += "\n";
+    current
 }
 
 fn append_count_line_final(builder: TextBuilder, count: I32, label: Text) -> TextBuilder {
-    let with_count = text_builder_append(builder, text_from_f64_fixed(f64_from_i32(count), 0));
-    let with_tab = text_builder_append_codepoint(with_count, 9);
-    text_builder_append(with_tab, label)
+    let mut current = builder;
+    current += count;
+    current += "	";
+    current += label;
+    current
 }
 
 fn append_sorted_percent_lines_1(builder: TextBuilder, counts: List[I32], total: I32) -> TextBuilder effects [alloc] {
@@ -105,14 +112,14 @@ fn append_sorted_percent_lines_1(builder: TextBuilder, counts: List[I32], total:
         let mut best = -1;
         let mut best_count = -1;
         repeat i in 4 {
-            let count = list_get(counts, i);
-            if not (list_get(used, i)) and (best == -1 or count > best_count or (count == best_count and i < best)) {
+            let count = counts[i];
+            if not (used[i]) and (best == -1 or count > best_count or (count == best_count and i < best)) {
                 best = i;
                 best_count = count;
             };
         };
-        used = list_set(used, best, true);
-        current = append_percent_line(current, best, 1, list_get(counts, best), total);
+        used[best] = true;
+        current = append_percent_line(current, best, 1, counts[best], total);
     };
     current
 }
@@ -124,81 +131,29 @@ fn append_sorted_percent_lines_2(builder: TextBuilder, counts: List[I32], total:
         let mut best = -1;
         let mut best_count = -1;
         repeat i in 16 {
-            let count = list_get(counts, i);
-            if not (list_get(used, i)) and (best == -1 or count > best_count or (count == best_count and i < best)) {
+            let count = counts[i];
+            if not (used[i]) and (best == -1 or count > best_count or (count == best_count and i < best)) {
                 best = i;
                 best_count = count;
             };
         };
-        used = list_set(used, best, true);
-        current = append_percent_line(current, best, 2, list_get(counts, best), total);
+        used[best] = true;
+        current = append_percent_line(current, best, 2, counts[best], total);
     };
     current
-}
-
-fn suffix_match_3(last18: List[I32]) -> Bool {
-    list_get(last18, 15) == 2 and list_get(last18, 16) == 2 and list_get(last18, 17) == 3
-}
-
-fn suffix_match_4(last18: List[I32]) -> Bool {
-    list_get(last18, 14) == 2 and
-        list_get(last18, 15) == 2 and
-        list_get(last18, 16) == 3 and
-        list_get(last18, 17) == 0
-}
-
-fn suffix_match_6(last18: List[I32]) -> Bool {
-    list_get(last18, 12) == 2 and
-        list_get(last18, 13) == 2 and
-        list_get(last18, 14) == 3 and
-        list_get(last18, 15) == 0 and
-        list_get(last18, 16) == 3 and
-        list_get(last18, 17) == 3
-}
-
-fn suffix_match_12(last18: List[I32]) -> Bool {
-    list_get(last18, 6) == 2 and
-        list_get(last18, 7) == 2 and
-        list_get(last18, 8) == 3 and
-        list_get(last18, 9) == 0 and
-        list_get(last18, 10) == 3 and
-        list_get(last18, 11) == 3 and
-        list_get(last18, 12) == 3 and
-        list_get(last18, 13) == 3 and
-        list_get(last18, 14) == 0 and
-        list_get(last18, 15) == 0 and
-        list_get(last18, 16) == 3 and
-        list_get(last18, 17) == 3
-}
-
-fn suffix_match_18(last18: List[I32]) -> Bool {
-    list_get(last18, 0) == 2 and
-        list_get(last18, 1) == 2 and
-        list_get(last18, 2) == 3 and
-        list_get(last18, 3) == 0 and
-        list_get(last18, 4) == 3 and
-        list_get(last18, 5) == 3 and
-        list_get(last18, 6) == 3 and
-        list_get(last18, 7) == 3 and
-        list_get(last18, 8) == 0 and
-        list_get(last18, 9) == 0 and
-        list_get(last18, 10) == 3 and
-        list_get(last18, 11) == 3 and
-        list_get(last18, 12) == 3 and
-        list_get(last18, 13) == 0 and
-        list_get(last18, 14) == 3 and
-        list_get(last18, 15) == 0 and
-        list_get(last18, 16) == 2 and
-        list_get(last18, 17) == 3
 }
 
 fn main() -> Text effects [alloc] {
     let input = stdin_text();
     let mut counts1 = list_new(4, 0);
     let mut counts2 = list_new(16, 0);
-    let mut last18 = list_new(18, 0);
+    let mut lag9 = list_new(9, 0);
     let mut total = 0;
     let mut rolling2 = 0;
+    let mut rolling6 = 0;
+    let mut rolling9 = 0;
+    let mut rolling12 = 0;
+    let mut lag9_index = 0;
     let mut in_three = false;
     let mut done = false;
     let mut index = 0;
@@ -207,8 +162,8 @@ fn main() -> Text effects [alloc] {
     let mut count_ggtatt = 0;
     let mut count_ggtattttaatt = 0;
     let mut count_ggtattttaatttatagt = 0;
-    while index < text_len(input) and not done {
-        let line_end = find_line_end(input, index);
+    while index < input.len and not done {
+        let line_end = text_find_byte_range(input, index, input.len, 10);
         let content_end = trim_line_end(input, line_end);
         if content_end > index and text_byte(input, index) == 62 {
             if in_three {
@@ -222,39 +177,58 @@ fn main() -> Text effects [alloc] {
                 while pos < content_end {
                     let code = encode_base(text_byte(input, pos));
                     if code >= 0 {
-                        repeat i in 17 {
-                            last18 = list_set(last18, i, list_get(last18, i + 1));
-                        };
-                        last18 = list_set(last18, 17, code);
-                        counts1 = list_set(counts1, code, list_get(counts1, code) + 1);
+                        counts1[code] = counts1[code] + 1;
                         total = total + 1;
                         if total >= 2 {
-                            rolling2 = ((rolling2 * 4) - ((rolling2 / 4) * 16)) + code;
-                            counts2 = list_set(counts2, rolling2, list_get(counts2, rolling2) + 1);
+                            rolling2 = ((rolling2 * 4) - ((rolling2 / DIV2) * POW2)) + code;
+                            counts2[rolling2] = counts2[rolling2] + 1;
                         } else {
                             rolling2 = code;
                         };
-                        if total >= 3 and suffix_match_3(last18) {
+                        if total >= 6 {
+                            rolling6 = ((rolling6 * 4) - ((rolling6 / DIV6) * POW6)) + code;
+                        } else {
+                            rolling6 = rolling6 * 4 + code;
+                        };
+                        if total >= 9 {
+                            rolling9 = ((rolling9 * 4) - ((rolling9 / DIV9) * POW9)) + code;
+                        } else {
+                            rolling9 = rolling9 * 4 + code;
+                        };
+                        if total >= 12 {
+                            rolling12 = ((rolling12 * 4) - ((rolling12 / DIV12) * POW12)) + code;
+                        } else {
+                            rolling12 = rolling12 * 4 + code;
+                        };
+                        if total >= 3 and (rolling6 - ((rolling6 / 64) * 64)) == CODE_GGT {
                             count_ggt = count_ggt + 1;
                         };
-                        if total >= 4 and suffix_match_4(last18) {
+                        if total >= 4 and (rolling6 - ((rolling6 / 256) * 256)) == CODE_GGTA {
                             count_ggta = count_ggta + 1;
                         };
-                        if total >= 6 and suffix_match_6(last18) {
+                        if total >= 6 and rolling6 == CODE_GGTATT {
                             count_ggtatt = count_ggtatt + 1;
                         };
-                        if total >= 12 and suffix_match_12(last18) {
+                        if total >= 12 and rolling12 == CODE_GGTATTTTAATT {
                             count_ggtattttaatt = count_ggtattttaatt + 1;
                         };
-                        if total >= 18 and suffix_match_18(last18) {
-                            count_ggtattttaatttatagt = count_ggtattttaatttatagt + 1;
+                        if total >= 9 {
+                            let high9 = lag9[lag9_index];
+                            lag9[lag9_index] = rolling9;
+                            lag9_index = lag9_index + 1;
+                            if lag9_index == 9 {
+                                lag9_index = 0;
+                            };
+                            if total >= 18 and high9 == CODE_GGTATTTTA_HI9 and rolling9 == CODE_GGTATTTTA_LO9 {
+                                count_ggtattttaatttatagt = count_ggtattttaatttatagt + 1;
+                            };
                         };
                     };
                     pos = pos + 1;
                 };
             };
         };
-        if line_end < text_len(input) {
+        if line_end < input.len {
             index = line_end + 1;
         } else {
             index = line_end;
@@ -263,9 +237,9 @@ fn main() -> Text effects [alloc] {
 
     let mut builder = text_builder_new();
     builder = append_sorted_percent_lines_1(builder, counts1, total);
-    builder = text_builder_append_codepoint(builder, 10);
+    builder += "\n";
     builder = append_sorted_percent_lines_2(builder, counts2, total - 1);
-    builder = text_builder_append_codepoint(builder, 10);
+    builder += "\n";
     builder = append_count_line(builder, count_ggt, TARGET_GGT);
     builder = append_count_line(builder, count_ggta, TARGET_GGTA);
     builder = append_count_line(builder, count_ggtatt, TARGET_GGTATT);

@@ -1,26 +1,49 @@
 const WIDTH: I32 = 60;
 const CHUNK_LINES: I32 = 256;
 
-fn trim_line_end(source: Text, end: I32) -> I32 {
-    if end > 0 and text_byte(source, end - 1) == 13 {
-        end - 1
-    } else {
-        end
-    }
+fn trim_line_end(source: Text, end: I32) -> I32 = if end > 0 and text_byte(source, end - 1) == 13 {
+    end - 1
+} else {
+    end
+};
+
+fn flush_record(header: Text, source: Text, seq_start: I32, seq_end: I32) effects [alloc] {
+    if header.len > 0 {
+        stdout_write(header);
+        stdout_write("\n");
+        let flushed = write_reverse_complement_range(source, seq_start, seq_end);
+        let ignored_flush = flushed;
+    };
 }
 
-fn find_line_end(source: Text, start: I32) -> I32 {
-    if start >= text_len(source) {
-        start
-    } else {
-        if text_byte(source, start) == 10 {
-            start
+fn main() effects [alloc] {
+    let input = stdin_text();
+    let mut header = "";
+    let mut seq_start = 0;
+    let mut index = 0;
+    while index < input.len {
+        let line_end = text_find_byte_range(input, index, input.len, 10);
+        let content_end = trim_line_end(input, line_end);
+        let line = text_slice(input, index, content_end);
+        if line.len > 0 and text_byte(line, 0) == 62 {
+            let flushed = flush_record(header, input, seq_start, index);
+            let ignored_flush = flushed;
+            header = line;
+            if line_end < input.len {
+                seq_start = line_end + 1;
+            } else {
+                seq_start = line_end;
+            };
+        };
+        if line_end < input.len {
+            index = line_end + 1;
         } else {
-            find_line_end(source, start + 1)
-        }
-    }
+            index = line_end;
+        };
+    };
+    let final_flush = flush_record(header, input, seq_start, input.len);
+    let ignored_final_flush = final_flush;
 }
-
 fn complement_codepoint(byte: I32) -> I32 {
     if byte == 65 or byte == 97 {
         84
@@ -81,8 +104,9 @@ fn complement_codepoint(byte: I32) -> I32 {
     }
 }
 
-fn reverse_complement_range(source: Text, start: I32, end: I32) -> Text effects [alloc] {
+fn write_reverse_complement_range(source: Text, start: I32, end: I32) effects [alloc] {
     let mut builder = text_builder_new();
+    let mut chunk_lines = 0;
     let mut line_len = 0;
     let mut index = end;
     while index > start {
@@ -93,6 +117,11 @@ fn reverse_complement_range(source: Text, start: I32, end: I32) -> Text effects 
             line_len = line_len + 1;
             if line_len == WIDTH {
                 builder = text_builder_append_codepoint(builder, 10);
+                chunk_lines = chunk_lines + 1;
+                if chunk_lines == CHUNK_LINES {
+                    builder = stdout_write_builder(builder);
+                    chunk_lines = 0;
+                };
                 line_len = 0;
             };
         };
@@ -100,42 +129,7 @@ fn reverse_complement_range(source: Text, start: I32, end: I32) -> Text effects 
     if line_len > 0 {
         builder = text_builder_append_codepoint(builder, 10);
     };
-    text_builder_finish(builder)
-}
-
-fn flush_record(header: Text, source: Text, seq_start: I32, seq_end: I32) effects [alloc] {
-    if text_len(header) > 0 {
-        stdout_write(header);
-        stdout_write("\n");
-        stdout_write(reverse_complement_range(source, seq_start, seq_end));
-    };
-}
-
-fn main() effects [alloc] {
-    let input = stdin_text();
-    let mut header = "";
-    let mut seq_start = 0;
-    let mut index = 0;
-    while index < text_len(input) {
-        let line_end = find_line_end(input, index);
-        let content_end = trim_line_end(input, line_end);
-        let line = text_slice(input, index, content_end);
-        if text_len(line) > 0 and text_byte(line, 0) == 62 {
-            let flushed = flush_record(header, input, seq_start, index);
-            let ignored_flush = flushed;
-            header = line;
-            if line_end < text_len(input) {
-                seq_start = line_end + 1;
-            } else {
-                seq_start = line_end;
-            };
-        };
-        if line_end < text_len(input) {
-            index = line_end + 1;
-        } else {
-            index = line_end;
-        };
-    };
-    let final_flush = flush_record(header, input, seq_start, text_len(input));
-    let ignored_final_flush = final_flush;
+    let flushed = stdout_write_builder(builder);
+    let ignored_flush = flushed;
+    let sink = ignored_flush;
 }

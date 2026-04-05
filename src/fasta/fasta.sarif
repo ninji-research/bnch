@@ -114,15 +114,15 @@ fn write_repeat_section(header: Text, source: Text, length: I32) effects [alloc]
         chunk = text_builder_append(chunk, "\n");
         chunk_lines = chunk_lines + 1;
         if chunk_lines == CHUNK_LINES {
-            stdout_write(text_builder_finish(chunk));
-            chunk = text_builder_new();
+            chunk = stdout_write_builder(chunk);
             chunk_lines = 0;
         };
         let next_offset = offset + line_len;
         offset = next_offset - (next_offset / source_len) * source_len;
         remaining = remaining - line_len;
     };
-    stdout_write(text_builder_finish(chunk))
+    let flushed = stdout_write_builder(chunk);
+    let ignored_flush = flushed;
 }
 
 fn write_random_section(seed: I32, header: Text, length: I32, use_homo: Bool) -> I32 effects [alloc] {
@@ -134,12 +134,11 @@ fn write_random_section(seed: I32, header: Text, length: I32, use_homo: Bool) ->
     let mut remaining = length;
     while remaining > 0 {
         let line_len = if remaining < WIDTH { remaining } else { WIDTH };
-        let mut line = text_builder_new();
         let mut i = 0;
         while i < line_len {
             current_seed = next_seed(current_seed);
-            line = text_builder_append_codepoint(
-                line,
+            chunk = text_builder_append_codepoint(
+                chunk,
                 if use_homo {
                     pick_homo_codepoint(current_seed)
                 } else {
@@ -148,17 +147,16 @@ fn write_random_section(seed: I32, header: Text, length: I32, use_homo: Bool) ->
             );
             i = i + 1;
         };
-        chunk = text_builder_append(chunk, text_builder_finish(line));
         chunk = text_builder_append(chunk, "\n");
         chunk_lines = chunk_lines + 1;
         if chunk_lines == CHUNK_LINES {
-            stdout_write(text_builder_finish(chunk));
-            chunk = text_builder_new();
+            chunk = stdout_write_builder(chunk);
             chunk_lines = 0;
         };
         remaining = remaining - line_len;
     };
-    stdout_write(text_builder_finish(chunk));
+    let flushed = stdout_write_builder(chunk);
+    let ignored_flush = flushed;
     current_seed
 }
 

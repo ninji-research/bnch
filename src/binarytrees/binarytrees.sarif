@@ -2,65 +2,56 @@ enum Tree { leaf, branch(Branch) }
 
 struct Branch { left: Tree, right: Tree }
 
-fn default_n() -> I32 {
-    if arg_count() > 1 {
-        parse_i32(arg_text(1))
-    } else {
-        21
-    }
-}
+fn default_n() -> I32 = if arg_count() > 1 {
+    parse_i32(arg_text(1))
+} else {
+    21
+};
 
-fn item_check(tree: Tree) -> I32 {
-    match tree {
-        Tree.leaf => { 1 },
-        Tree.branch(node) => { 1 + item_check(node.left) + item_check(node.right) },
-    }
-}
+fn item_check(tree: Tree) -> I32 = match tree {
+    Tree.leaf => { 1 },
+    Tree.branch(node) => { 1 + item_check(node.left) + item_check(node.right) },
+};
 
-fn bottom_up_tree(depth: I32) -> Tree effects [alloc] {
-    if depth > 0 {
-        Tree.branch(Branch {
-            left: bottom_up_tree(depth - 1),
-            right: bottom_up_tree(depth - 1),
-        })
-    } else {
-        Tree.leaf
-    }
-}
+fn bottom_up_tree(depth: I32) -> Tree effects [alloc] = if depth > 0 {
+    Tree.branch(Branch {
+        left: bottom_up_tree(depth - 1),
+        right: bottom_up_tree(depth - 1),
+    })
+} else {
+    Tree.leaf
+};
 
 fn pow2(exponent: I32) -> I32 {
     let mut value = 1;
     let mut index = 0;
     while index < exponent {
-        value = value * 2;
-        index = index + 1;
+        value *= 2;
+        index += 1;
     };
     value
 }
 
-fn append_i32(builder: TextBuilder, value: I32) -> TextBuilder {
-    text_builder_append(builder, text_from_f64_fixed(f64_from_i32(value), 0))
-}
-
 fn append_line(builder: TextBuilder, prefix: Text, value: I32, extra: I32, suffix: Text) -> TextBuilder {
-    let with_prefix = text_builder_append(builder, prefix);
-    let with_value = append_i32(with_prefix, value);
-    let with_tab = text_builder_append_codepoint(with_value, 9);
-    let with_label = text_builder_append(with_tab, " check: ");
-    let with_extra = append_i32(with_label, extra);
-    let with_suffix = text_builder_append(with_extra, suffix);
-    text_builder_append_codepoint(with_suffix, 10)
+    let mut current = builder;
+    current += prefix;
+    current += value;
+    current += "	 check: ";
+    current += extra;
+    current += suffix;
+    current += "\n";
+    current
 }
 
 fn append_depth_line(builder: TextBuilder, iterations: I32, depth: I32, check: I32) -> TextBuilder {
-    let with_iterations = append_i32(builder, iterations);
-    let with_tab = text_builder_append_codepoint(with_iterations, 9);
-    let with_label = text_builder_append(with_tab, " trees of depth ");
-    let with_depth = append_i32(with_label, depth);
-    let with_check_tab = text_builder_append_codepoint(with_depth, 9);
-    let with_check_label = text_builder_append(with_check_tab, " check: ");
-    let with_check = append_i32(with_check_label, check);
-    text_builder_append_codepoint(with_check, 10)
+    let mut current = builder;
+    current += iterations;
+    current += "	 trees of depth ";
+    current += depth;
+    current += "	 check: ";
+    current += check;
+    current += "\n";
+    current
 }
 
 fn main() -> Text effects [alloc] {
@@ -88,17 +79,16 @@ fn main() -> Text effects [alloc] {
         while run < iterations {
             alloc_push();
             let tree = bottom_up_tree(depth);
-            check = check + item_check(tree);
+            check += item_check(tree);
             alloc_pop();
-            run = run + 1;
+            run += 1;
         };
         builder = append_depth_line(builder, iterations, depth, check);
-        depth = depth + 2;
+        depth += 2;
     };
-    let with_prefix = text_builder_append(builder, "long lived tree of depth ");
-    let with_depth = append_i32(with_prefix, max_depth);
-    let with_tab = text_builder_append_codepoint(with_depth, 9);
-    let with_label = text_builder_append(with_tab, " check: ");
-    let with_check = append_i32(with_label, item_check(long_lived_tree));
-    text_builder_finish(with_check)
+    builder += "long lived tree of depth ";
+    builder += max_depth;
+    builder += "	 check: ";
+    builder += item_check(long_lived_tree);
+    text_builder_finish(builder)
 }

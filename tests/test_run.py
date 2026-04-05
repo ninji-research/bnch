@@ -1,4 +1,5 @@
 import json
+import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -477,9 +478,36 @@ class RunHelpersTest(unittest.TestCase):
             fake_bin = Path(temp_dir) / "sarifc"
             fake_bin.write_text("", encoding="utf-8")
             fake_bin.chmod(0o755)
-            with mock.patch.object(run, "tool", return_value="/usr/bin/sarifc"):
-                with mock.patch.object(run, "sarif_bin_candidates", return_value=(fake_bin,)):
-                    self.assertEqual(run.sarifc_driver_command(), [str(fake_bin)])
+            with mock.patch.object(run, "tool", side_effect=lambda name: "/usr/bin/sarifc" if name == "sarifc" else None):
+                with mock.patch.object(run, "sarif_manifest_candidates", return_value=()):
+                    with mock.patch.object(run, "sarif_bin_candidates", return_value=(fake_bin,)):
+                        self.assertEqual(run.sarifc_driver_command(), [str(fake_bin)])
+
+    def test_sarifc_driver_command_falls_back_to_cargo_for_stale_repo_binary(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            repo = Path(temp_dir)
+            manifest = repo / "Cargo.toml"
+            src_dir = repo / "src"
+            src_dir.mkdir()
+            manifest.write_text("[workspace]\n", encoding="utf-8")
+            (src_dir / "main.rs").write_text("fn main() {}\n", encoding="utf-8")
+            stale_bin = repo / "target" / "release" / "sarifc"
+            stale_bin.parent.mkdir(parents=True)
+            stale_bin.write_text("", encoding="utf-8")
+            stale_bin.chmod(0o755)
+            old = stale_bin.stat().st_mtime - 10
+            os.utime(stale_bin, (old, old))
+            with mock.patch.object(
+                run,
+                "tool",
+                side_effect=lambda name: "/usr/bin/fake" if name in {"cargo", "rustc"} else None,
+            ):
+                with mock.patch.object(run, "sarif_manifest_candidates", return_value=(manifest,)):
+                    with mock.patch.object(run, "sarif_bin_candidates", return_value=(stale_bin,)):
+                        self.assertEqual(
+                            run.sarifc_driver_command(),
+                            ["cargo", "run", "--quiet", "--manifest-path", str(manifest), "-p", "sarifc", "--"],
+                        )
 
     def test_sarif_repo_candidates_default_to_sibling_checkouts(self) -> None:
         self.assertEqual(run.sarif_repo_candidates()[:2], (Path("/home/user/sarif"), Path("/home/user/sarif-main")))
