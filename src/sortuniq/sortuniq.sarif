@@ -1,0 +1,46 @@
+struct WordCount { word: Text, count: I32 }
+
+struct WordCounts { rows: List[WordCount], len: I32 }
+
+fn count_words(input: Text) -> WordCounts effects [alloc] {
+    let empty = WordCount { word: "", count: 0 };
+    let mut rows = list_new(8, empty);
+    let mut len = 0;
+    let mut words = text_index_new();
+    let mut index = 0;
+    while index < input.len {
+        let content_end = text_line_end(input, index);
+        let word = text_slice(input, index, content_end);
+        if word.len > 0 {
+            let pos = text_index_get(words, word);
+            if pos >= 0 {
+                let current = rows[pos];
+                rows[pos] = WordCount { word: current.word, count: current.count + 1 };
+            } else {
+                words = text_index_set(words, word, len);
+                rows = list_push(rows, len, WordCount { word, count: 1 });
+                len += 1;
+            }
+        };
+        index = text_next_line(input, index);
+    };
+    WordCounts { rows, len }
+}
+
+fn main() -> Text effects [alloc] {
+    let data = count_words(stdin_text());
+    let rows = list_sort_by_text_field(data.rows, data.len, "word");
+    let mut builder = text_builder_new();
+    let mut index = 0;
+    while index < data.len {
+        let row = rows[index];
+        builder += row.word;
+        builder += ",";
+        builder += row.count;
+        index += 1;
+        if index < data.len {
+            builder += "\n";
+        };
+    };
+    text_builder_finish(builder)
+}
