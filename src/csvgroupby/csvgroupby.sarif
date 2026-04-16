@@ -2,12 +2,6 @@ struct AggregateRow { customer: Text, count: I32, qty: I32, cents: I32 }
 
 struct AggregateList { rows: List[AggregateRow], len: I32 }
 
-fn trim_line_end(source: Text, end: I32) -> I32 = if end > 0 and text_byte(source, end - 1) == 13 {
-    end - 1
-} else {
-    end
-};
-
 fn group_orders(input: Text) -> AggregateList effects [alloc] {
     let empty = AggregateRow { customer: "", count: 0, qty: 0, cents: 0 };
     let mut rows = list_new(8, empty);
@@ -16,8 +10,7 @@ fn group_orders(input: Text) -> AggregateList effects [alloc] {
     let mut index = 0;
     let mut skip_header = true;
     while index < input.len {
-        let line_end = text_find_byte_range(input, index, input.len, 10);
-        let content_end = trim_line_end(input, line_end);
+        let content_end = text_line_end(input, index);
         if content_end > index {
             if skip_header {
                 skip_header = false;
@@ -38,9 +31,9 @@ fn group_orders(input: Text) -> AggregateList effects [alloc] {
                         cents: current.cents + cents,
                     };
                 } else {
-                    customers = text_index_set(customers, text_slice(input, index, comma1), len);
+                    customers = text_index_set(customers, customer, len);
                     rows = list_push(rows, len, AggregateRow {
-                        customer: text_slice(input, index, comma1),
+                        customer,
                         count: 1,
                         qty,
                         cents,
@@ -49,7 +42,7 @@ fn group_orders(input: Text) -> AggregateList effects [alloc] {
                 }
             }
         };
-        index = line_end + 1;
+        index = text_next_line(input, index);
     };
     AggregateList { rows, len }
 }

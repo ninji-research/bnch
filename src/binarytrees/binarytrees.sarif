@@ -22,16 +22,6 @@ fn bottom_up_tree(depth: I32) -> Tree effects [alloc] = if depth > 0 {
     Tree.leaf
 };
 
-fn pow2(exponent: I32) -> I32 {
-    let mut value = 1;
-    let mut index = 0;
-    while index < exponent {
-        value *= 2;
-        index += 1;
-    };
-    value
-}
-
 fn append_line(builder: TextBuilder, prefix: Text, value: I32, extra: I32, suffix: Text) -> TextBuilder {
     let mut current = builder;
     current += prefix;
@@ -73,7 +63,7 @@ fn main() -> Text effects [alloc] {
     let long_lived_tree = bottom_up_tree(max_depth);
     let mut depth = min_depth;
     while depth <= max_depth {
-        let iterations = pow2(max_depth - depth + min_depth);
+        let iterations = 1 << (max_depth - depth + min_depth);
         let mut check = 0;
         let mut run = 0;
         while run < iterations {

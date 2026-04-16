@@ -1,5 +1,6 @@
 import json
 import os
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
@@ -14,6 +15,118 @@ def live_sarif_supported_benchmarks() -> tuple[str, ...]:
 
 
 class RunHelpersTest(unittest.TestCase):
+    def test_find_moonbit_binary_uses_declared_artifact_path(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            artifact = root / "_build" / "native" / "release" / "build" / "cmd" / "main" / "main.exe"
+            artifact.parent.mkdir(parents=True)
+            artifact.write_text("binary", encoding="utf-8")
+            artifact.chmod(0o755)
+            build_output = json.dumps({"artifacts_path": [str(artifact)]})
+            self.assertEqual(run.find_moonbit_binary(root, build_output), artifact)
+
+    def test_find_moonbit_binary_falls_back_to_build_tree_scan(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            artifact = root / "_build" / "native" / "release" / "build" / "cmd" / "main" / "main.exe"
+            artifact.parent.mkdir(parents=True)
+            artifact.write_text("binary", encoding="utf-8")
+            artifact.chmod(0o755)
+            self.assertEqual(run.find_moonbit_binary(root, ""), artifact)
+
+    def test_build_with_retry_retries_once_after_transient_build_failure(self) -> None:
+        entry = run.EntrySpec(
+            key="rust__llvm",
+            label="rust",
+            language="rust",
+            compiler="rustc",
+            backend="llvm",
+            track="main",
+            canonical=True,
+            supported_benchmarks=None,
+            required_tools=("rustc",),
+            build_profile="native",
+            optimization_notes=("fat lto",),
+        )
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            build_dir = root / "build"
+            build_dir.mkdir()
+            binary = root / "demo"
+
+            def timed_side_effect(command: list[str], cwd: Path | None = None, stdin_text: str | None = None, cpu_list: str | None = None):
+                del command, cwd, stdin_text, cpu_list
+                if not binary.exists():
+                    return subprocess.CompletedProcess(["rustc"], 1, "", "transient"), 0.25, 0
+                return subprocess.CompletedProcess(["rustc"], 0, "", ""), 0.5, 0
+
+            call_count = 0
+
+            def timed_with_binary(command: list[str], cwd: Path | None = None, stdin_text: str | None = None, cpu_list: str | None = None):
+                nonlocal call_count
+                call_count += 1
+                if call_count == 2:
+                    binary.write_text("ok", encoding="utf-8")
+                return timed_side_effect(command, cwd, stdin_text, cpu_list)
+
+            with mock.patch.object(run, "timed", side_effect=timed_with_binary):
+                proc, build_time = run.build_with_retry(entry, ["rustc"], binary, build_dir, None, None)
+
+        self.assertEqual(proc.returncode, 0)
+        self.assertAlmostEqual(build_time, 0.75)
+        self.assertEqual(call_count, 2)
+
+    def test_build_with_retry_retries_when_binary_is_missing_after_success(self) -> None:
+        entry = run.EntrySpec(
+            key="rust__llvm",
+            label="rust",
+            language="rust",
+            compiler="rustc",
+            backend="llvm",
+            track="main",
+            canonical=True,
+            supported_benchmarks=None,
+            required_tools=("rustc",),
+            build_profile="native",
+            optimization_notes=("fat lto",),
+        )
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            build_dir = root / "build"
+            build_dir.mkdir()
+            binary = root / "demo"
+
+            call_count = 0
+
+            def timed_side_effect(command: list[str], cwd: Path | None = None, stdin_text: str | None = None, cpu_list: str | None = None):
+                del command, cwd, stdin_text, cpu_list
+                nonlocal call_count
+                call_count += 1
+                if call_count == 2:
+                    binary.write_text("ok", encoding="utf-8")
+                return subprocess.CompletedProcess(["rustc"], 0, "", ""), 0.4, 0
+
+            with mock.patch.object(run, "timed", side_effect=timed_side_effect):
+                proc, build_time = run.build_with_retry(entry, ["rustc"], binary, build_dir, None, None)
+
+        self.assertEqual(proc.returncode, 0)
+        self.assertAlmostEqual(build_time, 0.8)
+        self.assertEqual(call_count, 2)
+
+    def test_stage_run_binary_recreates_build_dir(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            binary = root / "demo"
+            binary.write_text("binary", encoding="utf-8")
+            build_dir = root / "build"
+            with mock.patch.object(run, "BUILD", build_dir):
+                staged = run.stage_run_binary(binary)
+                self.assertIsNotNone(staged)
+                assert staged is not None
+                self.assertTrue(staged.exists())
+                self.assertTrue(build_dir.exists())
+                staged.unlink(missing_ok=True)
+
     def test_parse_benchmark_spec_rejects_missing_fixture(self) -> None:
         manifest = {
             "id": "demo",
@@ -483,7 +596,7 @@ class RunHelpersTest(unittest.TestCase):
                     with mock.patch.object(run, "sarif_bin_candidates", return_value=(fake_bin,)):
                         self.assertEqual(run.sarifc_driver_command(), [str(fake_bin)])
 
-    def test_sarifc_driver_command_falls_back_to_cargo_for_stale_repo_binary(self) -> None:
+    def test_sarifc_driver_command_builds_stale_repo_binary_once(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             repo = Path(temp_dir)
             manifest = repo / "Cargo.toml"
@@ -497,17 +610,37 @@ class RunHelpersTest(unittest.TestCase):
             stale_bin.chmod(0o755)
             old = stale_bin.stat().st_mtime - 10
             os.utime(stale_bin, (old, old))
+            call_count = 0
+
+            def fake_sh(
+                command: list[str],
+                cwd: Path | None = None,
+                capture: bool = True,
+                cpu_list: str | None = None,
+            ) -> subprocess.CompletedProcess[str]:
+                nonlocal call_count
+                del cwd, capture, cpu_list
+                call_count += 1
+                self.assertEqual(command[:4], ["cargo", "build", "--quiet", "--manifest-path"])
+                stale_bin.write_text("rebuilt", encoding="utf-8")
+                stale_bin.chmod(0o755)
+                os.utime(stale_bin, None)
+                return subprocess.CompletedProcess(command, 0, "", "")
+
             with mock.patch.object(
                 run,
                 "tool",
                 side_effect=lambda name: "/usr/bin/fake" if name in {"cargo", "rustc"} else None,
             ):
                 with mock.patch.object(run, "sarif_manifest_candidates", return_value=(manifest,)):
-                    with mock.patch.object(run, "sarif_bin_candidates", return_value=(stale_bin,)):
-                        self.assertEqual(
-                            run.sarifc_driver_command(),
-                            ["cargo", "run", "--quiet", "--manifest-path", str(manifest), "-p", "sarifc", "--"],
-                        )
+                    with mock.patch.object(run, "sh", side_effect=fake_sh):
+                        run.sarifc_repo_driver_binary.cache_clear()
+                        try:
+                            self.assertEqual(run.sarifc_driver_command(build=True), [str(stale_bin)])
+                            self.assertEqual(run.sarifc_driver_command(build=True), [str(stale_bin)])
+                        finally:
+                            run.sarifc_repo_driver_binary.cache_clear()
+                        self.assertEqual(call_count, 1)
 
     def test_sarif_repo_candidates_default_to_sibling_checkouts(self) -> None:
         self.assertEqual(run.sarif_repo_candidates()[:2], (Path("/home/user/sarif"), Path("/home/user/sarif-main")))
@@ -516,7 +649,7 @@ class RunHelpersTest(unittest.TestCase):
         with mock.patch.dict(run.os.environ, {"BNCH_SARIF_REPO": "/tmp/custom-sarif"}, clear=False):
             self.assertEqual(run.sarif_repo_candidates()[0], Path("/tmp/custom-sarif"))
 
-    def test_build_command_falls_back_to_cargo_run_for_sarif(self) -> None:
+    def test_build_command_uses_explicitly_built_repo_sarifc_binary(self) -> None:
         entry = run.EntrySpec(
             key="sarif__stage0",
             label="sarif",
@@ -547,34 +680,49 @@ class RunHelpersTest(unittest.TestCase):
             retained_for="demo",
         )
         with tempfile.TemporaryDirectory() as temp_dir:
-            fake_manifest = Path(temp_dir) / "Cargo.toml"
+            repo = Path(temp_dir)
+            fake_manifest = repo / "Cargo.toml"
             fake_manifest.write_text("[workspace]\n", encoding="utf-8")
+            (repo / "src").mkdir()
+            (repo / "src" / "main.rs").write_text("fn main() {}\n", encoding="utf-8")
+            built_bin = repo / "target" / "release" / "sarifc"
+            built_bin.parent.mkdir(parents=True)
+            built_bin.write_text("", encoding="utf-8")
+            built_bin.chmod(0o755)
+            os.utime(built_bin, (built_bin.stat().st_mtime - 10, built_bin.stat().st_mtime - 10))
+            call_count = 0
+
+            def fake_sh(
+                command: list[str],
+                cwd: Path | None = None,
+                capture: bool = True,
+                cpu_list: str | None = None,
+            ) -> subprocess.CompletedProcess[str]:
+                nonlocal call_count
+                del cwd, capture, cpu_list
+                call_count += 1
+                built_bin.write_text("rebuilt", encoding="utf-8")
+                built_bin.chmod(0o755)
+                os.utime(built_bin, None)
+                return subprocess.CompletedProcess(command, 0, "", "")
+
             with mock.patch.object(
                 run,
                 "tool",
                 side_effect=lambda name: "/usr/bin/fake" if name in {"cargo", "rustc"} else None,
             ):
-                with mock.patch.object(run, "sarif_bin_candidates", return_value=(Path(temp_dir) / "missing",)):
-                    with mock.patch.object(run, "sarif_manifest_candidates", return_value=(fake_manifest,)):
-                        command = run.build_command(spec, entry, Path("/tmp/out"), Path("/tmp/build"), 1)
+                with mock.patch.object(run, "sarif_manifest_candidates", return_value=(fake_manifest,)):
+                    with mock.patch.object(run, "sh", side_effect=fake_sh):
+                        run.sarifc_repo_driver_binary.cache_clear()
+                        try:
+                            command = run.build_command(spec, entry, Path("/tmp/out"), Path("/tmp/build"), 1)
+                        finally:
+                            run.sarifc_repo_driver_binary.cache_clear()
         self.assertEqual(
             command,
-            [
-                "cargo",
-                "run",
-                "--quiet",
-                "--manifest-path",
-                str(fake_manifest),
-                "-p",
-                "sarifc",
-                "--",
-                "build",
-                str(run.SRC / "mandelbrot" / "mandelbrot.sarif"),
-                "--print-main",
-                "-o",
-                "/tmp/out",
-            ],
+            [str(built_bin), "build", str(run.SRC / "mandelbrot" / "mandelbrot.sarif"), "--print-main", "-o", "/tmp/out"],
         )
+        self.assertEqual(call_count, 1)
 
     def test_entries_exclude_sarif_when_driver_is_unavailable(self) -> None:
         sarif_entry = run.EntrySpec(

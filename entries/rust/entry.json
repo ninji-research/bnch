@@ -12,10 +12,10 @@
   ],
   "build": {
     "compiler": "rustc",
-    "profile_label": "native-fat-lto",
+    "profile_label": "native-thin-lto",
     "low_burden_optimizations": [
       "target-cpu=native",
-      "fat LTO and single codegen unit",
+      "thin LTO and single codegen unit",
       "panic abort and symbol stripping for release binaries"
     ],
     "profile": "optimized-native",

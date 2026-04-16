@@ -1,30 +1,13 @@
-const TARGET_GGT: Text = "GGT";
-const TARGET_GGTA: Text = "GGTA";
-const TARGET_GGTATT: Text = "GGTATT";
-const TARGET_GGTATTTTAATT: Text = "GGTATTTTAATT";
-const TARGET_GGTATTTTAATTTATAGT: Text = "GGTATTTTAATTTATAGT";
 const CODE_GGT: I32 = 43;
 const CODE_GGTA: I32 = 172;
 const CODE_GGTATT: I32 = 2767;
 const CODE_GGTATTTTAATT: I32 = 11337487;
 const CODE_GGTATTTTA_HI9: I32 = 177148;
 const CODE_GGTATTTTA_LO9: I32 = 64715;
-const POW2: I32 = 16;
-const POW6: I32 = 4096;
-const POW9: I32 = 262144;
-const POW12: I32 = 16777216;
-const DIV2: I32 = 4;
-const DIV6: I32 = 1024;
-const DIV9: I32 = 65536;
-const DIV12: I32 = 4194304;
-
-fn trim_line_end(source: Text, end: I32) -> I32 {
-    if end > 0 and text_byte(source, end - 1) == 13 {
-        end - 1
-    } else {
-        end
-    }
-}
+const MASK2: I32 = 15;
+const MASK6: I32 = 4095;
+const MASK9: I32 = 262143;
+const MASK12: I32 = 16777215;
 
 fn line_is_three_header(source: Text, start: I32, end: I32) -> Bool {
     end - start >= 6 and
@@ -33,38 +16,21 @@ fn line_is_three_header(source: Text, start: I32, end: I32) -> Bool {
 }
 
 fn encode_base(byte: I32) -> I32 {
-    if byte == 65 or byte == 97 {
-        0
-    } else {
-        if byte == 67 or byte == 99 {
-            1
-        } else {
-            if byte == 71 or byte == 103 {
-                2
-            } else {
-                if byte == 84 or byte == 116 {
-                    3
-                } else {
-                    -1
-                }
-            }
-        }
+    match byte {
+        65 | 97 => { 0 },
+        67 | 99 => { 1 },
+        71 | 103 => { 2 },
+        84 | 116 => { 3 },
+        _ => { -1 },
     }
 }
 
 fn base_codepoint(code: I32) -> I32 {
-    if code == 0 {
-        65
-    } else {
-        if code == 1 {
-            67
-        } else {
-            if code == 2 {
-                71
-            } else {
-                84
-            }
-        }
+    match code {
+        0 => { 65 },
+        1 => { 67 },
+        2 => { 71 },
+        _ => { 84 },
     }
 }
 
@@ -72,8 +38,8 @@ fn append_code_kmer(builder: TextBuilder, code: I32, len: I32) -> TextBuilder {
     if len == 1 {
         text_builder_append_codepoint(builder, base_codepoint(code))
     } else {
-        let first = code / 4;
-        let second = code - first * 4;
+        let first = code >> 2;
+        let second = code & 3;
         let after_first = text_builder_append_codepoint(builder, base_codepoint(first));
         text_builder_append_codepoint(after_first, base_codepoint(second))
     }
@@ -88,30 +54,22 @@ fn append_percent_line(builder: TextBuilder, code: I32, len: I32, count: I32, to
     current
 }
 
-fn append_count_line(builder: TextBuilder, count: I32, label: Text) -> TextBuilder {
+fn append_count_line(builder: TextBuilder, count: I32, label: Text, suffix: Text) -> TextBuilder {
     let mut current = builder;
     current += count;
     current += "	";
     current += label;
-    current += "\n";
+    current += suffix;
     current
 }
 
-fn append_count_line_final(builder: TextBuilder, count: I32, label: Text) -> TextBuilder {
+fn append_sorted_percent_lines(builder: TextBuilder, counts: List[I32], bucket_count: I32, kmer_len: I32, total: I32) -> TextBuilder effects [alloc] {
     let mut current = builder;
-    current += count;
-    current += "	";
-    current += label;
-    current
-}
-
-fn append_sorted_percent_lines_1(builder: TextBuilder, counts: List[I32], total: I32) -> TextBuilder effects [alloc] {
-    let mut current = builder;
-    let mut used = list_new(4, false);
-    repeat step in 4 {
+    let mut used = list_new(bucket_count, false);
+    repeat step in bucket_count {
         let mut best = -1;
         let mut best_count = -1;
-        repeat i in 4 {
+        repeat i in bucket_count {
             let count = counts[i];
             if not (used[i]) and (best == -1 or count > best_count or (count == best_count and i < best)) {
                 best = i;
@@ -119,26 +77,7 @@ fn append_sorted_percent_lines_1(builder: TextBuilder, counts: List[I32], total:
             };
         };
         used[best] = true;
-        current = append_percent_line(current, best, 1, counts[best], total);
-    };
-    current
-}
-
-fn append_sorted_percent_lines_2(builder: TextBuilder, counts: List[I32], total: I32) -> TextBuilder effects [alloc] {
-    let mut current = builder;
-    let mut used = list_new(16, false);
-    repeat step in 16 {
-        let mut best = -1;
-        let mut best_count = -1;
-        repeat i in 16 {
-            let count = counts[i];
-            if not (used[i]) and (best == -1 or count > best_count or (count == best_count and i < best)) {
-                best = i;
-                best_count = count;
-            };
-        };
-        used[best] = true;
-        current = append_percent_line(current, best, 2, counts[best], total);
+        current = append_percent_line(current, best, kmer_len, counts[best], total);
     };
     current
 }
@@ -163,8 +102,7 @@ fn main() -> Text effects [alloc] {
     let mut count_ggtattttaatt = 0;
     let mut count_ggtattttaatttatagt = 0;
     while index < input.len and not done {
-        let line_end = text_find_byte_range(input, index, input.len, 10);
-        let content_end = trim_line_end(input, line_end);
+        let content_end = text_line_end(input, index);
         if content_end > index and text_byte(input, index) == 62 {
             if in_three {
                 done = true;
@@ -180,30 +118,30 @@ fn main() -> Text effects [alloc] {
                         counts1[code] = counts1[code] + 1;
                         total = total + 1;
                         if total >= 2 {
-                            rolling2 = ((rolling2 * 4) - ((rolling2 / DIV2) * POW2)) + code;
+                            rolling2 = ((rolling2 << 2) & MASK2) | code;
                             counts2[rolling2] = counts2[rolling2] + 1;
                         } else {
                             rolling2 = code;
                         };
                         if total >= 6 {
-                            rolling6 = ((rolling6 * 4) - ((rolling6 / DIV6) * POW6)) + code;
+                            rolling6 = ((rolling6 << 2) & MASK6) | code;
                         } else {
-                            rolling6 = rolling6 * 4 + code;
+                            rolling6 = (rolling6 << 2) | code;
                         };
                         if total >= 9 {
-                            rolling9 = ((rolling9 * 4) - ((rolling9 / DIV9) * POW9)) + code;
+                            rolling9 = ((rolling9 << 2) & MASK9) | code;
                         } else {
-                            rolling9 = rolling9 * 4 + code;
+                            rolling9 = (rolling9 << 2) | code;
                         };
                         if total >= 12 {
-                            rolling12 = ((rolling12 * 4) - ((rolling12 / DIV12) * POW12)) + code;
+                            rolling12 = ((rolling12 << 2) & MASK12) | code;
                         } else {
-                            rolling12 = rolling12 * 4 + code;
+                            rolling12 = (rolling12 << 2) | code;
                         };
-                        if total >= 3 and (rolling6 - ((rolling6 / 64) * 64)) == CODE_GGT {
+                        if total >= 3 and (rolling6 & 63) == CODE_GGT {
                             count_ggt = count_ggt + 1;
                         };
-                        if total >= 4 and (rolling6 - ((rolling6 / 256) * 256)) == CODE_GGTA {
+                        if total >= 4 and (rolling6 & 255) == CODE_GGTA {
                             count_ggta = count_ggta + 1;
                         };
                         if total >= 6 and rolling6 == CODE_GGTATT {
@@ -228,22 +166,18 @@ fn main() -> Text effects [alloc] {
                 };
             };
         };
-        if line_end < input.len {
-            index = line_end + 1;
-        } else {
-            index = line_end;
-        };
+        index = text_next_line(input, index);
     };
 
     let mut builder = text_builder_new();
-    builder = append_sorted_percent_lines_1(builder, counts1, total);
+    builder = append_sorted_percent_lines(builder, counts1, 4, 1, total);
     builder += "\n";
-    builder = append_sorted_percent_lines_2(builder, counts2, total - 1);
+    builder = append_sorted_percent_lines(builder, counts2, 16, 2, total - 1);
     builder += "\n";
-    builder = append_count_line(builder, count_ggt, TARGET_GGT);
-    builder = append_count_line(builder, count_ggta, TARGET_GGTA);
-    builder = append_count_line(builder, count_ggtatt, TARGET_GGTATT);
-    builder = append_count_line(builder, count_ggtattttaatt, TARGET_GGTATTTTAATT);
-    builder = append_count_line_final(builder, count_ggtattttaatttatagt, TARGET_GGTATTTTAATTTATAGT);
+    builder = append_count_line(builder, count_ggt, "GGT", "\n");
+    builder = append_count_line(builder, count_ggta, "GGTA", "\n");
+    builder = append_count_line(builder, count_ggtatt, "GGTATT", "\n");
+    builder = append_count_line(builder, count_ggtattttaatt, "GGTATTTTAATT", "\n");
+    builder = append_count_line(builder, count_ggtattttaatttatagt, "GGTATTTTAATTTATAGT", "");
     text_builder_finish(builder)
 }

@@ -22,8 +22,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 SRC = ROOT / "src"
 FIXTURES = ROOT / "fixtures"
-BIN = ROOT / "bin"
-BUILD = ROOT / ".build"
+RUN_ROOT = Path(os.environ.get("BNCH_RUN_ROOT", ROOT / ".runs" / f"{os.getpid()}-{time.time_ns():x}"))
+BIN = RUN_ROOT / "bin"
+BUILD = RUN_ROOT / ".build"
 GO_CACHE = BUILD / "go-cache"
 DEFAULT_REPORT = ROOT / "REPORT.md"
 DEFAULT_JSON_REPORT = ROOT / "REPORT.json"
@@ -770,14 +771,14 @@ def has_lld() -> bool:
     return tool("ld.lld") is not None
 
 
-def sarifc_driver_command() -> list[str]:
+def sarifc_driver_command(build: bool = False) -> list[str]:
     if tool("cargo") and tool("rustc"):
         for manifest in sarif_manifest_candidates():
             if manifest.is_file():
                 repo = manifest.parent
-                for candidate in (repo / "target" / "release" / "sarifc", repo / "target" / "debug" / "sarifc"):
-                    if os.access(candidate, os.X_OK) and sarif_binary_is_fresh(repo, candidate):
-                        return [str(candidate)]
+                candidate = sarifc_repo_driver_binary(repo, manifest, build)
+                if candidate is not None:
+                    return [str(candidate)]
                 return ["cargo", "run", "--quiet", "--manifest-path", str(manifest), "-p", "sarifc", "--"]
     for candidate in sarif_bin_candidates():
         if candidate.is_file() and os.access(candidate, os.X_OK):
@@ -788,6 +789,37 @@ def sarifc_driver_command() -> list[str]:
     raise ValueError(
         "sarif entry requires `sarifc` on PATH or a Sarif checkout via BNCH_SARIF_REPO, ~/sarif, or ~/sarif-main"
     )
+
+
+@functools.cache
+def sarifc_repo_driver_binary(repo: Path, manifest: Path, build: bool) -> Path | None:
+    for candidate in (repo / "target" / "release" / "sarifc", repo / "target" / "debug" / "sarifc"):
+        if os.access(candidate, os.X_OK) and sarif_binary_is_fresh(repo, candidate):
+            return candidate
+    if not build:
+        return None
+    command = [
+        "cargo",
+        "build",
+        "--quiet",
+        "--manifest-path",
+        str(manifest),
+        "-p",
+        "sarifc",
+        "--release",
+    ]
+    proc = sh(command, cwd=repo)
+    if proc.returncode != 0:
+        raise ValueError(
+            f"sarifc build failed for {manifest}: {proc.stderr.strip() or proc.stdout.strip()}"
+        )
+    release = repo / "target" / "release" / "sarifc"
+    if os.access(release, os.X_OK):
+        return release
+    debug = repo / "target" / "debug" / "sarifc"
+    if os.access(debug, os.X_OK):
+        return debug
+    raise ValueError(f"sarifc build did not produce a binary at {release}")
 
 
 def build_command(spec: BenchmarkSpec, entry: EntrySpec, binary: Path, build_dir: Path, build_jobs: int) -> list[str]:
@@ -817,9 +849,9 @@ def build_command(spec: BenchmarkSpec, entry: EntrySpec, binary: Path, build_dir
             "-C",
             "target-cpu=native",
             "-C",
-            "lto=fat",
-            "-C",
             "codegen-units=1",
+            "-C",
+            "lto=thin",
             "-C",
             "panic=abort",
             "-C",
@@ -898,12 +930,27 @@ def build_command(spec: BenchmarkSpec, entry: EntrySpec, binary: Path, build_dir
             "cmd/main",
         ]
     if entry.language == "sarif":
-        return [*sarifc_driver_command(), "build", str(source), "--print-main", "-o", str(binary)]
+        return [*sarifc_driver_command(build=True), "build", str(source), "--print-main", "-o", str(binary)]
     raise ValueError(f"unsupported language: {entry.language}")
 
 
-def find_moonbit_binary(source_dir: Path, build_stdout: str) -> Path:
-    for line in reversed(build_stdout.splitlines()):
+def moonbit_build_candidates(source_dir: Path) -> list[Path]:
+    build_dir = source_dir / "_build"
+    candidates: list[Path] = []
+    for path in build_dir.rglob("*"):
+        if not path.is_file():
+            continue
+        if not os.access(path, os.X_OK):
+            continue
+        if path.suffix in {".o", ".a", ".so", ".dll", ".dylib"}:
+            continue
+        candidates.append(path)
+    return candidates
+
+
+def find_moonbit_binary(source_dir: Path, build_output: str) -> Path:
+    declared: list[Path] = []
+    for line in reversed(build_output.splitlines()):
         text = line.strip()
         if not text.startswith("{"):
             continue
@@ -920,19 +967,19 @@ def find_moonbit_binary(source_dir: Path, build_stdout: str) -> Path:
                     path = Path(artifact)
                     if path.exists():
                         return path
+                    declared.append(path)
     build_dir = source_dir / "_build"
-    candidates: list[Path] = []
-    for path in build_dir.rglob("*"):
-        if not path.is_file():
-            continue
-        if not os.access(path, os.X_OK):
-            continue
-        if path.suffix in {".o", ".a", ".so", ".dll", ".dylib"}:
-            continue
-        candidates.append(path)
-    if not candidates:
-        raise FileNotFoundError(f"no moonbit binary under {build_dir}")
-    return max(candidates, key=lambda path: path.stat().st_mtime_ns)
+    for _ in range(10):
+        candidates = moonbit_build_candidates(source_dir)
+        if candidates:
+            return max(candidates, key=lambda path: path.stat().st_mtime_ns)
+        for path in declared:
+            if path.exists():
+                return path
+        time.sleep(0.05)
+    if declared:
+        raise FileNotFoundError(f"no moonbit binary under {build_dir} (declared: {declared[0]})")
+    raise FileNotFoundError(f"no moonbit binary under {build_dir}")
 
 
 def clean_dirs() -> None:
@@ -974,6 +1021,13 @@ def cleanup_source_tree() -> None:
 def cleanup_generated_dirs() -> None:
     for path in (BIN, BUILD):
         shutil.rmtree(path, ignore_errors=True)
+    run_root = RUN_ROOT
+    while run_root != ROOT and run_root.exists():
+        try:
+            run_root.rmdir()
+        except OSError:
+            break
+        run_root = run_root.parent
 
 
 def ensure_consistent_outputs(spec: BenchmarkSpec, outputs: list[str]) -> str | None:
@@ -1804,9 +1858,43 @@ def finalize_binary(
     return BuiltArtifact(binary=binary, build_time=build_time)
 
 
+def write_build_failure_logs(binary: Path, build_proc: subprocess.CompletedProcess[str]) -> None:
+    failure_dir = ROOT / ".failures" / binary.name
+    failure_dir.mkdir(parents=True, exist_ok=True)
+    (failure_dir / "build.stdout.txt").write_text(build_proc.stdout, encoding="utf-8")
+    (failure_dir / "build.stderr.txt").write_text(build_proc.stderr, encoding="utf-8")
+
+
+def build_with_retry(
+    entry: EntrySpec,
+    command: list[str],
+    binary: Path,
+    build_dir: Path,
+    build_cwd: Path | None,
+    cpu_list: str | None,
+) -> tuple[subprocess.CompletedProcess[str], float]:
+    total_build_time = 0.0
+    last_proc = subprocess.CompletedProcess(command, 127, "", "build did not run")
+    for attempt in range(3):
+        build_proc, build_time, _ = timed(command, cwd=build_cwd, cpu_list=cpu_list)
+        total_build_time += build_time
+        last_proc = build_proc
+        build_succeeded = build_proc.returncode == 0 and (entry.language == "moonbit" or binary.exists())
+        if build_succeeded:
+            return build_proc, total_build_time
+        if attempt == 2:
+            write_build_failure_logs(binary, build_proc)
+            return build_proc, total_build_time
+        binary.unlink(missing_ok=True)
+        shutil.rmtree(build_dir, ignore_errors=True)
+        build_dir.mkdir(parents=True, exist_ok=True)
+    return last_proc, total_build_time
+
+
 def stage_run_binary(binary: Path) -> Path | None:
     if not binary.exists():
         return None
+    BUILD.mkdir(parents=True, exist_ok=True)
     with tempfile.NamedTemporaryFile(dir=BUILD, prefix="run-", delete=False) as handle:
         staged = Path(handle.name)
     shutil.copy2(binary, staged)
@@ -1891,13 +1979,27 @@ def build_and_run(spec: BenchmarkSpec, entry: EntrySpec, run_args: argparse.Name
     build_cwd = source if entry.language == "moonbit" else None
 
     stdin_text = benchmark_input_text(spec)
-    build_proc, build_time, _ = timed(command, cwd=build_cwd, cpu_list=run_args.cpu_list)
+    build_proc, build_time = build_with_retry(
+        entry,
+        command,
+        binary,
+        build_dir,
+        build_cwd,
+        run_args.cpu_list,
+    )
     if build_proc.returncode != 0:
         return failed_result(spec, entry, benchmark_input_label(spec), "build-fail", build_time, binary)
     if entry.language != "moonbit" and not binary.exists():
         return failed_result(spec, entry, benchmark_input_label(spec), "build-fail", build_time, binary)
 
-    artifact = finalize_binary(entry, binary, build_dir, build_time, source, build_proc.stdout)
+    artifact = finalize_binary(
+        entry,
+        binary,
+        build_dir,
+        build_time,
+        source,
+        f"{build_proc.stdout}\n{build_proc.stderr}",
+    )
     if not artifact.binary.exists():
         return failed_result(spec, entry, benchmark_input_label(spec), "build-fail", artifact.build_time, artifact.binary)
     artifact_size = artifact.binary.stat().st_size
