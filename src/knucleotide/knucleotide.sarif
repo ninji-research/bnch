@@ -1,0 +1,183 @@
+const CODE_GGT: I32 = 43;
+const CODE_GGTA: I32 = 172;
+const CODE_GGTATT: I32 = 2767;
+const CODE_GGTATTTTAATT: I32 = 11337487;
+const CODE_GGTATTTTA_HI9: I32 = 177148;
+const CODE_GGTATTTTA_LO9: I32 = 64715;
+const MASK2: I32 = 15;
+const MASK6: I32 = 4095;
+const MASK9: I32 = 262143;
+const MASK12: I32 = 16777215;
+
+fn line_is_three_header(source: Text, start: I32, end: I32) -> Bool {
+    end - start >= 6 and
+        text_byte(source, start) == 62 and
+        text_eq_range(source, start + 1, start + 6, "THREE")
+}
+
+fn encode_base(byte: I32) -> I32 {
+    match byte {
+        65 | 97 => { 0 },
+        67 | 99 => { 1 },
+        71 | 103 => { 2 },
+        84 | 116 => { 3 },
+        _ => { -1 },
+    }
+}
+
+fn base_codepoint(code: I32) -> I32 {
+    match code {
+        0 => { 65 },
+        1 => { 67 },
+        2 => { 71 },
+        _ => { 84 },
+    }
+}
+
+fn append_code_kmer(builder: TextBuilder, code: I32, len: I32) -> TextBuilder {
+    if len == 1 {
+        text_builder_append_codepoint(builder, base_codepoint(code))
+    } else {
+        let first = code >> 2;
+        let second = code & 3;
+        let after_first = text_builder_append_codepoint(builder, base_codepoint(first));
+        text_builder_append_codepoint(after_first, base_codepoint(second))
+    }
+}
+
+fn append_percent_line(builder: TextBuilder, code: I32, len: I32, count: I32, total: I32) -> TextBuilder {
+    let mut current = append_code_kmer(builder, code, len);
+    current += " ";
+    let ratio = 100.0 * f64_from_i32(count) / f64_from_i32(total);
+    current += text_from_f64_fixed(ratio, 3);
+    current += "\n";
+    current
+}
+
+fn append_count_line(builder: TextBuilder, count: I32, label: Text, suffix: Text) -> TextBuilder {
+    let mut current = builder;
+    current += count;
+    current += "	";
+    current += label;
+    current += suffix;
+    current
+}
+
+fn append_sorted_percent_lines(builder: TextBuilder, counts: List[I32], bucket_count: I32, kmer_len: I32, total: I32) -> TextBuilder effects [alloc] {
+    let mut current = builder;
+    let mut used = list_new(bucket_count, false);
+    repeat step in bucket_count {
+        let mut best = -1;
+        let mut best_count = -1;
+        repeat i in bucket_count {
+            let count = counts[i];
+            if not (used[i]) and (best == -1 or count > best_count or (count == best_count and i < best)) {
+                best = i;
+                best_count = count;
+            };
+        };
+        used[best] = true;
+        current = append_percent_line(current, best, kmer_len, counts[best], total);
+    };
+    current
+}
+
+fn main() -> Text effects [alloc] {
+    let input = stdin_text();
+    let mut counts1 = list_new(4, 0);
+    let mut counts2 = list_new(16, 0);
+    let mut lag9 = list_new(9, 0);
+    let mut total = 0;
+    let mut rolling2 = 0;
+    let mut rolling6 = 0;
+    let mut rolling9 = 0;
+    let mut rolling12 = 0;
+    let mut lag9_index = 0;
+    let mut in_three = false;
+    let mut done = false;
+    let mut index = 0;
+    let mut count_ggt = 0;
+    let mut count_ggta = 0;
+    let mut count_ggtatt = 0;
+    let mut count_ggtattttaatt = 0;
+    let mut count_ggtattttaatttatagt = 0;
+    while index < input.len and not done {
+        let content_end = text_line_end(input, index);
+        if content_end > index and text_byte(input, index) == 62 {
+            if in_three {
+                done = true;
+            } else {
+                in_three = line_is_three_header(input, index, content_end);
+            };
+        } else {
+            if in_three {
+                let mut pos = index;
+                while pos < content_end {
+                    let code = encode_base(text_byte(input, pos));
+                    if code >= 0 {
+                        counts1[code] = counts1[code] + 1;
+                        total = total + 1;
+                        if total >= 2 {
+                            rolling2 = ((rolling2 << 2) & MASK2) | code;
+                            counts2[rolling2] = counts2[rolling2] + 1;
+                        } else {
+                            rolling2 = code;
+                        };
+                        if total >= 6 {
+                            rolling6 = ((rolling6 << 2) & MASK6) | code;
+                        } else {
+                            rolling6 = (rolling6 << 2) | code;
+                        };
+                        if total >= 9 {
+                            rolling9 = ((rolling9 << 2) & MASK9) | code;
+                        } else {
+                            rolling9 = (rolling9 << 2) | code;
+                        };
+                        if total >= 12 {
+                            rolling12 = ((rolling12 << 2) & MASK12) | code;
+                        } else {
+                            rolling12 = (rolling12 << 2) | code;
+                        };
+                        if total >= 3 and (rolling6 & 63) == CODE_GGT {
+                            count_ggt = count_ggt + 1;
+                        };
+                        if total >= 4 and (rolling6 & 255) == CODE_GGTA {
+                            count_ggta = count_ggta + 1;
+                        };
+                        if total >= 6 and rolling6 == CODE_GGTATT {
+                            count_ggtatt = count_ggtatt + 1;
+                        };
+                        if total >= 12 and rolling12 == CODE_GGTATTTTAATT {
+                            count_ggtattttaatt = count_ggtattttaatt + 1;
+                        };
+                        if total >= 9 {
+                            let high9 = lag9[lag9_index];
+                            lag9[lag9_index] = rolling9;
+                            lag9_index = lag9_index + 1;
+                            if lag9_index == 9 {
+                                lag9_index = 0;
+                            };
+                            if total >= 18 and high9 == CODE_GGTATTTTA_HI9 and rolling9 == CODE_GGTATTTTA_LO9 {
+                                count_ggtattttaatttatagt = count_ggtattttaatttatagt + 1;
+                            };
+                        };
+                    };
+                    pos = pos + 1;
+                };
+            };
+        };
+        index = text_next_line(input, index);
+    };
+
+    let mut builder = text_builder_new();
+    builder = append_sorted_percent_lines(builder, counts1, 4, 1, total);
+    builder += "\n";
+    builder = append_sorted_percent_lines(builder, counts2, 16, 2, total - 1);
+    builder += "\n";
+    builder = append_count_line(builder, count_ggt, "GGT", "\n");
+    builder = append_count_line(builder, count_ggta, "GGTA", "\n");
+    builder = append_count_line(builder, count_ggtatt, "GGTATT", "\n");
+    builder = append_count_line(builder, count_ggtattttaatt, "GGTATTTTAATT", "\n");
+    builder = append_count_line(builder, count_ggtattttaatttatagt, "GGTATTTTAATTTATAGT", "");
+    text_builder_finish(builder)
+}

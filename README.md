@@ -1,4 +1,4 @@
-# bnch
+# Benchmarks
 
 `bnch` is a fixed-host benchmark harness for canonical, production-ready native-language implementations.
 
@@ -33,14 +33,12 @@ The suite is single-threaded and uses release-style builds.
 ## What The Harness Produces
 
 Per benchmark entry:
-
 - Median runtime
 - Peak memory
 - Build time
 - Stripped binary size
 
 Across the suite:
-
 - Category-balanced composite score
 - Metric-specific views for speed, memory, build cost, and size
 - Decision profiles for different priorities
@@ -50,7 +48,6 @@ Across the suite:
 ## Retained Workloads
 
 The current suite covers:
-
 - allocation-heavy pointer and recursion pressure
 - scalar numeric kernels
 - floating-point iteration and simulation
@@ -60,47 +57,41 @@ The current suite covers:
 - hashing and string-heavy counting
 - sort plus frequency aggregation
 
-Benchmark manifests live under [benchmarks](/home/user/bnch/benchmarks). They define ordering, inputs, checks, weights, capability tags, and retention rationale.
+Benchmark manifests live under `benchmarks/`. They define ordering, inputs, checks, weights, capability tags, and retention rationale.
 
-Entry manifests live under [entries](/home/user/bnch/entries). They define canonical entries, allowed variants, required tools, and permanent optimization policy.
+Entry manifests live under `entries/`. They define canonical entries, allowed variants, required tools, and permanent optimization policy.
 Experimental manifests may also declare `track = "experimental"` to stay out of the default suite until they are genuinely ready.
 
 ## Quick Start
 
 Validate the repo:
-
 ```bash
 python3 tools/validate_manifests.py
 python3 -m unittest tests.test_run
 ```
 
 Run the main track:
-
 ```bash
 python3 run.py
 ```
 
 Run a fast smoke pass:
-
 ```bash
 python3 run.py --runs 1 --min-runs 1 --warmup 0
 ```
 
 Run a subset:
-
 ```bash
 python3 run.py --entry rust__llvm,go__gc
 python3 run.py --benchmark mandelbrot,knucleotide
 ```
 
 Include non-canonical variants:
-
 ```bash
 python3 run.py --all-entries
 ```
 
 Include experimental entries explicitly when a non-main lane exists:
-
 ```bash
 python3 run.py --experimental-entries
 python3 run.py --experimental-entries --all-entries
@@ -111,7 +102,6 @@ Sarif toolchain discovery uses `BNCH_SARIF_REPO` first when set, then sibling ch
 Single-entry experimental reports are marked non-comparative in both Markdown and JSON output. They are useful for validating one language entry end-to-end, but they do not support honest cross-language ranking claims.
 
 Run an honest overlap comparison for one narrower entry against the rest of the suite:
-
 ```bash
 python3 run.py --experimental-entries --compare-entry-overlap sarif__stage0
 python3 run.py --experimental-entries --compare-entry-overlap sarif__stage0 --benchmark revcomp
@@ -120,14 +110,13 @@ python3 run.py --experimental-entries --compare-entry-overlap sarif__stage0 --be
 `--compare-entry-overlap` automatically includes the named entry and restricts the benchmark set to what that entry actually supports, which is the right way to compare a narrower experimental lane without pretending it covers the full retained suite.
 
 Write reports elsewhere:
-
 ```bash
 python3 run.py --report-path /tmp/bnch.md --json-path /tmp/bnch.json
 ```
 
 ## Reading The Report
 
-Read [REPORT.md](/home/user/bnch/REPORT.md) in this order:
+Read `REPORT.md` in this order:
 
 1. Environment
 2. Entry Policies
@@ -169,7 +158,6 @@ The report exposes these under `Entry Policies` so optimization policy stays rev
 ## Development Standard
 
 Any harness change should leave the repo passing:
-
 ```bash
 python3 tools/validate_manifests.py
 python3 -m unittest tests.test_run
@@ -180,10 +168,18 @@ Use the full `python3 run.py` before treating a benchmark-harness change as comp
 
 ## Repository Layout
 
-- [run.py](/home/user/bnch/run.py): build, run, validate output, score, and report
-- [benchmarks](/home/user/bnch/benchmarks): benchmark manifests
-- [entries](/home/user/bnch/entries): entry manifests
-- [src](/home/user/bnch/src): retained implementations
-- [fixtures](/home/user/bnch/fixtures): committed inputs
-- [tools](/home/user/bnch/tools): validation and fixture helpers
-- [tests](/home/user/bnch/tests): harness tests
+- `run.py`: build, run, validate output, score, and report
+- `benchmarks/`: benchmark manifests
+- `entries/`: entry manifests
+- `src/`: retained implementations
+- `fixtures/`: committed inputs
+- `tools/`: validation and fixture helpers
+- `tests/`: harness tests
+
+## Legal
+
+Source code, including but not limited to implementation files, scripts, and configurations, is licensed under the [MPL-2.0](LICENSE.md) license. Documentation and informational content, such as but not limited to specifications, guides, and reports, are licensed under the [CC-BY-4.0](LICENSE-CONTENT.md) license.
+
+Brand identity, including but not limited to the NINJI name, logos, graphics, and visual assets, is strictly proprietary. All rights are reserved. Usage, modification, or distribution of these assets is prohibited without prior written consent.
+
+See [NOTICE.md](NOTICE.md) for full attribution details.

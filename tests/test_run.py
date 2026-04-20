@@ -643,7 +643,7 @@ class RunHelpersTest(unittest.TestCase):
                         self.assertEqual(call_count, 1)
 
     def test_sarif_repo_candidates_default_to_sibling_checkouts(self) -> None:
-        self.assertEqual(run.sarif_repo_candidates()[:2], (Path("/home/user/sarif"), Path("/home/user/sarif-main")))
+        self.assertEqual(run.sarif_repo_candidates()[:2], (run.ROOT.parent / "sarif", run.ROOT.parent / "sarif-main"))
 
     def test_sarif_repo_candidates_prefer_env_override(self) -> None:
         with mock.patch.dict(run.os.environ, {"BNCH_SARIF_REPO": "/tmp/custom-sarif"}, clear=False):
