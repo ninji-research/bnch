@@ -6,7 +6,7 @@ Objective:
 
 > Build the strongest fixed-host benchmark harness for canonical, production-ready native-language implementations, with correctness enforced before any ranking.
 
-## Core Philosophy
+## What It Optimizes For
 
 - Correctness gates ranking
 - One canonical entry per language in the main track
@@ -30,6 +30,48 @@ The default run compares canonical entries in:
 
 The suite is single-threaded and uses release-style builds.
 
+## Quick Start
+
+Validate the harness:
+
+```bash
+python3 tools/validate_manifests.py
+python3 -m unittest tests.test_run
+```
+
+Run the default main track:
+
+```bash
+python3 run.py
+```
+
+Run a fast smoke pass:
+
+```bash
+python3 run.py --runs 1 --min-runs 1 --warmup 0
+```
+
+Run a subset:
+
+```bash
+python3 run.py --entry rust__llvm,go__gc
+python3 run.py --benchmark mandelbrot,knucleotide
+```
+
+Include non-canonical or experimental lanes explicitly:
+
+```bash
+python3 run.py --all-entries
+python3 run.py --experimental-entries
+python3 run.py --experimental-entries --all-entries
+```
+
+Write reports elsewhere:
+
+```bash
+python3 run.py --report-path /tmp/bnch.md --json-path /tmp/bnch.json
+```
+
 ## What The Harness Produces
 
 Per benchmark entry:
@@ -45,74 +87,22 @@ Across the suite:
 - Benchmark coverage with category, base weight, effective weight, capabilities, unique coverage, and retention rationale
 - Entry policy disclosure for permanent low-burden optimizations
 
-## Retained Workloads
+## Sarif Lane
 
-The current suite covers:
-- allocation-heavy pointer and recursion pressure
-- scalar numeric kernels
-- floating-point iteration and simulation
-- text generation and streaming transforms
-- CSV parsing and group-by aggregation
-- relational join plus ordered aggregation
-- hashing and string-heavy counting
-- sort plus frequency aggregation
+Sarif discovery is explicit and deterministic:
 
-Benchmark manifests live under `benchmarks/`. They define ordering, inputs, checks, weights, capability tags, and retention rationale.
+- use `BNCH_SARIF_REPO` first when set
+- otherwise try sibling checkouts at `~/sarif` and `~/sarif-main`
+- otherwise use `sarifc` on `PATH`
 
-Entry manifests live under `entries/`. They define canonical entries, allowed variants, required tools, and permanent optimization policy.
-Experimental manifests may also declare `track = "experimental"` to stay out of the default suite until they are genuinely ready.
+For narrower experimental Sarif lanes, use honest overlap comparisons instead of pretending full-suite coverage:
 
-## Quick Start
-
-Validate the repo:
-```bash
-python3 tools/validate_manifests.py
-python3 -m unittest tests.test_run
-```
-
-Run the main track:
-```bash
-python3 run.py
-```
-
-Run a fast smoke pass:
-```bash
-python3 run.py --runs 1 --min-runs 1 --warmup 0
-```
-
-Run a subset:
-```bash
-python3 run.py --entry rust__llvm,go__gc
-python3 run.py --benchmark mandelbrot,knucleotide
-```
-
-Include non-canonical variants:
-```bash
-python3 run.py --all-entries
-```
-
-Include experimental entries explicitly when a non-main lane exists:
-```bash
-python3 run.py --experimental-entries
-python3 run.py --experimental-entries --all-entries
-```
-
-Sarif toolchain discovery uses `BNCH_SARIF_REPO` first when set, then sibling checkouts at `~/sarif` and `~/sarif-main`, then an installed `sarifc` on `PATH`.
-
-Single-entry experimental reports are marked non-comparative in both Markdown and JSON output. They are useful for validating one language entry end-to-end, but they do not support honest cross-language ranking claims.
-
-Run an honest overlap comparison for one narrower entry against the rest of the suite:
 ```bash
 python3 run.py --experimental-entries --compare-entry-overlap sarif__stage0
 python3 run.py --experimental-entries --compare-entry-overlap sarif__stage0 --benchmark revcomp
 ```
 
-`--compare-entry-overlap` automatically includes the named entry and restricts the benchmark set to what that entry actually supports, which is the right way to compare a narrower experimental lane without pretending it covers the full retained suite.
-
-Write reports elsewhere:
-```bash
-python3 run.py --report-path /tmp/bnch.md --json-path /tmp/bnch.json
-```
+Single-entry experimental reports are marked non-comparative in both Markdown and JSON output.
 
 ## Reading The Report
 
@@ -129,6 +119,22 @@ Read `REPORT.md` in this order:
 
 Use the benchmark coverage table to audit suite shape and weights.
 Use metric views and decision profiles when the decision is narrower than the default composite.
+
+## Retained Workloads
+
+The current retained suite spans:
+- allocation-heavy pointer and recursion pressure
+- scalar numeric kernels
+- floating-point iteration and simulation
+- text generation and streaming transforms
+- CSV parsing and group-by aggregation
+- relational join plus ordered aggregation
+- hashing and string-heavy counting
+- sort plus frequency aggregation
+
+Benchmark manifests live under `benchmarks/`. They define ordering, fixtures, checks, weights, capability tags, and retention rationale.
+
+Entry manifests live under `entries/`. They define canonical entries, allowed variants, required tools, and permanent optimization policy. Experimental entries stay outside the default suite until they are genuinely ready.
 
 ## Toolchains
 

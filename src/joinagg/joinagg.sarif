@@ -75,14 +75,13 @@ fn aggregate_join(input: Text) -> AggregateList effects [alloc] {
                         let user = users[user_pos];
                         let latency_ms = parse_i32_range(input, cuts.comma2 + 1, cuts.comma3);
                         let bytes = parse_i32_range(input, cuts.comma3 + 1, content_end);
-                        let pos = text_index_get(aggregates, user.key);
-                        if pos >= 0 {
-                            let current = rows[pos];
-                            rows[pos] = AggregateRow { key: current.key, count: current.count + 1, latency_sum: current.latency_sum + latency_ms, bytes_sum: current.bytes_sum + bytes };
-                        } else {
-                            aggregates = text_index_set(aggregates, user.key, len);
+                        let pos = text_index_get_or_insert(aggregates, user.key, len);
+                        if pos == len {
                             rows = list_push(rows, len, AggregateRow { key: user.key, count: 1, latency_sum: latency_ms, bytes_sum: bytes });
                             len += 1;
+                        } else {
+                            let current = rows[pos];
+                            rows[pos] = AggregateRow { key: current.key, count: current.count + 1, latency_sum: current.latency_sum + latency_ms, bytes_sum: current.bytes_sum + bytes };
                         }
                     }
                 }

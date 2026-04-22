@@ -1389,9 +1389,9 @@ def build_summary_data(
 ) -> SummaryData:
     valid_benchmarks = scored_benchmarks(results, benchmarks)
     composite_weights = metric_weights or METRIC_WEIGHTS
-    overall_scores = normalize_view_scores(metric_scores(results, valid_benchmarks, composite_weights))
+    overall_scores = metric_scores(results, valid_benchmarks, composite_weights)
     metric_score_maps = {
-        label: normalize_view_scores(metric_scores(results, valid_benchmarks, {metric: 1.0}))
+        label: metric_scores(results, valid_benchmarks, {metric: 1.0})
         for label, metric in SUMMARY_METRICS
     }
     overall_order = [entry for entry, _ in sorted(overall_scores.items(), key=lambda item: item[1], reverse=True)]
@@ -1509,9 +1509,7 @@ def build_category_summary(results: list[Result], benchmarks: list[BenchmarkSpec
     valid_benchmarks = scored_benchmarks(results, benchmarks)
     categories = [key for key in CATEGORY_LABELS if any(spec.category == key for spec in valid_benchmarks)]
     scores = {
-        category: normalize_view_scores(
-            metric_scores(results, [spec for spec in valid_benchmarks if spec.category == category], METRIC_WEIGHTS)
-        )
+        category: metric_scores(results, [spec for spec in valid_benchmarks if spec.category == category], METRIC_WEIGHTS)
         for category in categories
     }
     return CategorySummary(labels=categories, scores=scores)
@@ -1755,7 +1753,7 @@ def render_report(
                 "",
                 markdown_table(summary_headers(), summary_rows(summary, active_entries)),
                 "",
-                "_Displayed scores use median runtime, equal category weighting with benchmark normalization inside each category, then scale each view so its leader is 1.0000. The composite ranks fixed-host production tradeoffs; use metric views and decision profiles for narrower decisions._",
+                "_Displayed scores use median runtime with equal category weighting and benchmark normalization inside each category. Views stay on the same absolute 0..1 scale across report revisions, so regressions remain directly comparable over time._",
                 "",
             ]
         )

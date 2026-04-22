@@ -12,14 +12,13 @@ fn count_words(input: Text) -> WordCounts effects [alloc] {
         let content_end = text_line_end(input, index);
         let word = text_slice(input, index, content_end);
         if word.len > 0 {
-            let pos = text_index_get(words, word);
-            if pos >= 0 {
-                let current = rows[pos];
-                rows[pos] = WordCount { word: current.word, count: current.count + 1 };
-            } else {
-                words = text_index_set(words, word, len);
+            let pos = text_index_get_or_insert(words, word, len);
+            if pos == len {
                 rows = list_push(rows, len, WordCount { word, count: 1 });
                 len += 1;
+            } else {
+                let current = rows[pos];
+                rows[pos] = WordCount { word: current.word, count: current.count + 1 };
             }
         };
         index = text_next_line(input, index);

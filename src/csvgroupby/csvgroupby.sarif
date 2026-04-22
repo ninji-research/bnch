@@ -21,17 +21,8 @@ fn group_orders(input: Text) -> AggregateList effects [alloc] {
                 let customer = text_slice(input, index, comma1);
                 let qty = parse_i32_range(input, comma2 + 1, comma3);
                 let cents = parse_i32_range(input, comma3 + 1, content_end);
-                let pos = text_index_get(customers, customer);
-                if pos >= 0 {
-                    let current = rows[pos];
-                    rows[pos] = AggregateRow {
-                        customer: current.customer,
-                        count: current.count + 1,
-                        qty: current.qty + qty,
-                        cents: current.cents + cents,
-                    };
-                } else {
-                    customers = text_index_set(customers, customer, len);
+                let pos = text_index_get_or_insert(customers, customer, len);
+                if pos == len {
                     rows = list_push(rows, len, AggregateRow {
                         customer,
                         count: 1,
@@ -39,6 +30,14 @@ fn group_orders(input: Text) -> AggregateList effects [alloc] {
                         cents,
                     });
                     len += 1;
+                } else {
+                    let current = rows[pos];
+                    rows[pos] = AggregateRow {
+                        customer: current.customer,
+                        count: current.count + 1,
+                        qty: current.qty + qty,
+                        cents: current.cents + cents,
+                    };
                 }
             }
         };
