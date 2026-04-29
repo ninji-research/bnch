@@ -16,19 +16,7 @@ Objective:
 - Variant compiler and backend runs stay separate from the main track
 - Experimental entries stay opt-in and never count as canonical retained-suite coverage
 
-## Main Track
-
-The default run compares canonical entries in:
-
-- C
-- Go
-- Rust
-- Sarif
-- Nim
-- OCaml
-- MoonBit
-
-The suite is single-threaded and uses release-style builds.
+The default suite is single-threaded, release-style, category-balanced, and currently compares canonical C, Go, Rust, Sarif, Nim, OCaml, and MoonBit entries. The generated [REPORT.md](REPORT.md) is the source of truth for the latest local results.
 
 ## Quick Start
 
@@ -87,23 +75,6 @@ Across the suite:
 - Benchmark coverage with category, base weight, effective weight, capabilities, unique coverage, and retention rationale
 - Entry policy disclosure for permanent low-burden optimizations
 
-## Sarif Lane
-
-Sarif discovery is explicit and deterministic:
-
-- use `BNCH_SARIF_REPO` first when set
-- otherwise try sibling checkouts at `~/sarif` and `~/sarif-main`
-- otherwise use `sarifc` on `PATH`
-
-For narrower experimental Sarif lanes, use honest overlap comparisons instead of pretending full-suite coverage:
-
-```bash
-python3 run.py --experimental-entries --compare-entry-overlap sarif__stage0
-python3 run.py --experimental-entries --compare-entry-overlap sarif__stage0 --benchmark revcomp
-```
-
-Single-entry experimental reports are marked non-comparative in both Markdown and JSON output.
-
 ## Reading The Report
 
 Read `REPORT.md` in this order:
@@ -120,21 +91,24 @@ Read `REPORT.md` in this order:
 Use the benchmark coverage table to audit suite shape and weights.
 Use metric views and decision profiles when the decision is narrower than the default composite.
 
-## Retained Workloads
-
-The current retained suite spans:
-- allocation-heavy pointer and recursion pressure
-- scalar numeric kernels
-- floating-point iteration and simulation
-- text generation and streaming transforms
-- CSV parsing and group-by aggregation
-- relational join plus ordered aggregation
-- hashing and string-heavy counting
-- sort plus frequency aggregation
+## Canonical Inputs
 
 Benchmark manifests live under `benchmarks/`. They define ordering, fixtures, checks, weights, capability tags, and retention rationale.
 
 Entry manifests live under `entries/`. They define canonical entries, allowed variants, required tools, and permanent optimization policy. Experimental entries stay outside the default suite until they are genuinely ready.
+
+The retained suite spans allocation pressure, scalar numeric kernels, floating-point simulation, text generation, streaming transforms, CSV aggregation, joins, hashing-heavy counting, and sort/frequency aggregation.
+
+Sarif discovery is explicit: `BNCH_SARIF_REPO` first, sibling checkouts at `~/sarif` and `~/sarif-main` next, then `sarifc` on `PATH`.
+
+For narrower experimental Sarif lanes, use honest overlap comparisons instead of pretending full-suite coverage:
+
+```bash
+python3 run.py --experimental-entries --compare-entry-overlap sarif__stage0
+python3 run.py --experimental-entries --compare-entry-overlap sarif__stage0 --benchmark revcomp
+```
+
+Single-entry experimental reports are marked non-comparative in both Markdown and JSON output.
 
 ## Toolchains
 
