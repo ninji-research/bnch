@@ -1237,15 +1237,6 @@ def metric_scores(
     return {entry: totals[entry] / total_weight for entry in complete_entries}
 
 
-def normalize_view_scores(scores: dict[str, float]) -> dict[str, float]:
-    if not scores:
-        return {}
-    leader = max(scores.values())
-    if leader <= 0:
-        return {entry: 0.0 for entry in scores}
-    return {entry: value / leader for entry, value in scores.items()}
-
-
 def complete_entry_keys(results: list[Result], benchmarks: list[BenchmarkSpec]) -> set[str]:
     if not benchmarks:
         return set()
