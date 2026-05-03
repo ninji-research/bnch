@@ -407,12 +407,12 @@
       "output": "stretch tree of depth 21\t check: 4194303 / 1048576\t trees of depth 4\t...",
       "reference": "stretch tree of depth 21\t check: 4194303 / 1048576\t trees of depth 4\t...",
       "status": "ok",
-      "build_time_s": 0.052656997002486605,
-      "run_time_s": 3.1258590774959885,
-      "run_time_relative_spread": 0.016547136553110586,
+      "build_time_s": 0.3087783699957072,
+      "run_time_s": 2.954642687996966,
+      "run_time_relative_spread": 0.0012947785585601251,
       "measured_runs": 2,
-      "peak_memory_kib": 100004,
-      "binary_size_bytes": 9200
+      "peak_memory_kib": 99876,
+      "binary_size_bytes": 9216
     },
     {
       "benchmark": "csvgroupby",
@@ -421,12 +421,12 @@
       "output": "sha256:b7ce6bd0a0cc01ea",
       "reference": "sha256:b7ce6bd0a0cc01ea",
       "status": "ok",
-      "build_time_s": 0.036441130003368016,
-      "run_time_s": 0.020219853999151383,
-      "run_time_relative_spread": 0.14095274882972977,
+      "build_time_s": 0.03742628899635747,
+      "run_time_s": 0.019556898005248513,
+      "run_time_relative_spread": 0.0919780835644165,
       "measured_runs": 3,
-      "peak_memory_kib": 31616,
-      "binary_size_bytes": 11400
+      "peak_memory_kib": 31752,
+      "binary_size_bytes": 11416
     },
     {
       "benchmark": "joinagg",
@@ -435,12 +435,12 @@
       "output": "sha256:37c7ac2d5630fe43",
       "reference": "sha256:37c7ac2d5630fe43",
       "status": "ok",
-      "build_time_s": 0.03711639599350747,
-      "run_time_s": 0.07317026999953669,
-      "run_time_relative_spread": 0.13052415952207075,
+      "build_time_s": 0.04129157900024438,
+      "run_time_s": 0.07421136499760905,
+      "run_time_relative_spread": 0.0688451829479816,
       "measured_runs": 3,
-      "peak_memory_kib": 43392,
-      "binary_size_bytes": 13896
+      "peak_memory_kib": 43528,
+      "binary_size_bytes": 13912
     },
     {
       "benchmark": "fasta",
@@ -449,12 +449,12 @@
       "output": "sha256:dfd37a44ede2e23f",
       "reference": "sha256:dfd37a44ede2e23f",
       "status": "ok",
-      "build_time_s": 0.03542860200832365,
-      "run_time_s": 0.02964693999820156,
-      "run_time_relative_spread": 0.015660031066853288,
+      "build_time_s": 0.19747862700023688,
+      "run_time_s": 0.03152104200125905,
+      "run_time_relative_spread": 0.011746915081238304,
       "measured_runs": 3,
-      "peak_memory_kib": 54188,
-      "binary_size_bytes": 8920
+      "peak_memory_kib": 54364,
+      "binary_size_bytes": 8944
     },
     {
       "benchmark": "mandelbrot",
@@ -463,11 +463,11 @@
       "output": "sha256:e41a9386e912a316",
       "reference": "sha256:e41a9386e912a316",
       "status": "ok",
-      "build_time_s": 0.035436736994597595,
-      "run_time_s": 0.01713470899994718,
-      "run_time_relative_spread": 0.04814479223037232,
+      "build_time_s": 0.20285539299220545,
+      "run_time_s": 0.017761148999852594,
+      "run_time_relative_spread": 0.10781971378315569,
       "measured_runs": 3,
-      "peak_memory_kib": 61676,
+      "peak_memory_kib": 61852,
       "binary_size_bytes": 5768
     },
     {
@@ -477,12 +477,12 @@
       "output": "1.274224153",
       "reference": "1.274224153",
       "status": "ok",
-      "build_time_s": 0.03429741099535022,
-      "run_time_s": 1.3032197739994444,
-      "run_time_relative_spread": 0.012195243130334224,
+      "build_time_s": 0.036667234991909936,
+      "run_time_s": 1.2960392995009897,
+      "run_time_relative_spread": 0.007586062405874288,
       "measured_runs": 2,
-      "peak_memory_kib": 61676,
-      "binary_size_bytes": 7528
+      "peak_memory_kib": 61852,
+      "binary_size_bytes": 7552
     },
     {
       "benchmark": "nbody",
@@ -491,12 +491,12 @@
       "output": "-0.169075164 / -0.169083134",
       "reference": "-0.169075164 / -0.169083134",
       "status": "ok",
-      "build_time_s": 0.03736066499550361,
-      "run_time_s": 0.3344134424987715,
-      "run_time_relative_spread": 0.015402906548034756,
+      "build_time_s": 0.04638729799626162,
+      "run_time_s": 0.327834071500547,
+      "run_time_relative_spread": 0.017458761909121993,
       "measured_runs": 2,
-      "peak_memory_kib": 61676,
-      "binary_size_bytes": 13760
+      "peak_memory_kib": 61852,
+      "binary_size_bytes": 13776
     },
     {
       "benchmark": "knucleotide",
@@ -505,11 +505,11 @@
       "output": "A 30.328 / T 30.079 / C 19.799 / G 19.794 /  / AA 9.188 / TA 9.122 / ...",
       "reference": "A 30.328 / T 30.079 / C 19.799 / G 19.794 /  / AA 9.188 / TA 9.122 / ...",
       "status": "ok",
-      "build_time_s": 0.03996195200306829,
-      "run_time_s": 0.0049231609955313616,
-      "run_time_relative_spread": 0.06851350137772765,
+      "build_time_s": 0.04187623699544929,
+      "run_time_s": 0.005560591001994908,
+      "run_time_relative_spread": 0.15316141798931784,
       "measured_runs": 3,
-      "peak_memory_kib": 61676,
+      "peak_memory_kib": 61852,
       "binary_size_bytes": 12032
     },
     {
@@ -519,11 +519,11 @@
       "output": "sha256:14899a73679b1d83",
       "reference": "sha256:14899a73679b1d83",
       "status": "ok",
-      "build_time_s": 0.03615699700458208,
-      "run_time_s": 0.003958022003644146,
-      "run_time_relative_spread": 0.06694404467852856,
+      "build_time_s": 0.03592871900036698,
+      "run_time_s": 0.004379384998173919,
+      "run_time_relative_spread": 0.12976593740351305,
       "measured_runs": 3,
-      "peak_memory_kib": 61676,
+      "peak_memory_kib": 61852,
       "binary_size_bytes": 8008
     },
     {
@@ -533,11 +533,11 @@
       "output": "sha256:6b28b0e803b80ff3",
       "reference": "sha256:6b28b0e803b80ff3",
       "status": "ok",
-      "build_time_s": 0.03453825199540006,
-      "run_time_s": 0.026382529002148658,
-      "run_time_relative_spread": 0.11956795320999226,
+      "build_time_s": 0.03453959399485029,
+      "run_time_s": 0.02417676399636548,
+      "run_time_relative_spread": 0.01927491220973528,
       "measured_runs": 3,
-      "peak_memory_kib": 61676,
+      "peak_memory_kib": 61852,
       "binary_size_bytes": 10288
     }
   ]

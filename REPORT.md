@@ -39,7 +39,7 @@
 
 | Entry                 | Compiler | Backend | Linkage | Stripped | Binary Size Sample (KiB) |
 | --------------------- | -------- | ------- | ------- | -------- | ------------------------ |
-| sarif (stage0/native) | sarifc   | native  | dynamic | yes      | 8.98                     |
+| sarif (stage0/native) | sarifc   | native  | dynamic | yes      | 9.00                     |
 
 ## Entry Policies
 
@@ -139,13 +139,13 @@ _Displayed scores use median runtime with equal category weighting and benchmark
 
 | Benchmark    | Entry                 | Input                            | Output                                                                   | Build Time (s) | Run Time (s) | Peak Memory (MiB) | Binary Size (KiB) | Status |
 | ------------ | --------------------- | -------------------------------- | ------------------------------------------------------------------------ | -------------- | ------------ | ----------------- | ----------------- | ------ |
-| binarytrees  | sarif (stage0/native) | 20                               | stretch tree of depth 21	 check: 4194303 / 1048576	 trees of depth 4	... | 0.0527         | 3.1259       | 97.66             | 8.98              | ok     |
-| csvgroupby   | sarif (stage0/native) | fixture:orders-120000.csv        | sha256:b7ce6bd0a0cc01ea                                                  | 0.0364         | 0.0202       | 30.88             | 11.13             | ok     |
-| fasta        | sarif (stage0/native) | 250000                           | sha256:dfd37a44ede2e23f                                                  | 0.0354         | 0.0296       | 52.92             | 8.71              | ok     |
-| joinagg      | sarif (stage0/native) | fixture:users-events-180000.txt  | sha256:37c7ac2d5630fe43                                                  | 0.0371         | 0.0732       | 42.38             | 13.57             | ok     |
-| knucleotide  | sarif (stage0/native) | fixture:knucleotide-250000.fasta | A 30.328 / T 30.079 / C 19.799 / G 19.794 /  / AA 9.188 / TA 9.122 / ... | 0.0400         | 0.0049       | 60.23             | 11.75             | ok     |
-| mandelbrot   | sarif (stage0/native) | 512                              | sha256:e41a9386e912a316                                                  | 0.0354         | 0.0171       | 60.23             | 5.63              | ok     |
-| nbody        | sarif (stage0/native) | 5000000                          | -0.169075164 / -0.169083134                                              | 0.0374         | 0.3344       | 60.23             | 13.44             | ok     |
-| revcomp      | sarif (stage0/native) | fixture:knucleotide-250000.fasta | sha256:14899a73679b1d83                                                  | 0.0362         | 0.0040       | 60.23             | 7.82              | ok     |
-| sortuniq     | sarif (stage0/native) | fixture:words-250000.txt         | sha256:6b28b0e803b80ff3                                                  | 0.0345         | 0.0264       | 60.23             | 10.05             | ok     |
-| spectralnorm | sarif (stage0/native) | 5000                             | 1.274224153                                                              | 0.0343         | 1.3032       | 60.23             | 7.35              | ok     |
+| binarytrees  | sarif (stage0/native) | 20                               | stretch tree of depth 21	 check: 4194303 / 1048576	 trees of depth 4	... | 0.3088         | 2.9546       | 97.54             | 9.00              | ok     |
+| csvgroupby   | sarif (stage0/native) | fixture:orders-120000.csv        | sha256:b7ce6bd0a0cc01ea                                                  | 0.0374         | 0.0196       | 31.01             | 11.15             | ok     |
+| fasta        | sarif (stage0/native) | 250000                           | sha256:dfd37a44ede2e23f                                                  | 0.1975         | 0.0315       | 53.09             | 8.73              | ok     |
+| joinagg      | sarif (stage0/native) | fixture:users-events-180000.txt  | sha256:37c7ac2d5630fe43                                                  | 0.0413         | 0.0742       | 42.51             | 13.59             | ok     |
+| knucleotide  | sarif (stage0/native) | fixture:knucleotide-250000.fasta | A 30.328 / T 30.079 / C 19.799 / G 19.794 /  / AA 9.188 / TA 9.122 / ... | 0.0419         | 0.0056       | 60.40             | 11.75             | ok     |
+| mandelbrot   | sarif (stage0/native) | 512                              | sha256:e41a9386e912a316                                                  | 0.2029         | 0.0178       | 60.40             | 5.63              | ok     |
+| nbody        | sarif (stage0/native) | 5000000                          | -0.169075164 / -0.169083134                                              | 0.0464         | 0.3278       | 60.40             | 13.45             | ok     |
+| revcomp      | sarif (stage0/native) | fixture:knucleotide-250000.fasta | sha256:14899a73679b1d83                                                  | 0.0359         | 0.0044       | 60.40             | 7.82              | ok     |
+| sortuniq     | sarif (stage0/native) | fixture:words-250000.txt         | sha256:6b28b0e803b80ff3                                                  | 0.0345         | 0.0242       | 60.40             | 10.05             | ok     |
+| spectralnorm | sarif (stage0/native) | 5000                             | 1.274224153                                                              | 0.0367         | 1.2960       | 60.40             | 7.38              | ok     |
