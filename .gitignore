@@ -6,6 +6,7 @@
 /REPORT.variants.json
 /__pycache__/
 /tools/__pycache__/
+/tests/__pycache__/
 /.failures/
 /src/**/_build/
 /src/**/*.cmi
