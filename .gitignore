@@ -1,7 +1,6 @@
 /.build/
 /.runs/
 /bin/
-/REPORT.json
 /REPORT.variants.md
 /REPORT.variants.json
 /__pycache__/
