@@ -115,25 +115,25 @@
 
 | Entry                 | Numeric | Allocation | Hash/String | Text/Streaming | Parse/Aggregate | Join/Aggregate | Sort/Aggregate | Overall |
 | --------------------- | ------- | ---------- | ----------- | -------------- | --------------- | -------------- | -------------- | ------- |
-| sarif (stage0/native) | 0.8670  | 0.9347     | 0.9877      | 0.7601         | 0.9783          | 0.9795         | 0.9797         | 0.9267  |
-| c (clang)             | 0.8698  | 0.4056     | 0.8269      | 0.9224         | 0.5494          | 0.6320         | 0.4896         | 0.6708  |
-| rust (rustc/llvm)     | 0.8323  | 0.2315     | 0.7105      | 0.6355         | 0.7336          | 0.5580         | 0.4666         | 0.5954  |
-| go (gc)               | 0.6925  | 0.3191     | 0.4886      | 0.5617         | 0.7657          | 0.5733         | 0.5469         | 0.5640  |
-| nim (clang)           | 0.7773  | 0.4126     | 0.5694      | 0.6226         | 0.3572          | 0.4608         | 0.3506         | 0.5072  |
-| ocaml (native)        | 0.5630  | 0.8420     | 0.3407      | 0.4574         | 0.3068          | 0.3650         | 0.2902         | 0.4522  |
-| moonbit (native)      | 0.2667  | 0.5803     | 0.2565      | 0.2324         | 0.2179          | 0.1766         | 0.2209         | 0.2788  |
+| sarif (stage0/native) | 0.9009  | 0.9322     | 0.9877      | 0.7626         | 0.9783          | 0.9795         | 0.9797         | 0.9316  |
+| c (clang)             | 0.8694  | 0.4303     | 0.8343      | 0.9382         | 0.5134          | 0.6393         | 0.4722         | 0.6710  |
+| rust (rustc/llvm)     | 0.8076  | 0.2446     | 0.7161      | 0.6727         | 0.7005          | 0.5674         | 0.4272         | 0.5909  |
+| go (gc)               | 0.6924  | 0.3413     | 0.4815      | 0.5698         | 0.7446          | 0.5748         | 0.5457         | 0.5643  |
+| nim (clang)           | 0.7526  | 0.4408     | 0.5903      | 0.6681         | 0.3773          | 0.4088         | 0.3474         | 0.5122  |
+| ocaml (native)        | 0.5992  | 0.8287     | 0.3336      | 0.4772         | 0.3012          | 0.3494         | 0.2941         | 0.4548  |
+| moonbit (native)      | 0.2657  | 0.6585     | 0.2539      | 0.2354         | 0.2168          | 0.1834         | 0.2211         | 0.2907  |
 
 ## Summary
 
 | Overall | Entry                 | Score  | Speed  | Memory | Build  | Size   |
 | ------- | --------------------- | ------ | ------ | ------ | ------ | ------ |
-| 1       | sarif (stage0/native) | 0.9267 | 0.9189 | 0.9730 | 1.0000 | 0.6962 |
-| 2       | c (clang)             | 0.6708 | 0.6014 | 0.9643 | 0.3746 | 0.9917 |
-| 3       | rust (rustc/llvm)     | 0.5954 | 0.6393 | 0.8852 | 0.0180 | 0.0204 |
-| 4       | go (gc)               | 0.5640 | 0.5329 | 0.9456 | 0.2823 | 0.0045 |
-| 5       | nim (clang)           | 0.5072 | 0.4829 | 0.8875 | 0.0389 | 0.2390 |
-| 6       | ocaml (native)        | 0.4522 | 0.3607 | 0.9414 | 0.2903 | 0.0071 |
-| 7       | moonbit (native)      | 0.2788 | 0.1232 | 0.9491 | 0.0692 | 0.0386 |
+| 1       | sarif (stage0/native) | 0.9316 | 0.9262 | 0.9735 | 1.0000 | 0.6962 |
+| 2       | c (clang)             | 0.6710 | 0.6058 | 0.9642 | 0.3480 | 0.9917 |
+| 3       | rust (rustc/llvm)     | 0.5909 | 0.6324 | 0.8863 | 0.0151 | 0.0204 |
+| 4       | go (gc)               | 0.5643 | 0.5370 | 0.9468 | 0.2565 | 0.0045 |
+| 5       | nim (clang)           | 0.5122 | 0.4892 | 0.8944 | 0.0338 | 0.2390 |
+| 6       | ocaml (native)        | 0.4548 | 0.3701 | 0.9440 | 0.2506 | 0.0071 |
+| 7       | moonbit (native)      | 0.2907 | 0.1402 | 0.9566 | 0.0627 | 0.0386 |
 
 _Displayed scores use median runtime with equal category weighting and benchmark normalization inside each category. Views stay on the same absolute 0..1 scale across report revisions, so regressions remain directly comparable over time._
 
@@ -141,121 +141,121 @@ _Displayed scores use median runtime with equal category weighting and benchmark
 
 | Speed Rank | Entry                 | Speed Score | Composite Score |
 | ---------- | --------------------- | ----------- | --------------- |
-| 1          | sarif (stage0/native) | 0.9189      | 0.9267          |
-| 2          | rust (rustc/llvm)     | 0.6393      | 0.5954          |
-| 3          | c (clang)             | 0.6014      | 0.6708          |
-| 4          | go (gc)               | 0.5329      | 0.5640          |
-| 5          | nim (clang)           | 0.4829      | 0.5072          |
-| 6          | ocaml (native)        | 0.3607      | 0.4522          |
-| 7          | moonbit (native)      | 0.1232      | 0.2788          |
+| 1          | sarif (stage0/native) | 0.9262      | 0.9316          |
+| 2          | rust (rustc/llvm)     | 0.6324      | 0.5909          |
+| 3          | c (clang)             | 0.6058      | 0.6710          |
+| 4          | go (gc)               | 0.5370      | 0.5643          |
+| 5          | nim (clang)           | 0.4892      | 0.5122          |
+| 6          | ocaml (native)        | 0.3701      | 0.4548          |
+| 7          | moonbit (native)      | 0.1402      | 0.2907          |
 
 ## Memory View
 
 | Memory Rank | Entry                 | Memory Score | Composite Score |
 | ----------- | --------------------- | ------------ | --------------- |
-| 1           | sarif (stage0/native) | 0.9730       | 0.9267          |
-| 2           | c (clang)             | 0.9643       | 0.6708          |
-| 3           | moonbit (native)      | 0.9491       | 0.2788          |
-| 4           | go (gc)               | 0.9456       | 0.5640          |
-| 5           | ocaml (native)        | 0.9414       | 0.4522          |
-| 6           | nim (clang)           | 0.8875       | 0.5072          |
-| 7           | rust (rustc/llvm)     | 0.8852       | 0.5954          |
+| 1           | sarif (stage0/native) | 0.9735       | 0.9316          |
+| 2           | c (clang)             | 0.9642       | 0.6710          |
+| 3           | moonbit (native)      | 0.9566       | 0.2907          |
+| 4           | go (gc)               | 0.9468       | 0.5643          |
+| 5           | ocaml (native)        | 0.9440       | 0.4548          |
+| 6           | nim (clang)           | 0.8944       | 0.5122          |
+| 7           | rust (rustc/llvm)     | 0.8863       | 0.5909          |
 
 ## Build View
 
 | Build Rank | Entry                 | Build Score | Composite Score |
 | ---------- | --------------------- | ----------- | --------------- |
-| 1          | sarif (stage0/native) | 1.0000      | 0.9267          |
-| 2          | c (clang)             | 0.3746      | 0.6708          |
-| 3          | ocaml (native)        | 0.2903      | 0.4522          |
-| 4          | go (gc)               | 0.2823      | 0.5640          |
-| 5          | moonbit (native)      | 0.0692      | 0.2788          |
-| 6          | nim (clang)           | 0.0389      | 0.5072          |
-| 7          | rust (rustc/llvm)     | 0.0180      | 0.5954          |
+| 1          | sarif (stage0/native) | 1.0000      | 0.9316          |
+| 2          | c (clang)             | 0.3480      | 0.6710          |
+| 3          | go (gc)               | 0.2565      | 0.5643          |
+| 4          | ocaml (native)        | 0.2506      | 0.4548          |
+| 5          | moonbit (native)      | 0.0627      | 0.2907          |
+| 6          | nim (clang)           | 0.0338      | 0.5122          |
+| 7          | rust (rustc/llvm)     | 0.0151      | 0.5909          |
 
 ## Size View
 
 | Size Rank | Entry                 | Size Score | Composite Score |
 | --------- | --------------------- | ---------- | --------------- |
-| 1         | c (clang)             | 0.9917     | 0.6708          |
-| 2         | sarif (stage0/native) | 0.6962     | 0.9267          |
-| 3         | nim (clang)           | 0.2390     | 0.5072          |
-| 4         | moonbit (native)      | 0.0386     | 0.2788          |
-| 5         | rust (rustc/llvm)     | 0.0204     | 0.5954          |
-| 6         | ocaml (native)        | 0.0071     | 0.4522          |
-| 7         | go (gc)               | 0.0045     | 0.5640          |
+| 1         | c (clang)             | 0.9917     | 0.6710          |
+| 2         | sarif (stage0/native) | 0.6962     | 0.9316          |
+| 3         | nim (clang)           | 0.2390     | 0.5122          |
+| 4         | moonbit (native)      | 0.0386     | 0.2907          |
+| 5         | rust (rustc/llvm)     | 0.0204     | 0.5909          |
+| 6         | ocaml (native)        | 0.0071     | 0.4548          |
+| 7         | go (gc)               | 0.0045     | 0.5643          |
 
 ## Results
 
 | Benchmark    | Entry                 | Input                            | Output                                                                   | Build Time (s) | Run Time (s) | Peak Memory (MiB) | Binary Size (KiB) | Status |
 | ------------ | --------------------- | -------------------------------- | ------------------------------------------------------------------------ | -------------- | ------------ | ----------------- | ----------------- | ------ |
-| binarytrees  | c (clang)             | 20                               | stretch tree of depth 21	 check: 4194303 / 1048576	 trees of depth 4	... | 0.3541         | 10.9823      | 130.05            | 5.75              | ok     |
-| binarytrees  | go (gc)               | 20                               | stretch tree of depth 21	 check: 4194303 / 1048576	 trees of depth 4	... | 4.6905         | 11.4826      | 135.03            | 1556.12           | ok     |
-| binarytrees  | moonbit (native)      | 20                               | stretch tree of depth 21	 check: 4194303 / 1048576	 trees of depth 4	... | 1.0498         | 5.3366       | 97.98             | 187.83            | ok     |
-| binarytrees  | nim (clang)           | 20                               | stretch tree of depth 21	 check: 4194303 / 1048576	 trees of depth 4	... | 1.6376         | 6.1581       | 262.03            | 26.03             | ok     |
-| binarytrees  | ocaml (native)        | 20                               | stretch tree of depth 21	 check: 4194303 / 1048576	 trees of depth 4	... | 0.2259         | 3.0466       | 128.24            | 1006.39           | ok     |
-| binarytrees  | rust (rustc/llvm)     | 20                               | stretch tree of depth 21	 check: 4194303 / 1048576	 trees of depth 4	... | 3.1773         | 13.0239      | 257.79            | 329.52            | ok     |
-| binarytrees  | sarif (stage0/native) | 20                               | stretch tree of depth 21	 check: 4194303 / 1048576	 trees of depth 4	... | 0.0892         | 3.2857       | 97.60             | 8.99              | ok     |
-| csvgroupby   | c (clang)             | fixture:orders-120000.csv        | sha256:b7ce6bd0a0cc01ea                                                  | 0.1202         | 0.0514       | 31.75             | 6.33              | ok     |
-| csvgroupby   | go (gc)               | fixture:orders-120000.csv        | sha256:b7ce6bd0a0cc01ea                                                  | 0.3962         | 0.0243       | 31.75             | 1584.12           | ok     |
-| csvgroupby   | moonbit (native)      | fixture:orders-120000.csv        | sha256:b7ce6bd0a0cc01ea                                                  | 0.7664         | 1.3188       | 31.75             | 174.68            | ok     |
-| csvgroupby   | nim (clang)           | fixture:orders-120000.csv        | sha256:b7ce6bd0a0cc01ea                                                  | 1.3021         | 0.0938       | 31.75             | 31.66             | ok     |
-| csvgroupby   | ocaml (native)        | fixture:orders-120000.csv        | sha256:b7ce6bd0a0cc01ea                                                  | 0.2011         | 0.1600       | 31.75             | 1010.17           | ok     |
-| csvgroupby   | rust (rustc/llvm)     | fixture:orders-120000.csv        | sha256:b7ce6bd0a0cc01ea                                                  | 3.0687         | 0.0254       | 31.75             | 345.04            | ok     |
-| csvgroupby   | sarif (stage0/native) | fixture:orders-120000.csv        | sha256:b7ce6bd0a0cc01ea                                                  | 0.0446         | 0.0207       | 31.75             | 11.18             | ok     |
-| fasta        | c (clang)             | 250000                           | sha256:dfd37a44ede2e23f                                                  | 0.1214         | 0.0375       | 46.47             | 7.53              | ok     |
-| fasta        | go (gc)               | 250000                           | sha256:dfd37a44ede2e23f                                                  | 0.1294         | 0.0447       | 58.58             | 1552.12           | ok     |
-| fasta        | moonbit (native)      | 250000                           | sha256:dfd37a44ede2e23f                                                  | 0.7577         | 0.2968       | 61.05             | 189.80            | ok     |
-| fasta        | nim (clang)           | 250000                           | sha256:dfd37a44ede2e23f                                                  | 1.4743         | 0.0415       | 68.32             | 27.70             | ok     |
-| fasta        | ocaml (native)        | 250000                           | sha256:dfd37a44ede2e23f                                                  | 0.1973         | 0.0598       | 70.66             | 1015.58           | ok     |
-| fasta        | rust (rustc/llvm)     | 250000                           | sha256:dfd37a44ede2e23f                                                  | 3.1590         | 0.0398       | 73.10             | 332.44            | ok     |
-| fasta        | sarif (stage0/native) | 250000                           | sha256:dfd37a44ede2e23f                                                  | 0.0503         | 0.0354       | 74.69             | 8.78              | ok     |
-| joinagg      | c (clang)             | fixture:users-events-180000.txt  | sha256:37c7ac2d5630fe43                                                  | 0.1298         | 0.1400       | 36.21             | 8.05              | ok     |
-| joinagg      | go (gc)               | fixture:users-events-180000.txt  | sha256:37c7ac2d5630fe43                                                  | 0.1326         | 0.1434       | 36.21             | 1592.12           | ok     |
-| joinagg      | moonbit (native)      | fixture:users-events-180000.txt  | sha256:37c7ac2d5630fe43                                                  | 0.7543         | 3.4070       | 47.21             | 200.77            | ok     |
-| joinagg      | nim (clang)           | fixture:users-events-180000.txt  | sha256:37c7ac2d5630fe43                                                  | 1.4996         | 0.1922       | 36.21             | 40.92             | ok     |
-| joinagg      | ocaml (native)        | fixture:users-events-180000.txt  | sha256:37c7ac2d5630fe43                                                  | 0.1864         | 0.3521       | 36.21             | 1010.55           | ok     |
-| joinagg      | rust (rustc/llvm)     | fixture:users-events-180000.txt  | sha256:37c7ac2d5630fe43                                                  | 3.3877         | 0.1338       | 36.21             | 362.88            | ok     |
-| joinagg      | sarif (stage0/native) | fixture:users-events-180000.txt  | sha256:37c7ac2d5630fe43                                                  | 0.0552         | 0.0731       | 36.21             | 13.62             | ok     |
-| knucleotide  | c (clang)             | fixture:knucleotide-250000.fasta | A 30.328 / T 30.079 / C 19.799 / G 19.794 /  / AA 9.188 / TA 9.122 / ... | 0.1204         | 0.0054       | 77.41             | 9.21              | ok     |
-| knucleotide  | go (gc)               | fixture:knucleotide-250000.fasta | A 30.328 / T 30.079 / C 19.799 / G 19.794 /  / AA 9.188 / TA 9.122 / ... | 0.1055         | 0.0118       | 77.41             | 1580.12           | ok     |
-| knucleotide  | moonbit (native)      | fixture:knucleotide-250000.fasta | A 30.328 / T 30.079 / C 19.799 / G 19.794 /  / AA 9.188 / TA 9.122 / ... | 0.5529         | 0.0633       | 77.41             | 181.43            | ok     |
-| knucleotide  | nim (clang)           | fixture:knucleotide-250000.fasta | A 30.328 / T 30.079 / C 19.799 / G 19.794 /  / AA 9.188 / TA 9.122 / ... | 1.0647         | 0.0083       | 77.41             | 32.49             | ok     |
-| knucleotide  | ocaml (native)        | fixture:knucleotide-250000.fasta | A 30.328 / T 30.079 / C 19.799 / G 19.794 /  / AA 9.188 / TA 9.122 / ... | 0.1432         | 0.0267       | 77.41             | 1065.61           | ok     |
-| knucleotide  | rust (rustc/llvm)     | fixture:knucleotide-250000.fasta | A 30.328 / T 30.079 / C 19.799 / G 19.794 /  / AA 9.188 / TA 9.122 / ... | 2.3628         | 0.0057       | 77.41             | 374.31            | ok     |
-| knucleotide  | sarif (stage0/native) | fixture:knucleotide-250000.fasta | A 30.328 / T 30.079 / C 19.799 / G 19.794 /  / AA 9.188 / TA 9.122 / ... | 0.0450         | 0.0045       | 77.41             | 12.21             | ok     |
-| mandelbrot   | c (clang)             | 512                              | sha256:e41a9386e912a316                                                  | 0.1382         | 0.0181       | 77.41             | 5.86              | ok     |
-| mandelbrot   | go (gc)               | 512                              | sha256:e41a9386e912a316                                                  | 0.1495         | 0.0215       | 77.41             | 1548.12           | ok     |
-| mandelbrot   | moonbit (native)      | 512                              | sha256:e41a9386e912a316                                                  | 0.8088         | 0.1199       | 77.41             | 187.33            | ok     |
-| mandelbrot   | nim (clang)           | 512                              | sha256:e41a9386e912a316                                                  | 1.4078         | 0.0172       | 77.41             | 23.80             | ok     |
-| mandelbrot   | ocaml (native)        | 512                              | sha256:e41a9386e912a316                                                  | 0.1989         | 0.0252       | 77.41             | 1005.33           | ok     |
-| mandelbrot   | rust (rustc/llvm)     | 512                              | sha256:e41a9386e912a316                                                  | 3.0190         | 0.0188       | 77.41             | 329.77            | ok     |
-| mandelbrot   | sarif (stage0/native) | 512                              | sha256:e41a9386e912a316                                                  | 0.0433         | 0.0202       | 77.41             | 5.63              | ok     |
-| nbody        | c (clang)             | 5000000                          | -0.169075164 / -0.169083134                                              | 0.1075         | 0.1986       | 77.41             | 8.55              | ok     |
-| nbody        | go (gc)               | 5000000                          | -0.169075164 / -0.169083134                                              | 0.1196         | 0.3203       | 77.41             | 1560.12           | ok     |
-| nbody        | moonbit (native)      | 5000000                          | -0.169075164 / -0.169083134                                              | 0.5887         | 3.0520       | 77.41             | 194.40            | ok     |
-| nbody        | nim (clang)           | 5000000                          | -0.169075164 / -0.169083134                                              | 1.0684         | 0.2854       | 77.41             | 27.12             | ok     |
-| nbody        | ocaml (native)        | 5000000                          | -0.169075164 / -0.169083134                                              | 0.1377         | 0.3303       | 77.41             | 1006.52           | ok     |
-| nbody        | rust (rustc/llvm)     | 5000000                          | -0.169075164 / -0.169083134                                              | 2.1837         | 0.1842       | 77.41             | 356.35            | ok     |
-| nbody        | sarif (stage0/native) | 5000000                          | -0.169075164 / -0.169083134                                              | 0.0507         | 0.3250       | 77.41             | 13.96             | ok     |
-| revcomp      | c (clang)             | fixture:knucleotide-250000.fasta | sha256:14899a73679b1d83                                                  | 0.0844         | 0.0014       | 77.41             | 6.72              | ok     |
-| revcomp      | go (gc)               | fixture:knucleotide-250000.fasta | sha256:14899a73679b1d83                                                  | 0.1018         | 0.0051       | 77.41             | 1468.12           | ok     |
-| revcomp      | moonbit (native)      | fixture:knucleotide-250000.fasta | sha256:14899a73679b1d83                                                  | 0.5625         | 0.0497       | 77.41             | 169.93            | ok     |
-| revcomp      | nim (clang)           | fixture:knucleotide-250000.fasta | sha256:14899a73679b1d83                                                  | 0.9628         | 0.0028       | 77.41             | 25.73             | ok     |
-| revcomp      | ocaml (native)        | fixture:knucleotide-250000.fasta | sha256:14899a73679b1d83                                                  | 0.1108         | 0.0065       | 77.41             | 774.77            | ok     |
-| revcomp      | rust (rustc/llvm)     | fixture:knucleotide-250000.fasta | sha256:14899a73679b1d83                                                  | 2.2280         | 0.0025       | 77.41             | 332.72            | ok     |
-| revcomp      | sarif (stage0/native) | fixture:knucleotide-250000.fasta | sha256:14899a73679b1d83                                                  | 0.0337         | 0.0035       | 77.41             | 7.84              | ok     |
-| sortuniq     | c (clang)             | fixture:words-250000.txt         | sha256:6b28b0e803b80ff3                                                  | 0.0737         | 0.0678       | 77.41             | 5.99              | ok     |
-| sortuniq     | go (gc)               | fixture:words-250000.txt         | sha256:6b28b0e803b80ff3                                                  | 0.1071         | 0.0418       | 77.41             | 1576.12           | ok     |
-| sortuniq     | moonbit (native)      | fixture:words-250000.txt         | sha256:6b28b0e803b80ff3                                                  | 0.5499         | 1.0023       | 77.41             | 173.37            | ok     |
-| sortuniq     | nim (clang)           | fixture:words-250000.txt         | sha256:6b28b0e803b80ff3                                                  | 1.0295         | 0.0966       | 77.41             | 27.70             | ok     |
-| sortuniq     | ocaml (native)        | fixture:words-250000.txt         | sha256:6b28b0e803b80ff3                                                  | 0.1398         | 0.1997       | 77.41             | 1005.48           | ok     |
-| sortuniq     | rust (rustc/llvm)     | fixture:words-250000.txt         | sha256:6b28b0e803b80ff3                                                  | 2.3192         | 0.0499       | 77.41             | 340.98            | ok     |
-| sortuniq     | sarif (stage0/native) | fixture:words-250000.txt         | sha256:6b28b0e803b80ff3                                                  | 0.0333         | 0.0203       | 77.41             | 10.08             | ok     |
-| spectralnorm | c (clang)             | 5000                             | 1.274224153                                                              | 0.1721         | 1.4103       | 77.41             | 9.04              | ok     |
-| spectralnorm | go (gc)               | 5000                             | 1.274224153                                                              | 0.1480         | 1.5880       | 77.41             | 1556.12           | ok     |
-| spectralnorm | moonbit (native)      | 5000                             | 1.274224153                                                              | 0.8248         | 17.8803      | 77.41             | 191.59            | ok     |
-| spectralnorm | nim (clang)           | 5000                             | 1.274224153                                                              | 1.1588         | 1.2685       | 77.41             | 24.66             | ok     |
-| spectralnorm | ocaml (native)        | 5000                             | 1.274224153                                                              | 0.1483         | 3.9313       | 77.41             | 1010.02           | ok     |
-| spectralnorm | rust (rustc/llvm)     | 5000                             | 1.274224153                                                              | 2.2815         | 1.1965       | 77.41             | 357.46            | ok     |
-| spectralnorm | sarif (stage0/native) | 5000                             | 1.274224153                                                              | 0.0408         | 1.1861       | 77.41             | 7.80              | ok     |
+| binarytrees  | c (clang)             | 20                               | stretch tree of depth 21	 check: 4194303 / 1048576	 trees of depth 4	... | 0.3592         | 9.2057       | 130.19            | 5.75              | ok     |
+| binarytrees  | go (gc)               | 20                               | stretch tree of depth 21	 check: 4194303 / 1048576	 trees of depth 4	... | 4.4154         | 10.1109      | 134.46            | 1556.12           | ok     |
+| binarytrees  | moonbit (native)      | 20                               | stretch tree of depth 21	 check: 4194303 / 1048576	 trees of depth 4	... | 0.8281         | 4.3681       | 97.90             | 187.83            | ok     |
+| binarytrees  | nim (clang)           | 20                               | stretch tree of depth 21	 check: 4194303 / 1048576	 trees of depth 4	... | 1.3822         | 5.6067       | 261.64            | 26.03             | ok     |
+| binarytrees  | ocaml (native)        | 20                               | stretch tree of depth 21	 check: 4194303 / 1048576	 trees of depth 4	... | 0.2264         | 3.0265       | 128.41            | 1006.39           | ok     |
+| binarytrees  | rust (rustc/llvm)     | 20                               | stretch tree of depth 21	 check: 4194303 / 1048576	 trees of depth 4	... | 3.3015         | 11.8438      | 257.53            | 329.52            | ok     |
+| binarytrees  | sarif (stage0/native) | 20                               | stretch tree of depth 21	 check: 4194303 / 1048576	 trees of depth 4	... | 0.0598         | 3.2777       | 97.60             | 8.99              | ok     |
+| csvgroupby   | c (clang)             | fixture:orders-120000.csv        | sha256:b7ce6bd0a0cc01ea                                                  | 0.1146         | 0.0531       | 31.79             | 6.33              | ok     |
+| csvgroupby   | go (gc)               | fixture:orders-120000.csv        | sha256:b7ce6bd0a0cc01ea                                                  | 0.3800         | 0.0229       | 31.79             | 1584.12           | ok     |
+| csvgroupby   | moonbit (native)      | fixture:orders-120000.csv        | sha256:b7ce6bd0a0cc01ea                                                  | 0.7215         | 1.2637       | 31.79             | 174.68            | ok     |
+| csvgroupby   | nim (clang)           | fixture:orders-120000.csv        | sha256:b7ce6bd0a0cc01ea                                                  | 1.4060         | 0.0743       | 31.79             | 31.66             | ok     |
+| csvgroupby   | ocaml (native)        | fixture:orders-120000.csv        | sha256:b7ce6bd0a0cc01ea                                                  | 0.1773         | 0.1540       | 31.79             | 1010.17           | ok     |
+| csvgroupby   | rust (rustc/llvm)     | fixture:orders-120000.csv        | sha256:b7ce6bd0a0cc01ea                                                  | 2.9919         | 0.0245       | 31.79             | 345.04            | ok     |
+| csvgroupby   | sarif (stage0/native) | fixture:orders-120000.csv        | sha256:b7ce6bd0a0cc01ea                                                  | 0.0381         | 0.0188       | 31.79             | 11.18             | ok     |
+| fasta        | c (clang)             | 250000                           | sha256:dfd37a44ede2e23f                                                  | 0.1262         | 0.0375       | 49.35             | 7.53              | ok     |
+| fasta        | go (gc)               | 250000                           | sha256:dfd37a44ede2e23f                                                  | 0.1861         | 0.0447       | 61.39             | 1552.12           | ok     |
+| fasta        | moonbit (native)      | 250000                           | sha256:dfd37a44ede2e23f                                                  | 0.8596         | 0.2933       | 63.62             | 189.80            | ok     |
+| fasta        | nim (clang)           | 250000                           | sha256:dfd37a44ede2e23f                                                  | 1.4106         | 0.0404       | 63.62             | 27.70             | ok     |
+| fasta        | ocaml (native)        | 250000                           | sha256:dfd37a44ede2e23f                                                  | 0.1855         | 0.0610       | 70.95             | 1015.58           | ok     |
+| fasta        | rust (rustc/llvm)     | 250000                           | sha256:dfd37a44ede2e23f                                                  | 3.1953         | 0.0407       | 75.96             | 332.44            | ok     |
+| fasta        | sarif (stage0/native) | 250000                           | sha256:dfd37a44ede2e23f                                                  | 0.0471         | 0.0377       | 78.50             | 8.78              | ok     |
+| joinagg      | c (clang)             | fixture:users-events-180000.txt  | sha256:37c7ac2d5630fe43                                                  | 0.1295         | 0.1329       | 37.84             | 8.05              | ok     |
+| joinagg      | go (gc)               | fixture:users-events-180000.txt  | sha256:37c7ac2d5630fe43                                                  | 0.1379         | 0.1378       | 37.84             | 1592.12           | ok     |
+| joinagg      | moonbit (native)      | fixture:users-events-180000.txt  | sha256:37c7ac2d5630fe43                                                  | 0.7459         | 3.7654       | 46.64             | 200.77            | ok     |
+| joinagg      | nim (clang)           | fixture:users-events-180000.txt  | sha256:37c7ac2d5630fe43                                                  | 1.7716         | 0.2372       | 37.84             | 40.92             | ok     |
+| joinagg      | ocaml (native)        | fixture:users-events-180000.txt  | sha256:37c7ac2d5630fe43                                                  | 0.2147         | 0.3714       | 37.84             | 1010.55           | ok     |
+| joinagg      | rust (rustc/llvm)     | fixture:users-events-180000.txt  | sha256:37c7ac2d5630fe43                                                  | 3.4532         | 0.1275       | 37.84             | 362.88            | ok     |
+| joinagg      | sarif (stage0/native) | fixture:users-events-180000.txt  | sha256:37c7ac2d5630fe43                                                  | 0.0510         | 0.0716       | 37.84             | 13.62             | ok     |
+| knucleotide  | c (clang)             | fixture:knucleotide-250000.fasta | A 30.328 / T 30.079 / C 19.799 / G 19.794 /  / AA 9.188 / TA 9.122 / ... | 0.1309         | 0.0065       | 80.90             | 9.21              | ok     |
+| knucleotide  | go (gc)               | fixture:knucleotide-250000.fasta | A 30.328 / T 30.079 / C 19.799 / G 19.794 /  / AA 9.188 / TA 9.122 / ... | 0.1250         | 0.0147       | 80.90             | 1580.12           | ok     |
+| knucleotide  | moonbit (native)      | fixture:knucleotide-250000.fasta | A 30.328 / T 30.079 / C 19.799 / G 19.794 /  / AA 9.188 / TA 9.122 / ... | 0.6949         | 0.0803       | 80.90             | 181.43            | ok     |
+| knucleotide  | nim (clang)           | fixture:knucleotide-250000.fasta | A 30.328 / T 30.079 / C 19.799 / G 19.794 /  / AA 9.188 / TA 9.122 / ... | 1.3289         | 0.0096       | 80.90             | 32.49             | ok     |
+| knucleotide  | ocaml (native)        | fixture:knucleotide-250000.fasta | A 30.328 / T 30.079 / C 19.799 / G 19.794 /  / AA 9.188 / TA 9.122 / ... | 0.1837         | 0.0332       | 80.90             | 1065.61           | ok     |
+| knucleotide  | rust (rustc/llvm)     | fixture:knucleotide-250000.fasta | A 30.328 / T 30.079 / C 19.799 / G 19.794 /  / AA 9.188 / TA 9.122 / ... | 3.0847         | 0.0070       | 80.90             | 374.31            | ok     |
+| knucleotide  | sarif (stage0/native) | fixture:knucleotide-250000.fasta | A 30.328 / T 30.079 / C 19.799 / G 19.794 /  / AA 9.188 / TA 9.122 / ... | 0.0459         | 0.0055       | 80.90             | 12.21             | ok     |
+| mandelbrot   | c (clang)             | 512                              | sha256:e41a9386e912a316                                                  | 0.1189         | 0.0209       | 80.90             | 5.86              | ok     |
+| mandelbrot   | go (gc)               | 512                              | sha256:e41a9386e912a316                                                  | 0.1895         | 0.0272       | 80.90             | 1548.12           | ok     |
+| mandelbrot   | moonbit (native)      | 512                              | sha256:e41a9386e912a316                                                  | 0.8587         | 0.1297       | 80.90             | 187.33            | ok     |
+| mandelbrot   | nim (clang)           | 512                              | sha256:e41a9386e912a316                                                  | 1.4897         | 0.0197       | 80.90             | 23.80             | ok     |
+| mandelbrot   | ocaml (native)        | 512                              | sha256:e41a9386e912a316                                                  | 0.1966         | 0.0204       | 80.90             | 1005.33           | ok     |
+| mandelbrot   | rust (rustc/llvm)     | 512                              | sha256:e41a9386e912a316                                                  | 2.9868         | 0.0225       | 80.90             | 329.77            | ok     |
+| mandelbrot   | sarif (stage0/native) | 512                              | sha256:e41a9386e912a316                                                  | 0.0442         | 0.0178       | 80.90             | 5.63              | ok     |
+| nbody        | c (clang)             | 5000000                          | -0.169075164 / -0.169083134                                              | 0.1247         | 0.2252       | 80.90             | 8.55              | ok     |
+| nbody        | go (gc)               | 5000000                          | -0.169075164 / -0.169083134                                              | 0.1182         | 0.3754       | 80.90             | 1560.12           | ok     |
+| nbody        | moonbit (native)      | 5000000                          | -0.169075164 / -0.169083134                                              | 0.7274         | 3.4343       | 80.90             | 194.40            | ok     |
+| nbody        | nim (clang)           | 5000000                          | -0.169075164 / -0.169083134                                              | 1.2795         | 0.3331       | 80.90             | 27.12             | ok     |
+| nbody        | ocaml (native)        | 5000000                          | -0.169075164 / -0.169083134                                              | 0.1723         | 0.3897       | 80.90             | 1006.52           | ok     |
+| nbody        | rust (rustc/llvm)     | 5000000                          | -0.169075164 / -0.169083134                                              | 2.7345         | 0.2179       | 80.90             | 356.35            | ok     |
+| nbody        | sarif (stage0/native) | 5000000                          | -0.169075164 / -0.169083134                                              | 0.0468         | 0.3566       | 80.90             | 13.96             | ok     |
+| revcomp      | c (clang)             | fixture:knucleotide-250000.fasta | sha256:14899a73679b1d83                                                  | 0.1050         | 0.0018       | 80.90             | 6.72              | ok     |
+| revcomp      | go (gc)               | fixture:knucleotide-250000.fasta | sha256:14899a73679b1d83                                                  | 0.1407         | 0.0065       | 80.90             | 1468.12           | ok     |
+| revcomp      | moonbit (native)      | fixture:knucleotide-250000.fasta | sha256:14899a73679b1d83                                                  | 0.7512         | 0.0661       | 80.90             | 169.93            | ok     |
+| revcomp      | nim (clang)           | fixture:knucleotide-250000.fasta | sha256:14899a73679b1d83                                                  | 1.1666         | 0.0034       | 80.90             | 25.73             | ok     |
+| revcomp      | ocaml (native)        | fixture:knucleotide-250000.fasta | sha256:14899a73679b1d83                                                  | 0.1412         | 0.0073       | 80.90             | 774.77            | ok     |
+| revcomp      | rust (rustc/llvm)     | fixture:knucleotide-250000.fasta | sha256:14899a73679b1d83                                                  | 2.7323         | 0.0028       | 80.90             | 332.72            | ok     |
+| revcomp      | sarif (stage0/native) | fixture:knucleotide-250000.fasta | sha256:14899a73679b1d83                                                  | 0.0410         | 0.0043       | 80.90             | 7.84              | ok     |
+| sortuniq     | c (clang)             | fixture:words-250000.txt         | sha256:6b28b0e803b80ff3                                                  | 0.0921         | 0.0873       | 80.90             | 5.99              | ok     |
+| sortuniq     | go (gc)               | fixture:words-250000.txt         | sha256:6b28b0e803b80ff3                                                  | 0.1149         | 0.0493       | 80.90             | 1576.12           | ok     |
+| sortuniq     | moonbit (native)      | fixture:words-250000.txt         | sha256:6b28b0e803b80ff3                                                  | 0.6608         | 1.2102       | 80.90             | 173.37            | ok     |
+| sortuniq     | nim (clang)           | fixture:words-250000.txt         | sha256:6b28b0e803b80ff3                                                  | 1.2271         | 0.1134       | 80.90             | 27.70             | ok     |
+| sortuniq     | ocaml (native)        | fixture:words-250000.txt         | sha256:6b28b0e803b80ff3                                                  | 0.1635         | 0.2289       | 80.90             | 1005.48           | ok     |
+| sortuniq     | rust (rustc/llvm)     | fixture:words-250000.txt         | sha256:6b28b0e803b80ff3                                                  | 3.0156         | 0.0671       | 80.90             | 340.98            | ok     |
+| sortuniq     | sarif (stage0/native) | fixture:words-250000.txt         | sha256:6b28b0e803b80ff3                                                  | 0.0457         | 0.0232       | 80.90             | 10.08             | ok     |
+| spectralnorm | c (clang)             | 5000                             | 1.274224153                                                              | 0.1800         | 1.4600       | 80.90             | 9.04              | ok     |
+| spectralnorm | go (gc)               | 5000                             | 1.274224153                                                              | 0.1831         | 1.4542       | 80.90             | 1556.12           | ok     |
+| spectralnorm | moonbit (native)      | 5000                             | 1.274224153                                                              | 0.6886         | 19.5312      | 80.90             | 191.59            | ok     |
+| spectralnorm | nim (clang)           | 5000                             | 1.274224153                                                              | 1.3238         | 1.4516       | 80.90             | 24.66             | ok     |
+| spectralnorm | ocaml (native)        | 5000                             | 1.274224153                                                              | 0.1690         | 4.4308       | 80.90             | 1010.02           | ok     |
+| spectralnorm | rust (rustc/llvm)     | 5000                             | 1.274224153                                                              | 2.6912         | 1.3219       | 80.90             | 357.46            | ok     |
+| spectralnorm | sarif (stage0/native) | 5000                             | 1.274224153                                                              | 0.0359         | 1.3752       | 80.90             | 7.80              | ok     |
