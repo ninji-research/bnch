@@ -22,154 +22,128 @@ fn pair_energy(
 fn main() -> Text effects [alloc] {
     let iters = if arg_count() > 1 { parse_i32(arg_text(1)) } else { 10000000 };
 
-    let mut x0 = 0.0;
-    let mut y0 = 0.0;
-    let mut z0 = 0.0;
-    let mut vx0 = 0.0;
-    let mut vy0 = 0.0;
-    let mut vz0 = 0.0;
-    let m0 = SOLAR_MASS;
+    let mut xs = [
+        0.0,
+        4.84143144246472090,
+        8.34336671824457987,
+        12.8943695621391310,
+        15.3796971148509165,
+    ];
+    let mut ys = [
+        0.0,
+        -1.16032004402742839,
+        4.12479856412430479,
+        -15.1111514016986312,
+        -25.9193146099879641,
+    ];
+    let mut zs = [
+        0.0,
+        -0.103622044471123109,
+        -0.403523417114321381,
+        -0.223307578892655734,
+        0.179258772950371181,
+    ];
+    let mut vxs = [
+        0.0,
+        0.00166007664274403694 * DAYS_PER_YEAR,
+        -0.00276742510726862411 * DAYS_PER_YEAR,
+        0.00296460137564761618 * DAYS_PER_YEAR,
+        0.00268067772490389322 * DAYS_PER_YEAR,
+    ];
+    let mut vys = [
+        0.0,
+        0.00769901118419740425 * DAYS_PER_YEAR,
+        0.00499852801234917238 * DAYS_PER_YEAR,
+        0.00237847173959480950 * DAYS_PER_YEAR,
+        0.00162824170038242295 * DAYS_PER_YEAR,
+    ];
+    let mut vzs = [
+        0.0,
+        -0.0000690460016972063023 * DAYS_PER_YEAR,
+        0.0000230417297573763929 * DAYS_PER_YEAR,
+        -0.0000296589568540237556 * DAYS_PER_YEAR,
+        -0.0000951592254519715870 * DAYS_PER_YEAR,
+    ];
+    let ms = [
+        SOLAR_MASS,
+        0.000954791938424326609 * SOLAR_MASS,
+        0.000285885980666130812 * SOLAR_MASS,
+        0.0000436624404335156298 * SOLAR_MASS,
+        0.0000515138902046611451 * SOLAR_MASS,
+    ];
 
-    let mut x1 = 4.84143144246472090;
-    let mut y1 = -1.16032004402742839;
-    let mut z1 = -0.103622044471123109;
-    let mut vx1 = 0.00166007664274403694 * DAYS_PER_YEAR;
-    let mut vy1 = 0.00769901118419740425 * DAYS_PER_YEAR;
-    let mut vz1 = -0.0000690460016972063023 * DAYS_PER_YEAR;
-    let m1 = 0.000954791938424326609 * SOLAR_MASS;
-
-    let mut x2 = 8.34336671824457987;
-    let mut y2 = 4.12479856412430479;
-    let mut z2 = -0.403523417114321381;
-    let mut vx2 = -0.00276742510726862411 * DAYS_PER_YEAR;
-    let mut vy2 = 0.00499852801234917238 * DAYS_PER_YEAR;
-    let mut vz2 = 0.0000230417297573763929 * DAYS_PER_YEAR;
-    let m2 = 0.000285885980666130812 * SOLAR_MASS;
-
-    let mut x3 = 12.8943695621391310;
-    let mut y3 = -15.1111514016986312;
-    let mut z3 = -0.223307578892655734;
-    let mut vx3 = 0.00296460137564761618 * DAYS_PER_YEAR;
-    let mut vy3 = 0.00237847173959480950 * DAYS_PER_YEAR;
-    let mut vz3 = -0.0000296589568540237556 * DAYS_PER_YEAR;
-    let m3 = 0.0000436624404335156298 * SOLAR_MASS;
-
-    let mut x4 = 15.3796971148509165;
-    let mut y4 = -25.9193146099879641;
-    let mut z4 = 0.179258772950371181;
-    let mut vx4 = 0.00268067772490389322 * DAYS_PER_YEAR;
-    let mut vy4 = 0.00162824170038242295 * DAYS_PER_YEAR;
-    let mut vz4 = -0.0000951592254519715870 * DAYS_PER_YEAR;
-    let m4 = 0.0000515138902046611451 * SOLAR_MASS;
-
-    let px = vx0 * m0 + vx1 * m1 + vx2 * m2 + vx3 * m3 + vx4 * m4;
-    let py = vy0 * m0 + vy1 * m1 + vy2 * m2 + vy3 * m3 + vy4 * m4;
-    let pz = vz0 * m0 + vz1 * m1 + vz2 * m2 + vz3 * m3 + vz4 * m4;
-    vx0 = (0.0 - px) / SOLAR_MASS;
-    vy0 = (0.0 - py) / SOLAR_MASS;
-    vz0 = (0.0 - pz) / SOLAR_MASS;
+    let mut px = 0.0;
+    let mut py = 0.0;
+    let mut pz = 0.0;
+    repeat i in 5 {
+        px = px + vxs[i] * ms[i];
+        py = py + vys[i] * ms[i];
+        pz = pz + vzs[i] * ms[i];
+    };
+    vxs[0] = (0.0 - px) / SOLAR_MASS;
+    vys[0] = (0.0 - py) / SOLAR_MASS;
+    vzs[0] = (0.0 - pz) / SOLAR_MASS;
 
     let before =
-        0.5 * m0 * (vx0 * vx0 + vy0 * vy0 + vz0 * vz0) +
-        0.5 * m1 * (vx1 * vx1 + vy1 * vy1 + vz1 * vz1) +
-        0.5 * m2 * (vx2 * vx2 + vy2 * vy2 + vz2 * vz2) +
-        0.5 * m3 * (vx3 * vx3 + vy3 * vy3 + vz3 * vz3) +
-        0.5 * m4 * (vx4 * vx4 + vy4 * vy4 + vz4 * vz4) +
-        pair_energy(x0, y0, z0, m0, x1, y1, z1, m1) +
-        pair_energy(x0, y0, z0, m0, x2, y2, z2, m2) +
-        pair_energy(x0, y0, z0, m0, x3, y3, z3, m3) +
-        pair_energy(x0, y0, z0, m0, x4, y4, z4, m4) +
-        pair_energy(x1, y1, z1, m1, x2, y2, z2, m2) +
-        pair_energy(x1, y1, z1, m1, x3, y3, z3, m3) +
-        pair_energy(x1, y1, z1, m1, x4, y4, z4, m4) +
-        pair_energy(x2, y2, z2, m2, x3, y3, z3, m3) +
-        pair_energy(x2, y2, z2, m2, x4, y4, z4, m4) +
-        pair_energy(x3, y3, z3, m3, x4, y4, z4, m4);
+        0.5 * ms[0] * (vxs[0] * vxs[0] + vys[0] * vys[0] + vzs[0] * vzs[0]) +
+        0.5 * ms[1] * (vxs[1] * vxs[1] + vys[1] * vys[1] + vzs[1] * vzs[1]) +
+        0.5 * ms[2] * (vxs[2] * vxs[2] + vys[2] * vys[2] + vzs[2] * vzs[2]) +
+        0.5 * ms[3] * (vxs[3] * vxs[3] + vys[3] * vys[3] + vzs[3] * vzs[3]) +
+        0.5 * ms[4] * (vxs[4] * vxs[4] + vys[4] * vys[4] + vzs[4] * vzs[4]) +
+        pair_energy(xs[0], ys[0], zs[0], ms[0], xs[1], ys[1], zs[1], ms[1]) +
+        pair_energy(xs[0], ys[0], zs[0], ms[0], xs[2], ys[2], zs[2], ms[2]) +
+        pair_energy(xs[0], ys[0], zs[0], ms[0], xs[3], ys[3], zs[3], ms[3]) +
+        pair_energy(xs[0], ys[0], zs[0], ms[0], xs[4], ys[4], zs[4], ms[4]) +
+        pair_energy(xs[1], ys[1], zs[1], ms[1], xs[2], ys[2], zs[2], ms[2]) +
+        pair_energy(xs[1], ys[1], zs[1], ms[1], xs[3], ys[3], zs[3], ms[3]) +
+        pair_energy(xs[1], ys[1], zs[1], ms[1], xs[4], ys[4], zs[4], ms[4]) +
+        pair_energy(xs[2], ys[2], zs[2], ms[2], xs[3], ys[3], zs[3], ms[3]) +
+        pair_energy(xs[2], ys[2], zs[2], ms[2], xs[4], ys[4], zs[4], ms[4]) +
+        pair_energy(xs[3], ys[3], zs[3], ms[3], xs[4], ys[4], zs[4], ms[4]);
 
     repeat iters {
-        let dx01 = x0 - x1; let dy01 = y0 - y1; let dz01 = z0 - z1;
-        let d201 = dx01 * dx01 + dy01 * dy01 + dz01 * dz01;
-        let m01 = DT / (d201 * sqrt(d201));
-        vx0 = vx0 - dx01 * m1 * m01; vy0 = vy0 - dy01 * m1 * m01; vz0 = vz0 - dz01 * m1 * m01;
-        vx1 = vx1 + dx01 * m0 * m01; vy1 = vy1 + dy01 * m0 * m01; vz1 = vz1 + dz01 * m0 * m01;
-
-        let dx02 = x0 - x2; let dy02 = y0 - y2; let dz02 = z0 - z2;
-        let d202 = dx02 * dx02 + dy02 * dy02 + dz02 * dz02;
-        let m02 = DT / (d202 * sqrt(d202));
-        vx0 = vx0 - dx02 * m2 * m02; vy0 = vy0 - dy02 * m2 * m02; vz0 = vz0 - dz02 * m2 * m02;
-        vx2 = vx2 + dx02 * m0 * m02; vy2 = vy2 + dy02 * m0 * m02; vz2 = vz2 + dz02 * m0 * m02;
-
-        let dx03 = x0 - x3; let dy03 = y0 - y3; let dz03 = z0 - z3;
-        let d203 = dx03 * dx03 + dy03 * dy03 + dz03 * dz03;
-        let m03 = DT / (d203 * sqrt(d203));
-        vx0 = vx0 - dx03 * m3 * m03; vy0 = vy0 - dy03 * m3 * m03; vz0 = vz0 - dz03 * m3 * m03;
-        vx3 = vx3 + dx03 * m0 * m03; vy3 = vy3 + dy03 * m0 * m03; vz3 = vz3 + dz03 * m0 * m03;
-
-        let dx04 = x0 - x4; let dy04 = y0 - y4; let dz04 = z0 - z4;
-        let d204 = dx04 * dx04 + dy04 * dy04 + dz04 * dz04;
-        let m04 = DT / (d204 * sqrt(d204));
-        vx0 = vx0 - dx04 * m4 * m04; vy0 = vy0 - dy04 * m4 * m04; vz0 = vz0 - dz04 * m4 * m04;
-        vx4 = vx4 + dx04 * m0 * m04; vy4 = vy4 + dy04 * m0 * m04; vz4 = vz4 + dz04 * m0 * m04;
-
-        let dx12 = x1 - x2; let dy12 = y1 - y2; let dz12 = z1 - z2;
-        let d212 = dx12 * dx12 + dy12 * dy12 + dz12 * dz12;
-        let m12 = DT / (d212 * sqrt(d212));
-        vx1 = vx1 - dx12 * m2 * m12; vy1 = vy1 - dy12 * m2 * m12; vz1 = vz1 - dz12 * m2 * m12;
-        vx2 = vx2 + dx12 * m1 * m12; vy2 = vy2 + dy12 * m1 * m12; vz2 = vz2 + dz12 * m1 * m12;
-
-        let dx13 = x1 - x3; let dy13 = y1 - y3; let dz13 = z1 - z3;
-        let d213 = dx13 * dx13 + dy13 * dy13 + dz13 * dz13;
-        let m13 = DT / (d213 * sqrt(d213));
-        vx1 = vx1 - dx13 * m3 * m13; vy1 = vy1 - dy13 * m3 * m13; vz1 = vz1 - dz13 * m3 * m13;
-        vx3 = vx3 + dx13 * m1 * m13; vy3 = vy3 + dy13 * m1 * m13; vz3 = vz3 + dz13 * m1 * m13;
-
-        let dx14 = x1 - x4; let dy14 = y1 - y4; let dz14 = z1 - z4;
-        let d214 = dx14 * dx14 + dy14 * dy14 + dz14 * dz14;
-        let m14 = DT / (d214 * sqrt(d214));
-        vx1 = vx1 - dx14 * m4 * m14; vy1 = vy1 - dy14 * m4 * m14; vz1 = vz1 - dz14 * m4 * m14;
-        vx4 = vx4 + dx14 * m1 * m14; vy4 = vy4 + dy14 * m1 * m14; vz4 = vz4 + dz14 * m1 * m14;
-
-        let dx23 = x2 - x3; let dy23 = y2 - y3; let dz23 = z2 - z3;
-        let d223 = dx23 * dx23 + dy23 * dy23 + dz23 * dz23;
-        let m23 = DT / (d223 * sqrt(d223));
-        vx2 = vx2 - dx23 * m3 * m23; vy2 = vy2 - dy23 * m3 * m23; vz2 = vz2 - dz23 * m3 * m23;
-        vx3 = vx3 + dx23 * m2 * m23; vy3 = vy3 + dy23 * m2 * m23; vz3 = vz3 + dz23 * m2 * m23;
-
-        let dx24 = x2 - x4; let dy24 = y2 - y4; let dz24 = z2 - z4;
-        let d224 = dx24 * dx24 + dy24 * dy24 + dz24 * dz24;
-        let m24 = DT / (d224 * sqrt(d224));
-        vx2 = vx2 - dx24 * m4 * m24; vy2 = vy2 - dy24 * m4 * m24; vz2 = vz2 - dz24 * m4 * m24;
-        vx4 = vx4 + dx24 * m2 * m24; vy4 = vy4 + dy24 * m2 * m24; vz4 = vz4 + dz24 * m2 * m24;
-
-        let dx34 = x3 - x4; let dy34 = y3 - y4; let dz34 = z3 - z4;
-        let d234 = dx34 * dx34 + dy34 * dy34 + dz34 * dz34;
-        let m34 = DT / (d234 * sqrt(d234));
-        vx3 = vx3 - dx34 * m4 * m34; vy3 = vy3 - dy34 * m4 * m34; vz3 = vz3 - dz34 * m4 * m34;
-        vx4 = vx4 + dx34 * m3 * m34; vy4 = vy4 + dy34 * m3 * m34; vz4 = vz4 + dz34 * m3 * m34;
-
-        x0 = x0 + DT * vx0; y0 = y0 + DT * vy0; z0 = z0 + DT * vz0;
-        x1 = x1 + DT * vx1; y1 = y1 + DT * vy1; z1 = z1 + DT * vz1;
-        x2 = x2 + DT * vx2; y2 = y2 + DT * vy2; z2 = z2 + DT * vz2;
-        x3 = x3 + DT * vx3; y3 = y3 + DT * vy3; z3 = z3 + DT * vz3;
-        x4 = x4 + DT * vx4; y4 = y4 + DT * vy4; z4 = z4 + DT * vz4;
+        repeat i in 5 {
+            repeat j in 5 {
+                if j > i {
+                    let dx = xs[i] - xs[j];
+                    let dy = ys[i] - ys[j];
+                    let dz = zs[i] - zs[j];
+                    let d2 = dx * dx + dy * dy + dz * dz;
+                    let mag = DT / (d2 * sqrt(d2));
+                    let mj = ms[j];
+                    let mi = ms[i];
+                    vxs[i] = vxs[i] - dx * mj * mag;
+                    vys[i] = vys[i] - dy * mj * mag;
+                    vzs[i] = vzs[i] - dz * mj * mag;
+                    vxs[j] = vxs[j] + dx * mi * mag;
+                    vys[j] = vys[j] + dy * mi * mag;
+                    vzs[j] = vzs[j] + dz * mi * mag;
+                }
+            };
+        };
+        repeat i in 5 {
+            xs[i] = xs[i] + DT * vxs[i];
+            ys[i] = ys[i] + DT * vys[i];
+            zs[i] = zs[i] + DT * vzs[i];
+        };
     };
 
     let after =
-        0.5 * m0 * (vx0 * vx0 + vy0 * vy0 + vz0 * vz0) +
-        0.5 * m1 * (vx1 * vx1 + vy1 * vy1 + vz1 * vz1) +
-        0.5 * m2 * (vx2 * vx2 + vy2 * vy2 + vz2 * vz2) +
-        0.5 * m3 * (vx3 * vx3 + vy3 * vy3 + vz3 * vz3) +
-        0.5 * m4 * (vx4 * vx4 + vy4 * vy4 + vz4 * vz4) +
-        pair_energy(x0, y0, z0, m0, x1, y1, z1, m1) +
-        pair_energy(x0, y0, z0, m0, x2, y2, z2, m2) +
-        pair_energy(x0, y0, z0, m0, x3, y3, z3, m3) +
-        pair_energy(x0, y0, z0, m0, x4, y4, z4, m4) +
-        pair_energy(x1, y1, z1, m1, x2, y2, z2, m2) +
-        pair_energy(x1, y1, z1, m1, x3, y3, z3, m3) +
-        pair_energy(x1, y1, z1, m1, x4, y4, z4, m4) +
-        pair_energy(x2, y2, z2, m2, x3, y3, z3, m3) +
-        pair_energy(x2, y2, z2, m2, x4, y4, z4, m4) +
-        pair_energy(x3, y3, z3, m3, x4, y4, z4, m4);
+        0.5 * ms[0] * (vxs[0] * vxs[0] + vys[0] * vys[0] + vzs[0] * vzs[0]) +
+        0.5 * ms[1] * (vxs[1] * vxs[1] + vys[1] * vys[1] + vzs[1] * vzs[1]) +
+        0.5 * ms[2] * (vxs[2] * vxs[2] + vys[2] * vys[2] + vzs[2] * vzs[2]) +
+        0.5 * ms[3] * (vxs[3] * vxs[3] + vys[3] * vys[3] + vzs[3] * vzs[3]) +
+        0.5 * ms[4] * (vxs[4] * vxs[4] + vys[4] * vys[4] + vzs[4] * vzs[4]) +
+        pair_energy(xs[0], ys[0], zs[0], ms[0], xs[1], ys[1], zs[1], ms[1]) +
+        pair_energy(xs[0], ys[0], zs[0], ms[0], xs[2], ys[2], zs[2], ms[2]) +
+        pair_energy(xs[0], ys[0], zs[0], ms[0], xs[3], ys[3], zs[3], ms[3]) +
+        pair_energy(xs[0], ys[0], zs[0], ms[0], xs[4], ys[4], zs[4], ms[4]) +
+        pair_energy(xs[1], ys[1], zs[1], ms[1], xs[2], ys[2], zs[2], ms[2]) +
+        pair_energy(xs[1], ys[1], zs[1], ms[1], xs[3], ys[3], zs[3], ms[3]) +
+        pair_energy(xs[1], ys[1], zs[1], ms[1], xs[4], ys[4], zs[4], ms[4]) +
+        pair_energy(xs[2], ys[2], zs[2], ms[2], xs[3], ys[3], zs[3], ms[3]) +
+        pair_energy(xs[2], ys[2], zs[2], ms[2], xs[4], ys[4], zs[4], ms[4]) +
+        pair_energy(xs[3], ys[3], zs[3], ms[3], xs[4], ys[4], zs[4], ms[4]);
 
     text_concat(text_concat(text_from_f64_fixed(before, 9), "\n"), text_from_f64_fixed(after, 9))
 }
