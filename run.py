@@ -990,6 +990,40 @@ def clean_dirs() -> None:
     GO_CACHE.mkdir(parents=True, exist_ok=True)
 
 
+def prewarm_sarif_native_runtime(active_entries: list[EntrySpec], cpu_list: str | None) -> None:
+    if not any(entry.language == "sarif" for entry in active_entries):
+        return
+    driver = sarifc_driver_command(build=True)
+    warmup_dir = BUILD / "sarif-runtime-warmup"
+    warmup_dir.mkdir(parents=True, exist_ok=True)
+    programs = [
+        ("plain", "fn main() -> Text { \"ok\" }\n"),
+        (
+            "builder",
+            "fn main() -> Text effects [alloc] { "
+            "let mut b = text_builder_new(); b += \"ok\"; text_builder_finish(b) }\n",
+        ),
+        (
+            "index",
+            "fn main() -> Text effects [alloc] { "
+            "let mut index = text_index_new(); index = text_index_set(index, \"ok\", 1); \"ok\" }\n",
+        ),
+        ("sort", (SRC / "sortuniq" / "sortuniq.sarif").read_text(encoding="utf-8")),
+    ]
+    for name, source_text in programs:
+        source = warmup_dir / f"{name}.sarif"
+        output = warmup_dir / name
+        source.write_text(source_text, encoding="utf-8")
+        proc = sh(
+            [*driver, "build", str(source), "--print-main", "-o", str(output)],
+            cpu_list=cpu_list,
+        )
+        if proc.returncode != 0:
+            raise SystemExit(
+                f"sarif runtime warmup failed for {name}: {proc.stderr.strip() or proc.stdout.strip()}"
+            )
+
+
 def cleanup_source_tree() -> None:
     removable_suffixes = {
         ".o",
@@ -2266,6 +2300,7 @@ def main() -> int:
 
     clean_dirs()
     try:
+        prewarm_sarif_native_runtime(active_entries, args.cpu_list)
         results = run_suite(args, active_entries, active_benchmarks)
         apply_references(results, active_benchmarks)
         atomic_write(report_path, render_report(args, active_entries, active_benchmarks, results))
