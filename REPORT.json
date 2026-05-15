@@ -1,20 +1,20 @@
 {
   "environment": {
     "objective": "Build the strongest fixed-host benchmark harness for canonical, production-ready native-language implementations, with correctness enforced before any ranking.",
-    "runs": 1,
-    "min_runs": 1,
-    "warmup": 0,
+    "runs": 5,
+    "min_runs": 2,
+    "warmup": 1,
     "runtime_target_s": 0.35,
     "max_relative_spread": 0.03,
     "build_jobs": 16,
     "canonical_entries_only": true,
     "experimental_entries": false,
-    "selected_benchmarks": "mandelbrot",
+    "selected_benchmarks": "binarytrees,csvgroupby,joinagg,fasta,mandelbrot,spectralnorm,nbody,knucleotide,revcomp,sortuniq",
     "cpu_affinity": "",
     "scoring_balance": "equal category weight, benchmark weights normalized within category",
     "link_policy": "toolchain-default release mode (mixed linkage; see entry metadata)",
-    "entries": 1,
-    "benchmarks": 1,
+    "entries": 7,
+    "benchmarks": 10,
     "cpu_model": "AMD Ryzen 9 5900HS with Radeon Graphics",
     "logical_cores": 16,
     "memory_gib": "15.02",
@@ -33,9 +33,107 @@
       "sarifc": "sarifc 0.1.0"
     }
   },
-  "comparative": false,
-  "comparative_note": "This report is non-comparative: only one scored entry is present, so ranks and normalized scores are placeholders rather than cross-language conclusions.",
+  "comparative": true,
+  "comparative_note": null,
   "entries": [
+    {
+      "key": "c__clang",
+      "label": "c (clang)",
+      "language": "c",
+      "compiler": "clang",
+      "backend": "native",
+      "track": "main",
+      "canonical": true,
+      "supported_benchmarks": null,
+      "build_profile": "native-lto-release",
+      "optimization_notes": [
+        "O3 plus LTO for whole-program release builds",
+        "native CPU tuning",
+        "frame-pointer omission and low-cost math errno cleanup",
+        "lld when available, otherwise toolchain default linker"
+      ]
+    },
+    {
+      "key": "go__gc",
+      "label": "go (gc)",
+      "language": "go",
+      "compiler": "go",
+      "backend": "native",
+      "track": "main",
+      "canonical": true,
+      "supported_benchmarks": null,
+      "build_profile": "trimpath-release",
+      "optimization_notes": [
+        "optimized default Go compiler pipeline",
+        "trimpath and buildvcs disabled for cleaner reproducible artifacts",
+        "linker stripping and empty buildid for lean release binaries"
+      ]
+    },
+    {
+      "key": "moonbit__native",
+      "label": "moonbit (native)",
+      "language": "moonbit",
+      "compiler": "moon",
+      "backend": "native",
+      "track": "main",
+      "canonical": true,
+      "supported_benchmarks": null,
+      "build_profile": "native-release",
+      "optimization_notes": [
+        "native target release build",
+        "toolchain-managed stripping",
+        "frozen dependency graph for reproducible builds"
+      ]
+    },
+    {
+      "key": "nim__clang",
+      "label": "nim (clang)",
+      "language": "nim",
+      "compiler": "clang",
+      "backend": "c",
+      "track": "main",
+      "canonical": true,
+      "supported_benchmarks": null,
+      "build_profile": "native-lto-danger",
+      "optimization_notes": [
+        "danger mode plus speed optimization",
+        "ORC memory manager",
+        "C compiler native tuning with LTO",
+        "lld when available, otherwise toolchain default linker"
+      ]
+    },
+    {
+      "key": "ocaml__native",
+      "label": "ocaml (native)",
+      "language": "ocaml",
+      "compiler": "ocamlopt",
+      "backend": "native",
+      "track": "main",
+      "canonical": true,
+      "supported_benchmarks": null,
+      "build_profile": "native-release",
+      "optimization_notes": [
+        "native-code release build with unsafe and nodynlink",
+        "C backend native tuning flags passed through ccopt",
+        "separate stripping step after build"
+      ]
+    },
+    {
+      "key": "rust__llvm",
+      "label": "rust (rustc/llvm)",
+      "language": "rust",
+      "compiler": "rustc",
+      "backend": "llvm",
+      "track": "main",
+      "canonical": true,
+      "supported_benchmarks": null,
+      "build_profile": "native-thin-lto",
+      "optimization_notes": [
+        "target-cpu=native",
+        "thin LTO and single codegen unit",
+        "panic abort and symbol stripping for release binaries"
+      ]
+    },
     {
       "key": "sarif__stage0",
       "label": "sarif (stage0/native)",
@@ -65,19 +163,130 @@
     }
   ],
   "source_metrics": {
+    "c__clang": {
+      "benchmarks": 10,
+      "source_lines": 1052,
+      "source_chars": 28478
+    },
+    "go__gc": {
+      "benchmarks": 10,
+      "source_lines": 846,
+      "source_chars": 17701
+    },
+    "moonbit__native": {
+      "benchmarks": 10,
+      "source_lines": 1212,
+      "source_chars": 30708
+    },
+    "nim__clang": {
+      "benchmarks": 10,
+      "source_lines": 560,
+      "source_chars": 15821
+    },
+    "ocaml__native": {
+      "benchmarks": 10,
+      "source_lines": 628,
+      "source_chars": 18714
+    },
+    "rust__llvm": {
+      "benchmarks": 10,
+      "source_lines": 789,
+      "source_chars": 21904
+    },
     "sarif__stage0": {
-      "benchmarks": 1,
-      "source_lines": 42,
-      "source_chars": 1124
+      "benchmarks": 10,
+      "source_lines": 947,
+      "source_chars": 34869
     }
   },
   "benchmarks": [
+    {
+      "name": "binarytrees",
+      "category": "allocation_runtime",
+      "input": "20",
+      "base_weight": 1.0,
+      "effective_weight": 0.14285714285714285,
+      "check": "exact",
+      "output_kind": "exact_text",
+      "algorithm": "bottom-up binary tree construction and checksum",
+      "time_complexity": "O(nodes built)",
+      "space_complexity": "O(max tree size)",
+      "output_contract": "exact multiline text",
+      "fairness_notes": "Same tree/check workload; memory-management costs remain language-native.",
+      "capabilities": [
+        "allocation",
+        "pointer_chasing",
+        "tree_recursion"
+      ],
+      "retained_for": "Only benchmark centered on allocation-heavy pointer traversal and recursive tree construction."
+    },
+    {
+      "name": "csvgroupby",
+      "category": "parse_aggregate",
+      "input": "fixture:orders-120000.csv",
+      "base_weight": 1.0,
+      "effective_weight": 0.14285714285714285,
+      "check": "exact",
+      "output_kind": "exact_text",
+      "algorithm": "CSV parse plus per-customer group-by aggregation",
+      "time_complexity": "O(n log k)",
+      "space_complexity": "O(k)",
+      "output_contract": "exact CSV summary text",
+      "fairness_notes": "Uses a committed deterministic CSV fixture with clean unquoted fields and sorted aggregate output.",
+      "capabilities": [
+        "csv_parsing",
+        "aggregation",
+        "sorting"
+      ],
+      "retained_for": "Anchors real structured-text parsing plus aggregation with lighter state than the join workload."
+    },
+    {
+      "name": "joinagg",
+      "category": "join_aggregate",
+      "input": "fixture:users-events-180000.txt",
+      "base_weight": 1.0,
+      "effective_weight": 0.14285714285714285,
+      "check": "exact",
+      "output_kind": "exact_text",
+      "algorithm": "sectioned CSV parse plus active-user sort-merge join and ordered aggregation",
+      "time_complexity": "O((u + e) log (u + e))",
+      "space_complexity": "O(u + e)",
+      "output_contract": "exact region,tier aggregate text",
+      "fairness_notes": "Uses one deterministic two-section fixture, keeps the join key and aggregate contract fixed, and adds a realistic relational join workload without external libraries.",
+      "capabilities": [
+        "parsing",
+        "join_processing",
+        "aggregation",
+        "sorting"
+      ],
+      "retained_for": "Only retained workload that exercises join logic, multi-table data shaping, and ordered aggregation together."
+    },
+    {
+      "name": "fasta",
+      "category": "text_streaming",
+      "input": "250000",
+      "base_weight": 0.75,
+      "effective_weight": 0.07142857142857142,
+      "check": "exact",
+      "output_kind": "exact_text",
+      "algorithm": "deterministic FASTA generation with buffered text emission",
+      "time_complexity": "O(n)",
+      "space_complexity": "O(1)",
+      "output_contract": "exact FASTA text",
+      "fairness_notes": "Adds text generation and formatting without turning the suite into a library benchmark.",
+      "capabilities": [
+        "text_generation",
+        "streaming_output",
+        "buffered_io"
+      ],
+      "retained_for": "Covers deterministic text generation and sustained buffered output, which parsing workloads do not."
+    },
     {
       "name": "mandelbrot",
       "category": "numeric_compute",
       "input": "512",
       "base_weight": 1.0,
-      "effective_weight": 1.0,
+      "effective_weight": 0.047619047619047616,
       "check": "exact",
       "output_kind": "exact_text",
       "algorithm": "scalar Mandelbrot escape-time bitmap checksum",
@@ -91,45 +300,266 @@
         "branching"
       ],
       "retained_for": "Represents scalar numeric compute with tight loop and branch behavior distinct from floating-point iterative kernels."
+    },
+    {
+      "name": "spectralnorm",
+      "category": "numeric_compute",
+      "input": "5000",
+      "base_weight": 1.0,
+      "effective_weight": 0.047619047619047616,
+      "check": "float_9",
+      "output_kind": "float_9dp",
+      "algorithm": "power method on implicit matrix",
+      "time_complexity": "O(n^2 * iterations)",
+      "space_complexity": "O(n)",
+      "output_contract": "one float rounded to 9 decimals",
+      "fairness_notes": "Correctness compares canonical 9-decimal output, not raw printer differences.",
+      "capabilities": [
+        "numeric_compute",
+        "floating_point",
+        "vector_iteration"
+      ],
+      "retained_for": "Adds floating-point iterative linear-algebra style work with stable numeric comparison rules."
+    },
+    {
+      "name": "nbody",
+      "category": "numeric_compute",
+      "input": "5000000",
+      "base_weight": 1.0,
+      "effective_weight": 0.047619047619047616,
+      "check": "float_9_lines",
+      "output_kind": "float_lines_9dp",
+      "algorithm": "5-body symplectic advance and energy",
+      "time_complexity": "O(iterations * bodies^2)",
+      "space_complexity": "O(1)",
+      "output_contract": "two floats rounded to 9 decimals",
+      "fairness_notes": "Correctness compares canonical 9-decimal energies line-by-line.",
+      "capabilities": [
+        "numeric_compute",
+        "floating_point",
+        "simulation"
+      ],
+      "retained_for": "Only retained simulation-style kernel, preserving long-running floating-point update behavior."
+    },
+    {
+      "name": "knucleotide",
+      "category": "hash_map_string",
+      "input": "fixture:knucleotide-250000.fasta",
+      "base_weight": 1.0,
+      "effective_weight": 0.14285714285714285,
+      "check": "exact",
+      "output_kind": "exact_text",
+      "algorithm": "FASTA parsing plus k-mer frequency and occurrence counting",
+      "time_complexity": "O(n)",
+      "space_complexity": "O(unique k-mers + input)",
+      "output_contract": "exact multiline text",
+      "fairness_notes": "Uses one committed deterministic FASTA fixture and processes only the >THREE section.",
+      "capabilities": [
+        "text_parsing",
+        "hashing",
+        "string_processing",
+        "aggregation"
+      ],
+      "retained_for": "Primary hash-heavy and string-heavy benchmark; no other workload stresses this mix as directly."
+    },
+    {
+      "name": "revcomp",
+      "category": "text_streaming",
+      "input": "fixture:knucleotide-250000.fasta",
+      "base_weight": 0.75,
+      "effective_weight": 0.07142857142857142,
+      "check": "fasta_casefold",
+      "output_kind": "fasta_casefold",
+      "algorithm": "FASTA parsing plus reverse-complement text transformation",
+      "time_complexity": "O(n)",
+      "space_complexity": "O(n)",
+      "output_contract": "FASTA text with case-insensitive bases",
+      "fairness_notes": "Adds streaming-style text transformation and output reshaping with the same committed fixture family.",
+      "capabilities": [
+        "text_parsing",
+        "streaming_transform",
+        "buffered_io"
+      ],
+      "retained_for": "Keeps a transformation-oriented streaming workload in the suite instead of only generators and aggregators."
+    },
+    {
+      "name": "sortuniq",
+      "category": "sort_aggregate",
+      "input": "fixture:words-250000.txt",
+      "base_weight": 1.0,
+      "effective_weight": 0.14285714285714285,
+      "check": "exact",
+      "output_kind": "exact_text",
+      "algorithm": "line-oriented string sort and duplicate-count aggregation",
+      "time_complexity": "O(n log n)",
+      "space_complexity": "O(n)",
+      "output_contract": "exact word,count text",
+      "fairness_notes": "Uses one committed deterministic newline-word fixture, includes empty-line noise, and rewards lean sort-plus-aggregation implementations.",
+      "capabilities": [
+        "sorting",
+        "aggregation",
+        "string_processing"
+      ],
+      "retained_for": "Captures global ordering cost and frequency aggregation without parser-heavy setup or join complexity."
     }
   ],
   "category_scores": {
     "numeric_compute": {
-      "sarif__stage0": 1.0
+      "moonbit__native": 0.5980023938514004,
+      "sarif__stage0": 0.8519589251169385,
+      "go__gc": 0.714125814655201,
+      "c__clang": 0.9114038547221892,
+      "nim__clang": 0.7741051758350146,
+      "ocaml__native": 0.5832914374226144,
+      "rust__llvm": 0.8226412110321658
+    },
+    "allocation_runtime": {
+      "moonbit__native": 0.8552361527185464,
+      "sarif__stage0": 0.7328797972100198,
+      "go__gc": 0.294916757827041,
+      "c__clang": 0.3818869598430801,
+      "nim__clang": 0.3522161327701212,
+      "ocaml__native": 0.6608160663855478,
+      "rust__llvm": 0.2029775616167014
+    },
+    "hash_map_string": {
+      "moonbit__native": 0.3876825996267877,
+      "sarif__stage0": 0.9870977917981073,
+      "go__gc": 0.4852630720213024,
+      "c__clang": 0.8300819049172811,
+      "nim__clang": 0.6054805995297882,
+      "ocaml__native": 0.33546834772889667,
+      "rust__llvm": 0.7739009137244418
+    },
+    "text_streaming": {
+      "moonbit__native": 0.36518227008348464,
+      "sarif__stage0": 0.7562536826243704,
+      "go__gc": 0.5706981652343625,
+      "c__clang": 0.9268084269094978,
+      "nim__clang": 0.6621308854441457,
+      "ocaml__native": 0.4757258642416298,
+      "rust__llvm": 0.6605251734485152
+    },
+    "parse_aggregate": {
+      "moonbit__native": 0.23525255239882797,
+      "sarif__stage0": 0.9723230201171378,
+      "go__gc": 0.7378388244362746,
+      "c__clang": 0.5232215792819933,
+      "nim__clang": 0.377692485658313,
+      "ocaml__native": 0.28541578321231204,
+      "rust__llvm": 0.6966829421051889
+    },
+    "join_aggregate": {
+      "moonbit__native": 0.22228573713327732,
+      "sarif__stage0": 0.9799068142108329,
+      "go__gc": 0.5384274766548526,
+      "c__clang": 0.6170331228032983,
+      "nim__clang": 0.43850374807457365,
+      "ocaml__native": 0.34389094629793865,
+      "rust__llvm": 0.5171472263012927
+    },
+    "sort_aggregate": {
+      "moonbit__native": 0.2446444645051006,
+      "sarif__stage0": 0.9795894655305966,
+      "go__gc": 0.5005783036247365,
+      "c__clang": 0.4477002976064606,
+      "nim__clang": 0.3172103747644681,
+      "ocaml__native": 0.2770041104063956,
+      "rust__llvm": 0.41925336040002614
     }
   },
   "overall_scores": {
-    "sarif__stage0": 1.0
+    "moonbit__native": 0.41546945290248943,
+    "sarif__stage0": 0.8942870709440005,
+    "go__gc": 0.5488354877791103,
+    "c__clang": 0.6625908780119717,
+    "nim__clang": 0.5039056288680608,
+    "ocaml__native": 0.4230875079564767,
+    "rust__llvm": 0.5847326269469049
   },
   "overall_ranks": {
-    "sarif__stage0": 1
+    "sarif__stage0": 1,
+    "c__clang": 2,
+    "rust__llvm": 3,
+    "go__gc": 4,
+    "nim__clang": 5,
+    "ocaml__native": 6,
+    "moonbit__native": 7
   },
   "metric_scores": {
     "Speed": {
-      "sarif__stage0": 1.0
+      "moonbit__native": 0.3342256632968727,
+      "sarif__stage0": 0.8692460450629669,
+      "go__gc": 0.5174632927751286,
+      "c__clang": 0.6000880277844676,
+      "nim__clang": 0.4781567084499841,
+      "ocaml__native": 0.3253542595040029,
+      "rust__llvm": 0.6231454899666911
     },
     "Memory": {
-      "sarif__stage0": 1.0
+      "moonbit__native": 0.9617880893497788,
+      "sarif__stage0": 0.9739227481129646,
+      "go__gc": 0.9455425860951923,
+      "c__clang": 0.9641679301690094,
+      "nim__clang": 0.8898868532497883,
+      "ocaml__native": 0.9429694238166226,
+      "rust__llvm": 0.8866565760136969
     },
     "Build": {
-      "sarif__stage0": 1.0
+      "moonbit__native": 0.03910897107003133,
+      "sarif__stage0": 1.0,
+      "go__gc": 0.2314855161646172,
+      "c__clang": 0.29932065679981146,
+      "nim__clang": 0.0313689950077326,
+      "ocaml__native": 0.22656780372979424,
+      "rust__llvm": 0.013374030652292852
     },
     "Size": {
-      "sarif__stage0": 1.0
+      "moonbit__native": 0.03908513565126179,
+      "sarif__stage0": 0.6898518406095794,
+      "go__gc": 0.004545572795523167,
+      "c__clang": 0.9953601647656898,
+      "nim__clang": 0.23978996449679885,
+      "ocaml__native": 0.00713148285141086,
+      "rust__llvm": 0.020386804011731253
     }
   },
   "metric_ranks": {
     "Speed": {
-      "sarif__stage0": 1
+      "sarif__stage0": 1,
+      "rust__llvm": 2,
+      "c__clang": 3,
+      "go__gc": 4,
+      "nim__clang": 5,
+      "moonbit__native": 6,
+      "ocaml__native": 7
     },
     "Memory": {
-      "sarif__stage0": 1
+      "sarif__stage0": 1,
+      "c__clang": 2,
+      "moonbit__native": 3,
+      "go__gc": 4,
+      "ocaml__native": 5,
+      "nim__clang": 6,
+      "rust__llvm": 7
     },
     "Build": {
-      "sarif__stage0": 1
+      "sarif__stage0": 1,
+      "c__clang": 2,
+      "go__gc": 3,
+      "ocaml__native": 4,
+      "moonbit__native": 5,
+      "nim__clang": 6,
+      "rust__llvm": 7
     },
     "Size": {
-      "sarif__stage0": 1
+      "c__clang": 1,
+      "sarif__stage0": 2,
+      "nim__clang": 3,
+      "moonbit__native": 4,
+      "rust__llvm": 5,
+      "ocaml__native": 6,
+      "go__gc": 7
     }
   },
   "decision_profiles": [
@@ -137,69 +567,615 @@
       "label": "Balanced",
       "description": "Default composite across speed, memory, build time, and binary size.",
       "overall_scores": {
-        "sarif__stage0": 1.0
+        "moonbit__native": 0.41546945290248943,
+        "sarif__stage0": 0.8942870709440005,
+        "go__gc": 0.5488354877791103,
+        "c__clang": 0.6625908780119717,
+        "nim__clang": 0.5039056288680608,
+        "ocaml__native": 0.4230875079564767,
+        "rust__llvm": 0.5847326269469049
       },
       "overall_ranks": {
-        "sarif__stage0": 1
+        "sarif__stage0": 1,
+        "c__clang": 2,
+        "rust__llvm": 3,
+        "go__gc": 4,
+        "nim__clang": 5,
+        "ocaml__native": 6,
+        "moonbit__native": 7
       },
       "leaders": [
-        "sarif__stage0"
+        "sarif__stage0",
+        "c__clang",
+        "rust__llvm"
       ]
     },
     {
       "label": "Speed First",
       "description": "Throughput or latency matters most.",
       "overall_scores": {
-        "sarif__stage0": 1.0
+        "moonbit__native": 0.38222559458244576,
+        "sarif__stage0": 0.88004844992701,
+        "go__gc": 0.5414335344092277,
+        "c__clang": 0.6353784396330064,
+        "nim__clang": 0.5011587566476334,
+        "ocaml__native": 0.3777877267289869,
+        "rust__llvm": 0.6191482810728605
       },
       "overall_ranks": {
-        "sarif__stage0": 1
+        "sarif__stage0": 1,
+        "c__clang": 2,
+        "rust__llvm": 3,
+        "go__gc": 4,
+        "nim__clang": 5,
+        "moonbit__native": 6,
+        "ocaml__native": 7
       },
       "leaders": [
-        "sarif__stage0"
+        "sarif__stage0",
+        "c__clang",
+        "rust__llvm"
       ]
     },
     {
       "label": "Memory First",
       "description": "RAM pressure matters most.",
       "overall_scores": {
-        "sarif__stage0": 1.0
+        "moonbit__native": 0.7440065005402847,
+        "sarif__stage0": 0.940087724722148,
+        "go__gc": 0.7771740232696678,
+        "c__clang": 0.8596691977534755,
+        "nim__clang": 0.7321100869400756,
+        "ocaml__native": 0.7368344129014971,
+        "rust__llvm": 0.7469767429361276
       },
       "overall_ranks": {
-        "sarif__stage0": 1
+        "sarif__stage0": 1,
+        "c__clang": 2,
+        "go__gc": 3,
+        "rust__llvm": 4,
+        "moonbit__native": 5,
+        "ocaml__native": 6,
+        "nim__clang": 7
       },
       "leaders": [
-        "sarif__stage0"
+        "sarif__stage0",
+        "c__clang",
+        "go__gc"
       ]
     },
     {
       "label": "Build First",
       "description": "Build and iteration cost matter most.",
       "overall_scores": {
-        "sarif__stage0": 1.0
+        "moonbit__native": 0.12950923904710646,
+        "sarif__stage0": 0.9635756361955725,
+        "go__gc": 0.29873803898426804,
+        "c__clang": 0.41248010151426373,
+        "nim__clang": 0.1517340934106265,
+        "ocaml__native": 0.2662340370563479,
+        "rust__llvm": 0.1488545154854948
       },
       "overall_ranks": {
-        "sarif__stage0": 1
+        "sarif__stage0": 1,
+        "c__clang": 2,
+        "go__gc": 3,
+        "ocaml__native": 4,
+        "nim__clang": 5,
+        "rust__llvm": 6,
+        "moonbit__native": 7
       },
       "leaders": [
-        "sarif__stage0"
+        "sarif__stage0",
+        "c__clang",
+        "go__gc"
       ]
     },
     {
       "label": "Deploy First",
       "description": "Artifact footprint matters alongside runtime.",
       "overall_scores": {
-        "sarif__stage0": 1.0
+        "moonbit__native": 0.2807933386948186,
+        "sarif__stage0": 0.841772672202336,
+        "go__gc": 0.3592573182886996,
+        "c__clang": 0.7479301554378784,
+        "nim__clang": 0.38946971277000225,
+        "ocaml__native": 0.2918005939563574,
+        "rust__llvm": 0.3602408938923462
       },
       "overall_ranks": {
-        "sarif__stage0": 1
+        "sarif__stage0": 1,
+        "c__clang": 2,
+        "nim__clang": 3,
+        "rust__llvm": 4,
+        "go__gc": 5,
+        "ocaml__native": 6,
+        "moonbit__native": 7
       },
       "leaders": [
-        "sarif__stage0"
+        "sarif__stage0",
+        "c__clang",
+        "nim__clang"
       ]
     }
   ],
   "results": [
+    {
+      "benchmark": "binarytrees",
+      "entry": "c__clang",
+      "input": "20",
+      "output": "stretch tree of depth 21\t check: 4194303 / 1048576\t trees of depth 4\t...",
+      "reference": "stretch tree of depth 21\t check: 4194303 / 1048576\t trees of depth 4\t...",
+      "status": "ok",
+      "build_time_s": 0.3190272749925498,
+      "run_time_s": 7.956934243004071,
+      "run_time_relative_spread": 0.04417007609545873,
+      "measured_runs": 5,
+      "peak_memory_kib": 133416,
+      "binary_size_bytes": 5864
+    },
+    {
+      "benchmark": "binarytrees",
+      "entry": "go__gc",
+      "input": "20",
+      "output": "stretch tree of depth 21\t check: 4194303 / 1048576\t trees of depth 4\t...",
+      "reference": "stretch tree of depth 21\t check: 4194303 / 1048576\t trees of depth 4\t...",
+      "status": "ok",
+      "build_time_s": 3.6688039859873243,
+      "run_time_s": 9.096234700002242,
+      "run_time_relative_spread": 0.014871463905970241,
+      "measured_runs": 2,
+      "peak_memory_kib": 135996,
+      "binary_size_bytes": 1597566
+    },
+    {
+      "benchmark": "binarytrees",
+      "entry": "moonbit__native",
+      "input": "20",
+      "output": "stretch tree of depth 21\t check: 4194303 / 1048576\t trees of depth 4\t...",
+      "reference": "stretch tree of depth 21\t check: 4194303 / 1048576\t trees of depth 4\t...",
+      "status": "ok",
+      "build_time_s": 0.9821733150165528,
+      "run_time_s": 2.0497354160033865,
+      "run_time_relative_spread": 0.0015493433817166818,
+      "measured_runs": 2,
+      "peak_memory_kib": 100496,
+      "binary_size_bytes": 186352
+    },
+    {
+      "benchmark": "binarytrees",
+      "entry": "nim__clang",
+      "input": "20",
+      "output": "stretch tree of depth 21\t check: 4194303 / 1048576\t trees of depth 4\t...",
+      "reference": "stretch tree of depth 21\t check: 4194303 / 1048576\t trees of depth 4\t...",
+      "status": "ok",
+      "build_time_s": 1.2269392639864236,
+      "run_time_s": 5.067247556013172,
+      "run_time_relative_spread": 0.004441567887519827,
+      "measured_runs": 2,
+      "peak_memory_kib": 268416,
+      "binary_size_bytes": 26624
+    },
+    {
+      "benchmark": "binarytrees",
+      "entry": "ocaml__native",
+      "input": "20",
+      "output": "stretch tree of depth 21\t check: 4194303 / 1048576\t trees of depth 4\t...",
+      "reference": "stretch tree of depth 21\t check: 4194303 / 1048576\t trees of depth 4\t...",
+      "status": "ok",
+      "build_time_s": 0.20660982199478894,
+      "run_time_s": 2.7415667200111784,
+      "run_time_relative_spread": 0.022413445410136866,
+      "measured_runs": 2,
+      "peak_memory_kib": 131516,
+      "binary_size_bytes": 1030512
+    },
+    {
+      "benchmark": "binarytrees",
+      "entry": "rust__llvm",
+      "input": "20",
+      "output": "stretch tree of depth 21\t check: 4194303 / 1048576\t trees of depth 4\t...",
+      "reference": "stretch tree of depth 21\t check: 4194303 / 1048576\t trees of depth 4\t...",
+      "status": "ok",
+      "build_time_s": 2.8776964179996867,
+      "run_time_s": 10.674545605492312,
+      "run_time_relative_spread": 0.0005123267231985812,
+      "measured_runs": 2,
+      "peak_memory_kib": 264160,
+      "binary_size_bytes": 337392
+    },
+    {
+      "benchmark": "binarytrees",
+      "entry": "sarif__stage0",
+      "input": "20",
+      "output": "stretch tree of depth 21\t check: 4194303 / 1048576\t trees of depth 4\t...",
+      "reference": "stretch tree of depth 21\t check: 4194303 / 1048576\t trees of depth 4\t...",
+      "status": "ok",
+      "build_time_s": 0.046608212986029685,
+      "run_time_s": 3.3240468459844124,
+      "run_time_relative_spread": 0.02331544277161272,
+      "measured_runs": 2,
+      "peak_memory_kib": 99952,
+      "binary_size_bytes": 9144
+    },
+    {
+      "benchmark": "csvgroupby",
+      "entry": "c__clang",
+      "input": "fixture:orders-120000.csv",
+      "output": "sha256:b7ce6bd0a0cc01ea",
+      "reference": "sha256:b7ce6bd0a0cc01ea",
+      "status": "ok",
+      "build_time_s": 0.14294435098418035,
+      "run_time_s": 0.048799431999213994,
+      "run_time_relative_spread": 0.2036029439477867,
+      "measured_runs": 5,
+      "peak_memory_kib": 30484,
+      "binary_size_bytes": 6456
+    },
+    {
+      "benchmark": "csvgroupby",
+      "entry": "go__gc",
+      "input": "fixture:orders-120000.csv",
+      "output": "sha256:b7ce6bd0a0cc01ea",
+      "reference": "sha256:b7ce6bd0a0cc01ea",
+      "status": "ok",
+      "build_time_s": 0.4209895459935069,
+      "run_time_s": 0.02261103197815828,
+      "run_time_relative_spread": 0.1433493620244343,
+      "measured_runs": 5,
+      "peak_memory_kib": 31288,
+      "binary_size_bytes": 1622142
+    },
+    {
+      "benchmark": "csvgroupby",
+      "entry": "moonbit__native",
+      "input": "fixture:orders-120000.csv",
+      "output": "sha256:b7ce6bd0a0cc01ea",
+      "reference": "sha256:b7ce6bd0a0cc01ea",
+      "status": "ok",
+      "build_time_s": 0.9987206209916621,
+      "run_time_s": 0.34573407749121543,
+      "run_time_relative_spread": 0.017513179626838623,
+      "measured_runs": 2,
+      "peak_memory_kib": 31288,
+      "binary_size_bytes": 181720
+    },
+    {
+      "benchmark": "csvgroupby",
+      "entry": "nim__clang",
+      "input": "fixture:orders-120000.csv",
+      "output": "sha256:b7ce6bd0a0cc01ea",
+      "reference": "sha256:b7ce6bd0a0cc01ea",
+      "status": "ok",
+      "build_time_s": 1.3044941010011826,
+      "run_time_s": 0.07101236798916943,
+      "run_time_relative_spread": 0.13103176624295995,
+      "measured_runs": 5,
+      "peak_memory_kib": 31288,
+      "binary_size_bytes": 32384
+    },
+    {
+      "benchmark": "csvgroupby",
+      "entry": "ocaml__native",
+      "input": "fixture:orders-120000.csv",
+      "output": "sha256:b7ce6bd0a0cc01ea",
+      "reference": "sha256:b7ce6bd0a0cc01ea",
+      "status": "ok",
+      "build_time_s": 0.21166036304202862,
+      "run_time_s": 0.16400626799440943,
+      "run_time_relative_spread": 0.00696303258936275,
+      "measured_runs": 3,
+      "peak_memory_kib": 31416,
+      "binary_size_bytes": 1034384
+    },
+    {
+      "benchmark": "csvgroupby",
+      "entry": "rust__llvm",
+      "input": "fixture:orders-120000.csv",
+      "output": "sha256:b7ce6bd0a0cc01ea",
+      "reference": "sha256:b7ce6bd0a0cc01ea",
+      "status": "ok",
+      "build_time_s": 3.3458680490148254,
+      "run_time_s": 0.024120703019434586,
+      "run_time_relative_spread": 0.019735867631963035,
+      "measured_runs": 5,
+      "peak_memory_kib": 31416,
+      "binary_size_bytes": 353288
+    },
+    {
+      "benchmark": "csvgroupby",
+      "entry": "sarif__stage0",
+      "input": "fixture:orders-120000.csv",
+      "output": "sha256:b7ce6bd0a0cc01ea",
+      "reference": "sha256:b7ce6bd0a0cc01ea",
+      "status": "ok",
+      "build_time_s": 0.036855760001344606,
+      "run_time_s": 0.018576689006295055,
+      "run_time_relative_spread": 0.22865344782826,
+      "measured_runs": 5,
+      "peak_memory_kib": 31416,
+      "binary_size_bytes": 11424
+    },
+    {
+      "benchmark": "joinagg",
+      "entry": "c__clang",
+      "input": "fixture:users-events-180000.txt",
+      "output": "sha256:37c7ac2d5630fe43",
+      "reference": "sha256:37c7ac2d5630fe43",
+      "status": "ok",
+      "build_time_s": 0.11496929201530293,
+      "run_time_s": 0.12672189599834383,
+      "run_time_relative_spread": 0.04821799705662153,
+      "measured_runs": 5,
+      "peak_memory_kib": 43064,
+      "binary_size_bytes": 8216
+    },
+    {
+      "benchmark": "joinagg",
+      "entry": "go__gc",
+      "input": "fixture:users-events-180000.txt",
+      "output": "sha256:37c7ac2d5630fe43",
+      "reference": "sha256:37c7ac2d5630fe43",
+      "status": "ok",
+      "build_time_s": 0.13628525598323904,
+      "run_time_s": 0.13618716099881567,
+      "run_time_relative_spread": 0.11589530082396794,
+      "measured_runs": 5,
+      "peak_memory_kib": 43064,
+      "binary_size_bytes": 1630334
+    },
+    {
+      "benchmark": "joinagg",
+      "entry": "moonbit__native",
+      "input": "fixture:users-events-180000.txt",
+      "output": "sha256:37c7ac2d5630fe43",
+      "reference": "sha256:37c7ac2d5630fe43",
+      "status": "ok",
+      "build_time_s": 1.1766136250225827,
+      "run_time_s": 0.9731839379965095,
+      "run_time_relative_spread": 0.023341340831343427,
+      "measured_runs": 2,
+      "peak_memory_kib": 49592,
+      "binary_size_bytes": 198264
+    },
+    {
+      "benchmark": "joinagg",
+      "entry": "nim__clang",
+      "input": "fixture:users-events-180000.txt",
+      "output": "sha256:37c7ac2d5630fe43",
+      "reference": "sha256:37c7ac2d5630fe43",
+      "status": "ok",
+      "build_time_s": 1.3534537749947049,
+      "run_time_s": 0.1846729060052894,
+      "run_time_relative_spread": 0.026042239197220946,
+      "measured_runs": 2,
+      "peak_memory_kib": 43064,
+      "binary_size_bytes": 41872
+    },
+    {
+      "benchmark": "joinagg",
+      "entry": "ocaml__native",
+      "input": "fixture:users-events-180000.txt",
+      "output": "sha256:37c7ac2d5630fe43",
+      "reference": "sha256:37c7ac2d5630fe43",
+      "status": "ok",
+      "build_time_s": 0.16995736601529643,
+      "run_time_s": 0.3544930950156413,
+      "run_time_relative_spread": 0.17559239897828252,
+      "measured_runs": 5,
+      "peak_memory_kib": 43064,
+      "binary_size_bytes": 1034768
+    },
+    {
+      "benchmark": "joinagg",
+      "entry": "rust__llvm",
+      "input": "fixture:users-events-180000.txt",
+      "output": "sha256:37c7ac2d5630fe43",
+      "reference": "sha256:37c7ac2d5630fe43",
+      "status": "ok",
+      "build_time_s": 3.2082383570086677,
+      "run_time_s": 0.1322979899996426,
+      "run_time_relative_spread": 0.15100248326255575,
+      "measured_runs": 5,
+      "peak_memory_kib": 43064,
+      "binary_size_bytes": 371560
+    },
+    {
+      "benchmark": "joinagg",
+      "entry": "sarif__stage0",
+      "input": "fixture:users-events-180000.txt",
+      "output": "sha256:37c7ac2d5630fe43",
+      "reference": "sha256:37c7ac2d5630fe43",
+      "status": "ok",
+      "build_time_s": 0.04429331299616024,
+      "run_time_s": 0.0640446440083906,
+      "run_time_relative_spread": 0.2739832387507133,
+      "measured_runs": 5,
+      "peak_memory_kib": 43064,
+      "binary_size_bytes": 13736
+    },
+    {
+      "benchmark": "fasta",
+      "entry": "c__clang",
+      "input": "250000",
+      "output": "sha256:dfd37a44ede2e23f",
+      "reference": "sha256:dfd37a44ede2e23f",
+      "status": "ok",
+      "build_time_s": 0.13284529600059614,
+      "run_time_s": 0.03482961998088285,
+      "run_time_relative_spread": 0.08737809922305127,
+      "measured_runs": 5,
+      "peak_memory_kib": 56712,
+      "binary_size_bytes": 7688
+    },
+    {
+      "benchmark": "fasta",
+      "entry": "go__gc",
+      "input": "250000",
+      "output": "sha256:dfd37a44ede2e23f",
+      "reference": "sha256:dfd37a44ede2e23f",
+      "status": "ok",
+      "build_time_s": 0.152412933006417,
+      "run_time_s": 0.04256970199639909,
+      "run_time_relative_spread": 0.09037491077796654,
+      "measured_runs": 5,
+      "peak_memory_kib": 69240,
+      "binary_size_bytes": 1593470
+    },
+    {
+      "benchmark": "fasta",
+      "entry": "moonbit__native",
+      "input": "250000",
+      "output": "sha256:dfd37a44ede2e23f",
+      "reference": "sha256:dfd37a44ede2e23f",
+      "status": "ok",
+      "build_time_s": 1.0883594019978773,
+      "run_time_s": 0.07766359901870601,
+      "run_time_relative_spread": 0.09111524679719778,
+      "measured_runs": 5,
+      "peak_memory_kib": 71740,
+      "binary_size_bytes": 188696
+    },
+    {
+      "benchmark": "fasta",
+      "entry": "nim__clang",
+      "input": "250000",
+      "output": "sha256:dfd37a44ede2e23f",
+      "reference": "sha256:dfd37a44ede2e23f",
+      "status": "ok",
+      "build_time_s": 1.3255706100026146,
+      "run_time_s": 0.03879501498886384,
+      "run_time_relative_spread": 0.10804968090582369,
+      "measured_runs": 5,
+      "peak_memory_kib": 74128,
+      "binary_size_bytes": 28328
+    },
+    {
+      "benchmark": "fasta",
+      "entry": "ocaml__native",
+      "input": "250000",
+      "output": "sha256:dfd37a44ede2e23f",
+      "reference": "sha256:dfd37a44ede2e23f",
+      "status": "ok",
+      "build_time_s": 0.1698643819836434,
+      "run_time_s": 0.05802890699123964,
+      "run_time_relative_spread": 0.14853578027662032,
+      "measured_runs": 5,
+      "peak_memory_kib": 76544,
+      "binary_size_bytes": 1039920
+    },
+    {
+      "benchmark": "fasta",
+      "entry": "rust__llvm",
+      "input": "250000",
+      "output": "sha256:dfd37a44ede2e23f",
+      "reference": "sha256:dfd37a44ede2e23f",
+      "status": "ok",
+      "build_time_s": 2.905263592983829,
+      "run_time_s": 0.03576294000959024,
+      "run_time_relative_spread": 0.14373337294514288,
+      "measured_runs": 5,
+      "peak_memory_kib": 79232,
+      "binary_size_bytes": 340384
+    },
+    {
+      "benchmark": "fasta",
+      "entry": "sarif__stage0",
+      "input": "250000",
+      "output": "sha256:dfd37a44ede2e23f",
+      "reference": "sha256:dfd37a44ede2e23f",
+      "status": "ok",
+      "build_time_s": 0.036638391989981756,
+      "run_time_s": 0.034045770997181535,
+      "run_time_relative_spread": 0.0971966243870519,
+      "measured_runs": 5,
+      "peak_memory_kib": 81688,
+      "binary_size_bytes": 8968
+    },
+    {
+      "benchmark": "mandelbrot",
+      "entry": "c__clang",
+      "input": "512",
+      "output": "sha256:e41a9386e912a316",
+      "reference": "sha256:e41a9386e912a316",
+      "status": "ok",
+      "build_time_s": 0.10049094699206762,
+      "run_time_s": 0.016519591998076066,
+      "run_time_relative_spread": 0.12871909914993063,
+      "measured_runs": 5,
+      "peak_memory_kib": 84144,
+      "binary_size_bytes": 5976
+    },
+    {
+      "benchmark": "mandelbrot",
+      "entry": "go__gc",
+      "input": "512",
+      "output": "sha256:e41a9386e912a316",
+      "reference": "sha256:e41a9386e912a316",
+      "status": "ok",
+      "build_time_s": 0.11742212998797186,
+      "run_time_s": 0.02085544099099934,
+      "run_time_relative_spread": 0.10468318581992114,
+      "measured_runs": 5,
+      "peak_memory_kib": 84144,
+      "binary_size_bytes": 1585278
+    },
+    {
+      "benchmark": "mandelbrot",
+      "entry": "moonbit__native",
+      "input": "512",
+      "output": "sha256:e41a9386e912a316",
+      "reference": "sha256:e41a9386e912a316",
+      "status": "ok",
+      "build_time_s": 0.9992012629809324,
+      "run_time_s": 0.017650352005148306,
+      "run_time_relative_spread": 0.17774671118970348,
+      "measured_runs": 5,
+      "peak_memory_kib": 84144,
+      "binary_size_bytes": 184112
+    },
+    {
+      "benchmark": "mandelbrot",
+      "entry": "nim__clang",
+      "input": "512",
+      "output": "sha256:e41a9386e912a316",
+      "reference": "sha256:e41a9386e912a316",
+      "status": "ok",
+      "build_time_s": 1.303723960998468,
+      "run_time_s": 0.015972936991602182,
+      "run_time_relative_spread": 0.13144526937954332,
+      "measured_runs": 5,
+      "peak_memory_kib": 84144,
+      "binary_size_bytes": 24344
+    },
+    {
+      "benchmark": "mandelbrot",
+      "entry": "ocaml__native",
+      "input": "512",
+      "output": "sha256:e41a9386e912a316",
+      "reference": "sha256:e41a9386e912a316",
+      "status": "ok",
+      "build_time_s": 0.16302966797957197,
+      "run_time_s": 0.019214174011722207,
+      "run_time_relative_spread": 0.19785170053471193,
+      "measured_runs": 5,
+      "peak_memory_kib": 84144,
+      "binary_size_bytes": 1029424
+    },
+    {
+      "benchmark": "mandelbrot",
+      "entry": "rust__llvm",
+      "input": "512",
+      "output": "sha256:e41a9386e912a316",
+      "reference": "sha256:e41a9386e912a316",
+      "status": "ok",
+      "build_time_s": 2.851212095003575,
+      "run_time_s": 0.0175178240169771,
+      "run_time_relative_spread": 0.08283397533359965,
+      "measured_runs": 5,
+      "peak_memory_kib": 84144,
+      "binary_size_bytes": 337648
+    },
     {
       "benchmark": "mandelbrot",
       "entry": "sarif__stage0",
@@ -207,12 +1183,502 @@
       "output": "sha256:e41a9386e912a316",
       "reference": "sha256:e41a9386e912a316",
       "status": "ok",
-      "build_time_s": 0.03665411599649815,
-      "run_time_s": 0.01964062599290628,
-      "run_time_relative_spread": 0.0,
-      "measured_runs": 1,
-      "peak_memory_kib": 28068,
+      "build_time_s": 0.034038837999105453,
+      "run_time_s": 0.018683219008380547,
+      "run_time_relative_spread": 0.10240778106577957,
+      "measured_runs": 5,
+      "peak_memory_kib": 84144,
       "binary_size_bytes": 5808
+    },
+    {
+      "benchmark": "spectralnorm",
+      "entry": "c__clang",
+      "input": "5000",
+      "output": "1.274224153",
+      "reference": "1.274224153",
+      "status": "ok",
+      "build_time_s": 0.16771568401600234,
+      "run_time_s": 1.3250073544913903,
+      "run_time_relative_spread": 0.005469197573037554,
+      "measured_runs": 2,
+      "peak_memory_kib": 84144,
+      "binary_size_bytes": 9232
+    },
+    {
+      "benchmark": "spectralnorm",
+      "entry": "go__gc",
+      "input": "5000",
+      "output": "1.274224153",
+      "reference": "1.274224153",
+      "status": "ok",
+      "build_time_s": 0.12848486099392176,
+      "run_time_s": 1.5265514269849518,
+      "run_time_relative_spread": 0.009125266106945704,
+      "measured_runs": 2,
+      "peak_memory_kib": 84144,
+      "binary_size_bytes": 1597566
+    },
+    {
+      "benchmark": "spectralnorm",
+      "entry": "moonbit__native",
+      "input": "5000",
+      "output": "1.274224153",
+      "reference": "1.274224153",
+      "status": "ok",
+      "build_time_s": 1.091255772014847,
+      "run_time_s": 3.4712418779963627,
+      "run_time_relative_spread": 0.005896528307003754,
+      "measured_runs": 2,
+      "peak_memory_kib": 84144,
+      "binary_size_bytes": 189368
+    },
+    {
+      "benchmark": "spectralnorm",
+      "entry": "nim__clang",
+      "input": "5000",
+      "output": "1.274224153",
+      "reference": "1.274224153",
+      "status": "ok",
+      "build_time_s": 1.3154281460156199,
+      "run_time_s": 1.436735190494801,
+      "run_time_relative_spread": 0.0003579260703568924,
+      "measured_runs": 2,
+      "peak_memory_kib": 84144,
+      "binary_size_bytes": 25224
+    },
+    {
+      "benchmark": "spectralnorm",
+      "entry": "ocaml__native",
+      "input": "5000",
+      "output": "1.274224153",
+      "reference": "1.274224153",
+      "status": "ok",
+      "build_time_s": 0.17300951899960637,
+      "run_time_s": 4.609330287988996,
+      "run_time_relative_spread": 0.0008031214434581019,
+      "measured_runs": 2,
+      "peak_memory_kib": 84144,
+      "binary_size_bytes": 1034224
+    },
+    {
+      "benchmark": "spectralnorm",
+      "entry": "rust__llvm",
+      "input": "5000",
+      "output": "1.274224153",
+      "reference": "1.274224153",
+      "status": "ok",
+      "build_time_s": 2.886570775997825,
+      "run_time_s": 1.3941380990145262,
+      "run_time_relative_spread": 0.011767570231712314,
+      "measured_runs": 2,
+      "peak_memory_kib": 84144,
+      "binary_size_bytes": 366008
+    },
+    {
+      "benchmark": "spectralnorm",
+      "entry": "sarif__stage0",
+      "input": "5000",
+      "output": "1.274224153",
+      "reference": "1.274224153",
+      "status": "ok",
+      "build_time_s": 0.04205315400031395,
+      "run_time_s": 1.456295541502186,
+      "run_time_relative_spread": 0.003276076100180031,
+      "measured_runs": 2,
+      "peak_memory_kib": 84144,
+      "binary_size_bytes": 8592
+    },
+    {
+      "benchmark": "nbody",
+      "entry": "c__clang",
+      "input": "5000000",
+      "output": "-0.169075164 / -0.169083134",
+      "reference": "-0.169075164 / -0.169083134",
+      "status": "ok",
+      "build_time_s": 0.13338589001796208,
+      "run_time_s": 0.2265966979903169,
+      "run_time_relative_spread": 0.022869159430280585,
+      "measured_runs": 2,
+      "peak_memory_kib": 84144,
+      "binary_size_bytes": 8728
+    },
+    {
+      "benchmark": "nbody",
+      "entry": "go__gc",
+      "input": "5000000",
+      "output": "-0.169075164 / -0.169083134",
+      "reference": "-0.169075164 / -0.169083134",
+      "status": "ok",
+      "build_time_s": 0.11924089098465629,
+      "run_time_s": 0.36807977499847766,
+      "run_time_relative_spread": 0.01167705559286521,
+      "measured_runs": 2,
+      "peak_memory_kib": 84144,
+      "binary_size_bytes": 1597566
+    },
+    {
+      "benchmark": "nbody",
+      "entry": "moonbit__native",
+      "input": "5000000",
+      "output": "-0.169075164 / -0.169083134",
+      "reference": "-0.169075164 / -0.169083134",
+      "status": "ok",
+      "build_time_s": 1.0904044209746644,
+      "run_time_s": 0.41186248598387465,
+      "run_time_relative_spread": 0.09104286808494179,
+      "measured_runs": 5,
+      "peak_memory_kib": 84144,
+      "binary_size_bytes": 190000
+    },
+    {
+      "benchmark": "nbody",
+      "entry": "nim__clang",
+      "input": "5000000",
+      "output": "-0.169075164 / -0.169083134",
+      "reference": "-0.169075164 / -0.169083134",
+      "status": "ok",
+      "build_time_s": 1.2625519229914062,
+      "run_time_s": 0.3345190779946279,
+      "run_time_relative_spread": 0.010660276834346815,
+      "measured_runs": 2,
+      "peak_memory_kib": 84144,
+      "binary_size_bytes": 27744
+    },
+    {
+      "benchmark": "nbody",
+      "entry": "ocaml__native",
+      "input": "5000000",
+      "output": "-0.169075164 / -0.169083134",
+      "reference": "-0.169075164 / -0.169083134",
+      "status": "ok",
+      "build_time_s": 0.1640776729909703,
+      "run_time_s": 0.401141705995542,
+      "run_time_relative_spread": 0.029095209552287896,
+      "measured_runs": 2,
+      "peak_memory_kib": 84144,
+      "binary_size_bytes": 1030640
+    },
+    {
+      "benchmark": "nbody",
+      "entry": "rust__llvm",
+      "input": "5000000",
+      "output": "-0.169075164 / -0.169083134",
+      "reference": "-0.169075164 / -0.169083134",
+      "status": "ok",
+      "build_time_s": 2.7815230390115175,
+      "run_time_s": 0.2155565889843274,
+      "run_time_relative_spread": 0.16382518466780316,
+      "measured_runs": 5,
+      "peak_memory_kib": 84144,
+      "binary_size_bytes": 364872
+    },
+    {
+      "benchmark": "nbody",
+      "entry": "sarif__stage0",
+      "input": "5000000",
+      "output": "-0.169075164 / -0.169083134",
+      "reference": "-0.169075164 / -0.169083134",
+      "status": "ok",
+      "build_time_s": 0.04443756499676965,
+      "run_time_s": 0.3702958099893294,
+      "run_time_relative_spread": 0.005494968955359866,
+      "measured_runs": 2,
+      "peak_memory_kib": 84144,
+      "binary_size_bytes": 14360
+    },
+    {
+      "benchmark": "knucleotide",
+      "entry": "c__clang",
+      "input": "fixture:knucleotide-250000.fasta",
+      "output": "A 30.328 / T 30.079 / C 19.799 / G 19.794 /  / AA 9.188 / TA 9.122 / ...",
+      "reference": "A 30.328 / T 30.079 / C 19.799 / G 19.794 /  / AA 9.188 / TA 9.122 / ...",
+      "status": "ok",
+      "build_time_s": 0.1351801339769736,
+      "run_time_s": 0.006634758989093825,
+      "run_time_relative_spread": 0.10124406484554935,
+      "measured_runs": 5,
+      "peak_memory_kib": 84144,
+      "binary_size_bytes": 9408
+    },
+    {
+      "benchmark": "knucleotide",
+      "entry": "go__gc",
+      "input": "fixture:knucleotide-250000.fasta",
+      "output": "A 30.328 / T 30.079 / C 19.799 / G 19.794 /  / AA 9.188 / TA 9.122 / ...",
+      "reference": "A 30.328 / T 30.079 / C 19.799 / G 19.794 /  / AA 9.188 / TA 9.122 / ...",
+      "status": "ok",
+      "build_time_s": 0.12983500299742445,
+      "run_time_s": 0.014360764995217323,
+      "run_time_relative_spread": 0.14238754027787992,
+      "measured_runs": 5,
+      "peak_memory_kib": 84144,
+      "binary_size_bytes": 1618046
+    },
+    {
+      "benchmark": "knucleotide",
+      "entry": "moonbit__native",
+      "input": "fixture:knucleotide-250000.fasta",
+      "output": "A 30.328 / T 30.079 / C 19.799 / G 19.794 /  / AA 9.188 / TA 9.122 / ...",
+      "reference": "A 30.328 / T 30.079 / C 19.799 / G 19.794 /  / AA 9.188 / TA 9.122 / ...",
+      "status": "ok",
+      "build_time_s": 1.0299010050075594,
+      "run_time_s": 0.02015412598848343,
+      "run_time_relative_spread": 0.0923961157150668,
+      "measured_runs": 5,
+      "peak_memory_kib": 84144,
+      "binary_size_bytes": 186712
+    },
+    {
+      "benchmark": "knucleotide",
+      "entry": "nim__clang",
+      "input": "fixture:knucleotide-250000.fasta",
+      "output": "A 30.328 / T 30.079 / C 19.799 / G 19.794 /  / AA 9.188 / TA 9.122 / ...",
+      "reference": "A 30.328 / T 30.079 / C 19.799 / G 19.794 /  / AA 9.188 / TA 9.122 / ...",
+      "status": "ok",
+      "build_time_s": 1.3067540969932452,
+      "run_time_s": 0.009411045000888407,
+      "run_time_relative_spread": 0.10722953690117354,
+      "measured_runs": 5,
+      "peak_memory_kib": 84144,
+      "binary_size_bytes": 33240
+    },
+    {
+      "benchmark": "knucleotide",
+      "entry": "ocaml__native",
+      "input": "fixture:knucleotide-250000.fasta",
+      "output": "A 30.328 / T 30.079 / C 19.799 / G 19.794 /  / AA 9.188 / TA 9.122 / ...",
+      "reference": "A 30.328 / T 30.079 / C 19.799 / G 19.794 /  / AA 9.188 / TA 9.122 / ...",
+      "status": "ok",
+      "build_time_s": 0.17821132199605927,
+      "run_time_s": 0.032393293018685654,
+      "run_time_relative_spread": 0.16324657045708799,
+      "measured_runs": 5,
+      "peak_memory_kib": 84144,
+      "binary_size_bytes": 1091152
+    },
+    {
+      "benchmark": "knucleotide",
+      "entry": "rust__llvm",
+      "input": "fixture:knucleotide-250000.fasta",
+      "output": "A 30.328 / T 30.079 / C 19.799 / G 19.794 /  / AA 9.188 / TA 9.122 / ...",
+      "reference": "A 30.328 / T 30.079 / C 19.799 / G 19.794 /  / AA 9.188 / TA 9.122 / ...",
+      "status": "ok",
+      "build_time_s": 2.9491433960210998,
+      "run_time_s": 0.006396101001882926,
+      "run_time_relative_spread": 0.05152780024651137,
+      "measured_runs": 5,
+      "peak_memory_kib": 84144,
+      "binary_size_bytes": 383264
+    },
+    {
+      "benchmark": "knucleotide",
+      "entry": "sarif__stage0",
+      "input": "fixture:knucleotide-250000.fasta",
+      "output": "A 30.328 / T 30.079 / C 19.799 / G 19.794 /  / AA 9.188 / TA 9.122 / ...",
+      "reference": "A 30.328 / T 30.079 / C 19.799 / G 19.794 /  / AA 9.188 / TA 9.122 / ...",
+      "status": "ok",
+      "build_time_s": 0.039611485990462825,
+      "run_time_s": 0.005621980002615601,
+      "run_time_relative_spread": 0.1779613208820954,
+      "measured_runs": 5,
+      "peak_memory_kib": 84144,
+      "binary_size_bytes": 12680
+    },
+    {
+      "benchmark": "revcomp",
+      "entry": "c__clang",
+      "input": "fixture:knucleotide-250000.fasta",
+      "output": "sha256:14899a73679b1d83",
+      "reference": "sha256:14899a73679b1d83",
+      "status": "ok",
+      "build_time_s": 0.10589684199658222,
+      "run_time_s": 0.001828327978728339,
+      "run_time_relative_spread": 0.43391448679531996,
+      "measured_runs": 5,
+      "peak_memory_kib": 84144,
+      "binary_size_bytes": 6856
+    },
+    {
+      "benchmark": "revcomp",
+      "entry": "go__gc",
+      "input": "fixture:knucleotide-250000.fasta",
+      "output": "sha256:14899a73679b1d83",
+      "reference": "sha256:14899a73679b1d83",
+      "status": "ok",
+      "build_time_s": 0.12183529499452561,
+      "run_time_s": 0.0060056590009480715,
+      "run_time_relative_spread": 0.2529810634280874,
+      "measured_runs": 5,
+      "peak_memory_kib": 84144,
+      "binary_size_bytes": 1503358
+    },
+    {
+      "benchmark": "revcomp",
+      "entry": "moonbit__native",
+      "input": "fixture:knucleotide-250000.fasta",
+      "output": "sha256:14899a73679b1d83",
+      "reference": "sha256:14899a73679b1d83",
+      "status": "ok",
+      "build_time_s": 0.8810633859829977,
+      "run_time_s": 0.01582742398022674,
+      "run_time_relative_spread": 0.13880970125550068,
+      "measured_runs": 5,
+      "peak_memory_kib": 84144,
+      "binary_size_bytes": 176728
+    },
+    {
+      "benchmark": "revcomp",
+      "entry": "nim__clang",
+      "input": "fixture:knucleotide-250000.fasta",
+      "output": "sha256:14899a73679b1d83",
+      "reference": "sha256:14899a73679b1d83",
+      "status": "ok",
+      "build_time_s": 1.1476973370008636,
+      "run_time_s": 0.0032319390156771988,
+      "run_time_relative_spread": 0.22746066836208684,
+      "measured_runs": 5,
+      "peak_memory_kib": 84144,
+      "binary_size_bytes": 26312
+    },
+    {
+      "benchmark": "revcomp",
+      "entry": "ocaml__native",
+      "input": "fixture:knucleotide-250000.fasta",
+      "output": "sha256:14899a73679b1d83",
+      "reference": "sha256:14899a73679b1d83",
+      "status": "ok",
+      "build_time_s": 0.12861891300417483,
+      "run_time_s": 0.007156506995670497,
+      "run_time_relative_spread": 0.16073427763936407,
+      "measured_runs": 5,
+      "peak_memory_kib": 84144,
+      "binary_size_bytes": 793328
+    },
+    {
+      "benchmark": "revcomp",
+      "entry": "rust__llvm",
+      "input": "fixture:knucleotide-250000.fasta",
+      "output": "sha256:14899a73679b1d83",
+      "reference": "sha256:14899a73679b1d83",
+      "status": "ok",
+      "build_time_s": 2.990060309995897,
+      "run_time_s": 0.003354549000505358,
+      "run_time_relative_spread": 0.314943075578468,
+      "measured_runs": 5,
+      "peak_memory_kib": 84144,
+      "binary_size_bytes": 340672
+    },
+    {
+      "benchmark": "revcomp",
+      "entry": "sarif__stage0",
+      "input": "fixture:knucleotide-250000.fasta",
+      "output": "sha256:14899a73679b1d83",
+      "reference": "sha256:14899a73679b1d83",
+      "status": "ok",
+      "build_time_s": 0.043063498014817014,
+      "run_time_s": 0.004920604988001287,
+      "run_time_relative_spread": 0.1630254798732128,
+      "measured_runs": 5,
+      "peak_memory_kib": 84144,
+      "binary_size_bytes": 8728
+    },
+    {
+      "benchmark": "sortuniq",
+      "entry": "c__clang",
+      "input": "fixture:words-250000.txt",
+      "output": "sha256:6b28b0e803b80ff3",
+      "reference": "sha256:6b28b0e803b80ff3",
+      "status": "ok",
+      "build_time_s": 0.08898392302216962,
+      "run_time_s": 0.08602933402289636,
+      "run_time_relative_spread": 0.17897508099751241,
+      "measured_runs": 5,
+      "peak_memory_kib": 84144,
+      "binary_size_bytes": 6112
+    },
+    {
+      "benchmark": "sortuniq",
+      "entry": "go__gc",
+      "input": "fixture:words-250000.txt",
+      "output": "sha256:6b28b0e803b80ff3",
+      "reference": "sha256:6b28b0e803b80ff3",
+      "status": "ok",
+      "build_time_s": 0.12316128998645581,
+      "run_time_s": 0.050623010989511386,
+      "run_time_relative_spread": 0.07531691451794638,
+      "measured_runs": 5,
+      "peak_memory_kib": 84144,
+      "binary_size_bytes": 1613950
+    },
+    {
+      "benchmark": "sortuniq",
+      "entry": "moonbit__native",
+      "input": "fixture:words-250000.txt",
+      "output": "sha256:6b28b0e803b80ff3",
+      "reference": "sha256:6b28b0e803b80ff3",
+      "status": "ok",
+      "build_time_s": 0.9465476089972071,
+      "run_time_s": 0.3510936729871901,
+      "run_time_relative_spread": 0.017932604523544084,
+      "measured_runs": 2,
+      "peak_memory_kib": 84144,
+      "binary_size_bytes": 179480
+    },
+    {
+      "benchmark": "sortuniq",
+      "entry": "nim__clang",
+      "input": "fixture:words-250000.txt",
+      "output": "sha256:6b28b0e803b80ff3",
+      "reference": "sha256:6b28b0e803b80ff3",
+      "status": "ok",
+      "build_time_s": 1.217115758016007,
+      "run_time_s": 0.133716190000996,
+      "run_time_relative_spread": 0.46457986136058466,
+      "measured_runs": 5,
+      "peak_memory_kib": 84144,
+      "binary_size_bytes": 28328
+    },
+    {
+      "benchmark": "sortuniq",
+      "entry": "ocaml__native",
+      "input": "fixture:words-250000.txt",
+      "output": "sha256:6b28b0e803b80ff3",
+      "reference": "sha256:6b28b0e803b80ff3",
+      "status": "ok",
+      "build_time_s": 0.17312562800361775,
+      "run_time_s": 0.23927491801441647,
+      "run_time_relative_spread": 0.11657421607796856,
+      "measured_runs": 5,
+      "peak_memory_kib": 84144,
+      "binary_size_bytes": 1029584
+    },
+    {
+      "benchmark": "sortuniq",
+      "entry": "rust__llvm",
+      "input": "fixture:words-250000.txt",
+      "output": "sha256:6b28b0e803b80ff3",
+      "reference": "sha256:6b28b0e803b80ff3",
+      "status": "ok",
+      "build_time_s": 2.8182425670092925,
+      "run_time_s": 0.0638697870017495,
+      "run_time_relative_spread": 0.08677140230730332,
+      "measured_runs": 5,
+      "peak_memory_kib": 84144,
+      "binary_size_bytes": 349136
+    },
+    {
+      "benchmark": "sortuniq",
+      "entry": "sarif__stage0",
+      "input": "fixture:words-250000.txt",
+      "output": "sha256:6b28b0e803b80ff3",
+      "reference": "sha256:6b28b0e803b80ff3",
+      "status": "ok",
+      "build_time_s": 0.03241348100709729,
+      "run_time_s": 0.021345079003367573,
+      "run_time_relative_spread": 0.1248900504441348,
+      "measured_runs": 5,
+      "peak_memory_kib": 84144,
+      "binary_size_bytes": 10328
     }
   ]
 }
