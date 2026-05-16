@@ -1,0 +1,17 @@
+{
+  "id": "primecount",
+  "order": 55,
+  "category": "numeric_compute",
+  "input": {"kind": "args", "value": "50000"},
+  "weight": 1.0,
+  "check": "exact",
+  "algorithm": "trial-division prime counting",
+  "time_complexity": "O(n sqrt(n))",
+  "space_complexity": "O(1)",
+  "output_contract": "exact I32 count of primes below n",
+  "fairness_notes": "No precomputed tables; each candidate trial-divided by all odd integers up to sqrt(n).",
+  "capabilities": ["numeric_compute", "integer_division", "integer_modulo"],
+  "retained_for": "Only benchmark centered on integer division and modulo throughput with deterministic branching.",
+  "threads": 1,
+  "external_deps": false
+}

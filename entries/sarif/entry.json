@@ -6,6 +6,7 @@
     "csvgroupby",
     "joinagg",
     "mandelbrot",
+    "primecount",
     "fasta",
     "nbody",
     "revcomp",
