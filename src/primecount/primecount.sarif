@@ -6,14 +6,10 @@ fn is_prime(n: I32) -> Bool {
             n == 2
         } else {
             let mut i = 3;
-            let mut ok = true;
-            while n / i >= i {
-                if n % i == 0 {
-                    ok = false;
-                };
+            while n / i >= i and n % i != 0 {
                 i = i + 2;
             };
-            ok
+            n / i < i
         }
     }
 }
