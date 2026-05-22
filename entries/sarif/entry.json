@@ -22,6 +22,20 @@
       "compiler": "sarifc",
       "backend": "native",
       "required_tools": ["cargo", "rustc"]
+    },
+    {
+      "key": "sarif__c",
+      "label": "sarif (c/gcc)",
+      "compiler": "sarifc",
+      "backend": "c",
+      "required_tools": ["gcc"]
+    },
+    {
+      "key": "sarif__wasm",
+      "label": "sarif (wasm/node)",
+      "compiler": "sarifc",
+      "backend": "wasm",
+      "required_tools": ["node"]
     }
   ],
   "build": {

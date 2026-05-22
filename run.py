@@ -930,7 +930,24 @@ def build_command(spec: BenchmarkSpec, entry: EntrySpec, binary: Path, build_dir
             "cmd/main",
         ]
     if entry.language == "sarif":
-        return [*sarifc_driver_command(build=True), "build", str(source), "--print-main", "-o", str(binary)]
+        driver_cmd = ' '.join(f"'{arg}'" for arg in sarifc_driver_command(build=True))
+        if entry.backend == "wasm":
+            cmd_str = (
+                f"{driver_cmd} build '{source}' --target wasm --print-main -o '{binary}.wasm' && "
+                f"echo '#!/bin/bash' > '{binary}' && "
+                f"echo 'exec node /home/user/bnch/tools/run_wasm.js {binary}.wasm \"\\$@\"' >> '{binary}' && "
+                f"chmod +x '{binary}'"
+            )
+            return ["bash", "-c", cmd_str]
+        elif entry.backend == "c":
+            cmd_str = (
+                f"{driver_cmd} build '{source}' --target c --print-main -o '{binary}.c' && "
+                f"gcc -O3 -flto -march=native -mtune=native -fomit-frame-pointer -fno-math-errno -fno-trapping-math -pipe -s "
+                f"'{binary}.c' /home/user/sarif/runtime/sarif_runtime.c -o '{binary}' -lm -lpthread"
+            )
+            return ["bash", "-c", cmd_str]
+        else:
+            return [*sarifc_driver_command(build=True), "build", str(source), "--print-main", "-o", str(binary)]
     raise ValueError(f"unsupported language: {entry.language}")
 
 
