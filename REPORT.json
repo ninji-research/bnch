@@ -428,12 +428,12 @@
       "output": "stretch tree of depth 21\t check: 4194303 / 1048576\t trees of depth 4\t...",
       "reference": "stretch tree of depth 21\t check: 4194303 / 1048576\t trees of depth 4\t...",
       "status": "ok",
-      "build_time_s": 0.2539745920075802,
-      "run_time_s": 3.256139171993709,
-      "run_time_relative_spread": 0.09339288830399566,
-      "measured_runs": 5,
+      "build_time_s": 0.03852208799798973,
+      "run_time_s": 3.278248994007299,
+      "run_time_relative_spread": 0.006362123815255778,
+      "measured_runs": 2,
       "peak_memory_kib": 100072,
-      "binary_size_bytes": 10064
+      "binary_size_bytes": 9848
     },
     {
       "benchmark": "csvgroupby",
@@ -442,12 +442,12 @@
       "output": "sha256:b7ce6bd0a0cc01ea",
       "reference": "sha256:b7ce6bd0a0cc01ea",
       "status": "ok",
-      "build_time_s": 0.33254235300410073,
-      "run_time_s": 0.018381093002972193,
-      "run_time_relative_spread": 0.09348214432945272,
+      "build_time_s": 0.034356682997895405,
+      "run_time_s": 0.01661852801044006,
+      "run_time_relative_spread": 0.1801451968276162,
       "measured_runs": 5,
-      "peak_memory_kib": 37500,
-      "binary_size_bytes": 13136
+      "peak_memory_kib": 37788,
+      "binary_size_bytes": 12912
     },
     {
       "benchmark": "joinagg",
@@ -456,12 +456,12 @@
       "output": "sha256:37c7ac2d5630fe43",
       "reference": "sha256:37c7ac2d5630fe43",
       "status": "ok",
-      "build_time_s": 0.05235018799430691,
-      "run_time_s": 0.056994839003891684,
-      "run_time_relative_spread": 0.17406867332015982,
+      "build_time_s": 0.04144354900927283,
+      "run_time_s": 0.05199175099551212,
+      "run_time_relative_spread": 0.10806700857556123,
       "measured_runs": 5,
-      "peak_memory_kib": 45536,
-      "binary_size_bytes": 17472
+      "peak_memory_kib": 45720,
+      "binary_size_bytes": 17056
     },
     {
       "benchmark": "fasta",
@@ -470,12 +470,12 @@
       "output": "sha256:dfd37a44ede2e23f",
       "reference": "sha256:dfd37a44ede2e23f",
       "status": "ok",
-      "build_time_s": 0.046853544990881346,
-      "run_time_s": 0.03136234200792387,
-      "run_time_relative_spread": 0.06205961924345814,
+      "build_time_s": 0.040402425001957454,
+      "run_time_s": 0.03133066800364759,
+      "run_time_relative_spread": 0.2713342725761896,
       "measured_runs": 5,
-      "peak_memory_kib": 59428,
-      "binary_size_bytes": 9424
+      "peak_memory_kib": 59612,
+      "binary_size_bytes": 9280
     },
     {
       "benchmark": "mandelbrot",
@@ -484,11 +484,11 @@
       "output": "sha256:e41a9386e912a316",
       "reference": "sha256:e41a9386e912a316",
       "status": "ok",
-      "build_time_s": 0.04532967800332699,
-      "run_time_s": 0.017422802004148252,
-      "run_time_relative_spread": 0.04891302744108214,
+      "build_time_s": 0.05221433599945158,
+      "run_time_s": 0.018480636994354427,
+      "run_time_relative_spread": 0.06925691940034343,
       "measured_runs": 5,
-      "peak_memory_kib": 71796,
+      "peak_memory_kib": 72060,
       "binary_size_bytes": 6032
     },
     {
@@ -498,12 +498,12 @@
       "output": "5133",
       "reference": "5133",
       "status": "ok",
-      "build_time_s": 0.04713507399719674,
-      "run_time_s": 0.0035218830016674474,
-      "run_time_relative_spread": 0.14779763969927737,
+      "build_time_s": 0.04220523800177034,
+      "run_time_s": 0.0030621920013800263,
+      "run_time_relative_spread": 0.15007386796144423,
       "measured_runs": 5,
-      "peak_memory_kib": 71796,
-      "binary_size_bytes": 6648
+      "peak_memory_kib": 72060,
+      "binary_size_bytes": 6632
     },
     {
       "benchmark": "spectralnorm",
@@ -512,12 +512,12 @@
       "output": "1.274224153",
       "reference": "1.274224153",
       "status": "ok",
-      "build_time_s": 0.04165784700307995,
-      "run_time_s": 1.3789863719866844,
-      "run_time_relative_spread": 0.03845685793059647,
+      "build_time_s": 0.053699511001468636,
+      "run_time_s": 1.4616339009953663,
+      "run_time_relative_spread": 0.04281039593109271,
       "measured_runs": 5,
-      "peak_memory_kib": 71796,
-      "binary_size_bytes": 9192
+      "peak_memory_kib": 72060,
+      "binary_size_bytes": 9120
     },
     {
       "benchmark": "nbody",
@@ -526,12 +526,12 @@
       "output": "-0.169075164 / -0.169083134",
       "reference": "-0.169075164 / -0.169083134",
       "status": "ok",
-      "build_time_s": 0.05865692200313788,
-      "run_time_s": 0.3439510349999182,
-      "run_time_relative_spread": 0.02028262543762639,
-      "measured_runs": 2,
-      "peak_memory_kib": 71796,
-      "binary_size_bytes": 15168
+      "build_time_s": 0.05443137799738906,
+      "run_time_s": 0.3530024619976757,
+      "run_time_relative_spread": 0.1310625249708016,
+      "measured_runs": 5,
+      "peak_memory_kib": 72060,
+      "binary_size_bytes": 15104
     },
     {
       "benchmark": "knucleotide",
@@ -540,12 +540,12 @@
       "output": "A 30.328 / T 30.079 / C 19.799 / G 19.794 /  / AA 9.188 / TA 9.122 / ...",
       "reference": "A 30.328 / T 30.079 / C 19.799 / G 19.794 /  / AA 9.188 / TA 9.122 / ...",
       "status": "ok",
-      "build_time_s": 0.058931677995133214,
-      "run_time_s": 0.004818696004804224,
-      "run_time_relative_spread": 0.15918560037887255,
+      "build_time_s": 0.06076926799141802,
+      "run_time_s": 0.005664269992848858,
+      "run_time_relative_spread": 0.06012178118770082,
       "measured_runs": 5,
-      "peak_memory_kib": 71796,
-      "binary_size_bytes": 13600
+      "peak_memory_kib": 72060,
+      "binary_size_bytes": 13352
     },
     {
       "benchmark": "revcomp",
@@ -554,12 +554,12 @@
       "output": "sha256:14899a73679b1d83",
       "reference": "sha256:14899a73679b1d83",
       "status": "ok",
-      "build_time_s": 0.03687693599204067,
-      "run_time_s": 0.004082429004483856,
-      "run_time_relative_spread": 0.3216599694908846,
+      "build_time_s": 0.040990769004565664,
+      "run_time_s": 0.0043872210080735385,
+      "run_time_relative_spread": 0.14653672311729296,
       "measured_runs": 5,
-      "peak_memory_kib": 71796,
-      "binary_size_bytes": 8632
+      "peak_memory_kib": 72060,
+      "binary_size_bytes": 8520
     },
     {
       "benchmark": "sortuniq",
@@ -568,12 +568,12 @@
       "output": "sha256:6b28b0e803b80ff3",
       "reference": "sha256:6b28b0e803b80ff3",
       "status": "ok",
-      "build_time_s": 0.046578719993704,
-      "run_time_s": 0.019119525008136407,
-      "run_time_relative_spread": 0.05704331054541679,
+      "build_time_s": 0.03450174401223194,
+      "run_time_s": 0.020577133996994235,
+      "run_time_relative_spread": 0.12311500700165187,
       "measured_runs": 5,
-      "peak_memory_kib": 71796,
-      "binary_size_bytes": 11984
+      "peak_memory_kib": 72060,
+      "binary_size_bytes": 11800
     }
   ]
 }
