@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.backends._legacy:_Backend"
+
+[project]
+name = "bnch"
+version = "0.1.0"
+description = "Fixed-host benchmark harness for canonical native-language implementations"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+keywords = ["benchmark", "harness", "native", "compiler"]
+authors = [{name = "NINJI Research"}]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["run*", "tools/*", "tests/*"]
+
+[tool.setuptools.package-data]
+"*" = ["*.json", "*.md", "*.sarif", "*.c", "*.go", "*.rs", "*.nim", "*.ml"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
