@@ -637,6 +637,16 @@ def sarif_bin_candidates() -> tuple[Path, ...]:
     return tuple(candidates)
 
 
+def find_sarif_runtime() -> Path:
+    for repo in sarif_repo_candidates():
+        runtime = repo / "runtime" / "sarif_runtime.c"
+        if runtime.is_file():
+            return runtime
+    raise ValueError(
+        "sarif runtime requires BNCH_SARIF_REPO, ~/sarif, or ~/sarif-main to have runtime/sarif_runtime.c"
+    )
+
+
 def sarif_binary_is_fresh(repo: Path, binary: Path) -> bool:
     if not binary.is_file():
         return False
@@ -935,7 +945,7 @@ def build_command(spec: BenchmarkSpec, entry: EntrySpec, binary: Path, build_dir
             cmd_str = (
                 f"{driver_cmd} build '{source}' --target wasm --print-main -o '{binary}.wasm' && "
                 f"echo '#!/bin/bash' > '{binary}' && "
-                f"echo 'exec node /home/user/bnch/tools/run_wasm.js {binary}.wasm \"\\$@\"' >> '{binary}' && "
+                f"echo 'exec node {ROOT / "tools/run_wasm.js"} {binary}.wasm \"\\$@\"' >> '{binary}' && "
                 f"chmod +x '{binary}'"
             )
             return ["bash", "-c", cmd_str]
@@ -943,7 +953,7 @@ def build_command(spec: BenchmarkSpec, entry: EntrySpec, binary: Path, build_dir
             cmd_str = (
                 f"{driver_cmd} build '{source}' --target c --print-main -o '{binary}.c' && "
                 f"gcc -O2 -flto -march=native -mtune=native -fomit-frame-pointer -fno-math-errno -fno-trapping-math -pipe -s "
-                f"'{binary}.c' /home/user/sarif/runtime/sarif_runtime.c -o '{binary}' -lm -lpthread"
+                f"'{binary}.c' '{find_sarif_runtime()}' -o '{binary}' -lm -lpthread"
             )
             return ["bash", "-c", cmd_str]
         else:

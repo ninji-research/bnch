@@ -8,7 +8,7 @@
     "max_relative_spread": 0.03,
     "build_jobs": 16,
     "canonical_entries_only": true,
-    "experimental_entries": false,
+    "experimental_entries": true,
     "selected_benchmarks": "primecount",
     "cpu_affinity": "",
     "scoring_balance": "equal category weight, benchmark weights normalized within category",
@@ -29,34 +29,47 @@
       "nim": "Nim Compiler Version 2.2.10 [Linux: amd64]",
       "ocamlopt": "5.4.1",
       "moon": "moon 0.1.20260512 (81d40e3 2026-05-12)",
-      "strip": "GNU strip (GNU Binutils) 2.46.0"
+      "strip": "GNU strip (GNU Binutils) 2.46.0",
+      "sarifc": "sarifc 0.1.0"
     }
   },
   "comparative": false,
   "comparative_note": "This report is non-comparative: only one scored entry is present, so ranks and normalized scores are placeholders rather than cross-language conclusions.",
   "entries": [
     {
-      "key": "rust__llvm",
-      "label": "rust (rustc/llvm)",
-      "language": "rust",
-      "compiler": "rustc",
-      "backend": "llvm",
+      "key": "sarif__stage0",
+      "label": "sarif (stage0/native)",
+      "language": "sarif",
+      "compiler": "sarifc",
+      "backend": "native",
       "track": "main",
       "canonical": true,
-      "supported_benchmarks": null,
-      "build_profile": "native-thin-lto",
+      "supported_benchmarks": [
+        "binarytrees",
+        "csvgroupby",
+        "joinagg",
+        "mandelbrot",
+        "primecount",
+        "fasta",
+        "nbody",
+        "revcomp",
+        "spectralnorm",
+        "knucleotide",
+        "sortuniq"
+      ],
+      "build_profile": "stage0-native",
       "optimization_notes": [
-        "target-cpu=native",
-        "thin LTO and single codegen unit",
-        "panic abort and symbol stripping for release binaries"
+        "native executable emitted through sarifc build",
+        "stdout result mode for benchmark output parity",
+        "retained benchmark inputs declared in per-benchmark specs"
       ]
     }
   ],
   "source_metrics": {
-    "rust__llvm": {
+    "sarif__stage0": {
       "benchmarks": 1,
-      "source_lines": 30,
-      "source_chars": 516
+      "source_lines": 32,
+      "source_chars": 571
     }
   },
   "benchmarks": [
@@ -83,41 +96,41 @@
   ],
   "category_scores": {
     "numeric_compute": {
-      "rust__llvm": 1.0
+      "sarif__stage0": 1.0
     }
   },
   "overall_scores": {
-    "rust__llvm": 1.0
+    "sarif__stage0": 1.0
   },
   "overall_ranks": {
-    "rust__llvm": 1
+    "sarif__stage0": 1
   },
   "metric_scores": {
     "Speed": {
-      "rust__llvm": 1.0
+      "sarif__stage0": 1.0
     },
     "Memory": {
-      "rust__llvm": 1.0
+      "sarif__stage0": 1.0
     },
     "Build": {
-      "rust__llvm": 1.0
+      "sarif__stage0": 1.0
     },
     "Size": {
-      "rust__llvm": 1.0
+      "sarif__stage0": 1.0
     }
   },
   "metric_ranks": {
     "Speed": {
-      "rust__llvm": 1
+      "sarif__stage0": 1
     },
     "Memory": {
-      "rust__llvm": 1
+      "sarif__stage0": 1
     },
     "Build": {
-      "rust__llvm": 1
+      "sarif__stage0": 1
     },
     "Size": {
-      "rust__llvm": 1
+      "sarif__stage0": 1
     }
   },
   "decision_profiles": [
@@ -125,82 +138,82 @@
       "label": "Balanced",
       "description": "Default composite across speed, memory, build time, and binary size.",
       "overall_scores": {
-        "rust__llvm": 1.0
+        "sarif__stage0": 1.0
       },
       "overall_ranks": {
-        "rust__llvm": 1
+        "sarif__stage0": 1
       },
       "leaders": [
-        "rust__llvm"
+        "sarif__stage0"
       ]
     },
     {
       "label": "Speed First",
       "description": "Throughput or latency matters most.",
       "overall_scores": {
-        "rust__llvm": 1.0
+        "sarif__stage0": 1.0
       },
       "overall_ranks": {
-        "rust__llvm": 1
+        "sarif__stage0": 1
       },
       "leaders": [
-        "rust__llvm"
+        "sarif__stage0"
       ]
     },
     {
       "label": "Memory First",
       "description": "RAM pressure matters most.",
       "overall_scores": {
-        "rust__llvm": 1.0
+        "sarif__stage0": 1.0
       },
       "overall_ranks": {
-        "rust__llvm": 1
+        "sarif__stage0": 1
       },
       "leaders": [
-        "rust__llvm"
+        "sarif__stage0"
       ]
     },
     {
       "label": "Build First",
       "description": "Build and iteration cost matter most.",
       "overall_scores": {
-        "rust__llvm": 1.0
+        "sarif__stage0": 1.0
       },
       "overall_ranks": {
-        "rust__llvm": 1
+        "sarif__stage0": 1
       },
       "leaders": [
-        "rust__llvm"
+        "sarif__stage0"
       ]
     },
     {
       "label": "Deploy First",
       "description": "Artifact footprint matters alongside runtime.",
       "overall_scores": {
-        "rust__llvm": 1.0
+        "sarif__stage0": 1.0
       },
       "overall_ranks": {
-        "rust__llvm": 1
+        "sarif__stage0": 1
       },
       "leaders": [
-        "rust__llvm"
+        "sarif__stage0"
       ]
     }
   ],
   "results": [
     {
       "benchmark": "primecount",
-      "entry": "rust__llvm",
+      "entry": "sarif__stage0",
       "input": "50000",
       "output": "5133",
       "reference": "5133",
       "status": "ok",
-      "build_time_s": 2.816446459997678,
-      "run_time_s": 0.002330884017283097,
+      "build_time_s": 0.03862742299679667,
+      "run_time_s": 0.002796657005092129,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 40812,
-      "binary_size_bytes": 336696
+      "peak_memory_kib": 40472,
+      "binary_size_bytes": 6720
     }
   ]
 }

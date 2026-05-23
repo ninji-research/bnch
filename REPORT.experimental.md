@@ -12,7 +12,7 @@
 | max_relative_spread    | 0.03                                                                                                                                                            |
 | build_jobs             | 16                                                                                                                                                              |
 | canonical_entries_only | yes                                                                                                                                                             |
-| experimental_entries   | no                                                                                                                                                              |
+| experimental_entries   | yes                                                                                                                                                             |
 | selected_benchmarks    | primecount                                                                                                                                                      |
 | cpu_affinity           | -                                                                                                                                                               |
 | scoring_balance        | equal category weight, benchmark weights normalized within category                                                                                             |
@@ -33,24 +33,25 @@
 | ocamlopt               | 5.4.1                                                                                                                                                           |
 | moon                   | moon 0.1.20260512 (81d40e3 2026-05-12)                                                                                                                          |
 | strip                  | GNU strip (GNU Binutils) 2.46.0                                                                                                                                 |
+| sarifc                 | sarifc 0.1.0                                                                                                                                                    |
 
 ## Entries
 
-| Entry             | Compiler | Backend | Linkage | Stripped | Binary Size Sample (KiB) |
-| ----------------- | -------- | ------- | ------- | -------- | ------------------------ |
-| rust (rustc/llvm) | rustc    | llvm    | dynamic | yes      | 328.80                   |
+| Entry                 | Compiler | Backend | Linkage | Stripped | Binary Size Sample (KiB) |
+| --------------------- | -------- | ------- | ------- | -------- | ------------------------ |
+| sarif (stage0/native) | sarifc   | native  | dynamic | yes      | 6.56                     |
 
 ## Entry Policies
 
-| Entry             | Build Profile   | Low-Burden Optimizations                                                                                   |
-| ----------------- | --------------- | ---------------------------------------------------------------------------------------------------------- |
-| rust (rustc/llvm) | native-thin-lto | target-cpu=native; thin LTO and single codegen unit; panic abort and symbol stripping for release binaries |
+| Entry                 | Build Profile | Low-Burden Optimizations                                                                                                                                  |
+| --------------------- | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| sarif (stage0/native) | stage0-native | native executable emitted through sarifc build; stdout result mode for benchmark output parity; retained benchmark inputs declared in per-benchmark specs |
 
 ## Source Concision
 
-| Entry             | Benchmarks | Source Lines | Source Chars | Norm Lines | Norm Chars |
-| ----------------- | ---------- | ------------ | ------------ | ---------- | ---------- |
-| rust (rustc/llvm) | 1          | 30           | 516          | 1.0000     | 1.0000     |
+| Entry                 | Benchmarks | Source Lines | Source Chars | Norm Lines | Norm Chars |
+| --------------------- | ---------- | ------------ | ------------ | ---------- | ---------- |
+| sarif (stage0/native) | 1          | 32           | 571          | 1.0000     | 1.0000     |
 
 ## Benchmark Coverage
 
@@ -70,54 +71,54 @@ This report is non-comparative: only one scored entry is present, so ranks and n
 
 ## Decision Profiles
 
-| Profile      | Leader            | Runner-Up | Third | Intent                                                               |
-| ------------ | ----------------- | --------- | ----- | -------------------------------------------------------------------- |
-| Balanced     | rust (rustc/llvm) | -         | -     | Default composite across speed, memory, build time, and binary size. |
-| Speed First  | rust (rustc/llvm) | -         | -     | Throughput or latency matters most.                                  |
-| Memory First | rust (rustc/llvm) | -         | -     | RAM pressure matters most.                                           |
-| Build First  | rust (rustc/llvm) | -         | -     | Build and iteration cost matter most.                                |
-| Deploy First | rust (rustc/llvm) | -         | -     | Artifact footprint matters alongside runtime.                        |
+| Profile      | Leader                | Runner-Up | Third | Intent                                                               |
+| ------------ | --------------------- | --------- | ----- | -------------------------------------------------------------------- |
+| Balanced     | sarif (stage0/native) | -         | -     | Default composite across speed, memory, build time, and binary size. |
+| Speed First  | sarif (stage0/native) | -         | -     | Throughput or latency matters most.                                  |
+| Memory First | sarif (stage0/native) | -         | -     | RAM pressure matters most.                                           |
+| Build First  | sarif (stage0/native) | -         | -     | Build and iteration cost matter most.                                |
+| Deploy First | sarif (stage0/native) | -         | -     | Artifact footprint matters alongside runtime.                        |
 
 ## Categories
 
-| Entry             | Numeric | Overall |
-| ----------------- | ------- | ------- |
-| rust (rustc/llvm) | 1.0000  | 1.0000  |
+| Entry                 | Numeric | Overall |
+| --------------------- | ------- | ------- |
+| sarif (stage0/native) | 1.0000  | 1.0000  |
 
 ## Summary
 
-| Overall | Entry             | Score  | Speed  | Memory | Build  | Size   |
-| ------- | ----------------- | ------ | ------ | ------ | ------ | ------ |
-| 1       | rust (rustc/llvm) | 1.0000 | 1.0000 | 1.0000 | 1.0000 | 1.0000 |
+| Overall | Entry                 | Score  | Speed  | Memory | Build  | Size   |
+| ------- | --------------------- | ------ | ------ | ------ | ------ | ------ |
+| 1       | sarif (stage0/native) | 1.0000 | 1.0000 | 1.0000 | 1.0000 | 1.0000 |
 
 _Displayed scores use median runtime with equal category weighting and benchmark normalization inside each category. Views stay on the same absolute 0..1 scale across report revisions, so regressions remain directly comparable over time._
 
 ## Speed View
 
-| Speed Rank | Entry             | Speed Score | Composite Score |
-| ---------- | ----------------- | ----------- | --------------- |
-| 1          | rust (rustc/llvm) | 1.0000      | 1.0000          |
+| Speed Rank | Entry                 | Speed Score | Composite Score |
+| ---------- | --------------------- | ----------- | --------------- |
+| 1          | sarif (stage0/native) | 1.0000      | 1.0000          |
 
 ## Memory View
 
-| Memory Rank | Entry             | Memory Score | Composite Score |
-| ----------- | ----------------- | ------------ | --------------- |
-| 1           | rust (rustc/llvm) | 1.0000       | 1.0000          |
+| Memory Rank | Entry                 | Memory Score | Composite Score |
+| ----------- | --------------------- | ------------ | --------------- |
+| 1           | sarif (stage0/native) | 1.0000       | 1.0000          |
 
 ## Build View
 
-| Build Rank | Entry             | Build Score | Composite Score |
-| ---------- | ----------------- | ----------- | --------------- |
-| 1          | rust (rustc/llvm) | 1.0000      | 1.0000          |
+| Build Rank | Entry                 | Build Score | Composite Score |
+| ---------- | --------------------- | ----------- | --------------- |
+| 1          | sarif (stage0/native) | 1.0000      | 1.0000          |
 
 ## Size View
 
-| Size Rank | Entry             | Size Score | Composite Score |
-| --------- | ----------------- | ---------- | --------------- |
-| 1         | rust (rustc/llvm) | 1.0000     | 1.0000          |
+| Size Rank | Entry                 | Size Score | Composite Score |
+| --------- | --------------------- | ---------- | --------------- |
+| 1         | sarif (stage0/native) | 1.0000     | 1.0000          |
 
 ## Results
 
-| Benchmark  | Entry             | Input | Output | Build Time (s) | Run Time (s) | Peak Memory (MiB) | Binary Size (KiB) | Status |
-| ---------- | ----------------- | ----- | ------ | -------------- | ------------ | ----------------- | ----------------- | ------ |
-| primecount | rust (rustc/llvm) | 50000 | 5133   | 2.8164         | 0.0023       | 39.86             | 328.80            | ok     |
+| Benchmark  | Entry                 | Input | Output | Build Time (s) | Run Time (s) | Peak Memory (MiB) | Binary Size (KiB) | Status |
+| ---------- | --------------------- | ----- | ------ | -------------- | ------------ | ----------------- | ----------------- | ------ |
+| primecount | sarif (stage0/native) | 50000 | 5133   | 0.0386         | 0.0028       | 39.52             | 6.56              | ok     |
