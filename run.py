@@ -942,7 +942,7 @@ def build_command(spec: BenchmarkSpec, entry: EntrySpec, binary: Path, build_dir
         elif entry.backend == "c":
             cmd_str = (
                 f"{driver_cmd} build '{source}' --target c --print-main -o '{binary}.c' && "
-                f"gcc -O3 -flto -march=native -mtune=native -fomit-frame-pointer -fno-math-errno -fno-trapping-math -pipe -s "
+                f"gcc -O2 -flto -march=native -mtune=native -fomit-frame-pointer -fno-math-errno -fno-trapping-math -pipe -s "
                 f"'{binary}.c' /home/user/sarif/runtime/sarif_runtime.c -o '{binary}' -lm -lpthread"
             )
             return ["bash", "-c", cmd_str]

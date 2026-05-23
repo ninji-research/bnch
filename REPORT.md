@@ -5,9 +5,9 @@
 | Setting                | Value                                                                                                                                                           |
 | ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | objective              | Build the strongest fixed-host benchmark harness for canonical, production-ready native-language implementations, with correctness enforced before any ranking. |
-| runs                   | 5                                                                                                                                                               |
-| min_runs               | 2                                                                                                                                                               |
-| warmup                 | 1                                                                                                                                                               |
+| runs                   | 1                                                                                                                                                               |
+| min_runs               | 1                                                                                                                                                               |
+| warmup                 | 0                                                                                                                                                               |
 | runtime_target_s       | 0.35                                                                                                                                                            |
 | max_relative_spread    | 0.03                                                                                                                                                            |
 | build_jobs             | 16                                                                                                                                                              |
@@ -39,7 +39,7 @@
 
 | Entry                 | Compiler | Backend | Linkage | Stripped | Binary Size Sample (KiB) |
 | --------------------- | -------- | ------- | ------- | -------- | ------------------------ |
-| sarif (stage0/native) | sarifc   | native  | dynamic | yes      | 9.62                     |
+| sarif (stage0/native) | sarifc   | native  | -       | -        | 0.00                     |
 
 ## Entry Policies
 
@@ -51,7 +51,7 @@
 
 | Entry                 | Benchmarks | Source Lines | Source Chars | Norm Lines | Norm Chars |
 | --------------------- | ---------- | ------------ | ------------ | ---------- | ---------- |
-| sarif (stage0/native) | 11         | 979          | 35452        | 1.0000     | 1.0000     |
+| sarif (stage0/native) | 11         | 992          | 35706        | 1.0000     | 1.0000     |
 
 ## Benchmark Coverage
 
@@ -85,6 +85,12 @@
 | revcomp      | FASTA parsing plus reverse-complement text transformation                    | O(n)                     | O(n)                     | FASTA text with case-insensitive bases | Adds streaming-style text transformation and output reshaping with the same committed fixture family.                                                                  |
 | sortuniq     | line-oriented string sort and duplicate-count aggregation                    | O(n log n)               | O(n)                     | exact word,count text                  | Uses one committed deterministic newline-word fixture, includes empty-line noise, and rewards lean sort-plus-aggregation implementations.                              |
 
+## Excluded
+
+| Excluded From Score | Reason     |
+| ------------------- | ---------- |
+| binarytrees         | build-fail |
+
 ## Interpretation
 
 This report is non-comparative: only one scored entry is present, so ranks and normalized scores are placeholders rather than cross-language conclusions.
@@ -101,9 +107,9 @@ This report is non-comparative: only one scored entry is present, so ranks and n
 
 ## Categories
 
-| Entry                 | Numeric | Allocation | Hash/String | Text/Streaming | Parse/Aggregate | Join/Aggregate | Sort/Aggregate | Overall |
-| --------------------- | ------- | ---------- | ----------- | -------------- | --------------- | -------------- | -------------- | ------- |
-| sarif (stage0/native) | 1.0000  | 1.0000     | 1.0000      | 1.0000         | 1.0000          | 1.0000         | 1.0000         | 1.0000  |
+| Entry                 | Numeric | Hash/String | Text/Streaming | Parse/Aggregate | Join/Aggregate | Sort/Aggregate | Overall |
+| --------------------- | ------- | ----------- | -------------- | --------------- | -------------- | -------------- | ------- |
+| sarif (stage0/native) | 1.0000  | 1.0000      | 1.0000         | 1.0000          | 1.0000         | 1.0000         | 1.0000  |
 
 ## Summary
 
@@ -139,16 +145,22 @@ _Displayed scores use median runtime with equal category weighting and benchmark
 
 ## Results
 
-| Benchmark    | Entry                 | Input                            | Output                                                                   | Build Time (s) | Run Time (s) | Peak Memory (MiB) | Binary Size (KiB) | Status |
-| ------------ | --------------------- | -------------------------------- | ------------------------------------------------------------------------ | -------------- | ------------ | ----------------- | ----------------- | ------ |
-| binarytrees  | sarif (stage0/native) | 20                               | stretch tree of depth 21	 check: 4194303 / 1048576	 trees of depth 4	... | 0.0385         | 3.2782       | 97.73             | 9.62              | ok     |
-| csvgroupby   | sarif (stage0/native) | fixture:orders-120000.csv        | sha256:b7ce6bd0a0cc01ea                                                  | 0.0344         | 0.0166       | 36.90             | 12.61             | ok     |
-| fasta        | sarif (stage0/native) | 250000                           | sha256:dfd37a44ede2e23f                                                  | 0.0404         | 0.0313       | 58.21             | 9.06              | ok     |
-| joinagg      | sarif (stage0/native) | fixture:users-events-180000.txt  | sha256:37c7ac2d5630fe43                                                  | 0.0414         | 0.0520       | 44.65             | 16.66             | ok     |
-| knucleotide  | sarif (stage0/native) | fixture:knucleotide-250000.fasta | A 30.328 / T 30.079 / C 19.799 / G 19.794 /  / AA 9.188 / TA 9.122 / ... | 0.0608         | 0.0057       | 70.37             | 13.04             | ok     |
-| mandelbrot   | sarif (stage0/native) | 512                              | sha256:e41a9386e912a316                                                  | 0.0522         | 0.0185       | 70.37             | 5.89              | ok     |
-| nbody        | sarif (stage0/native) | 5000000                          | -0.169075164 / -0.169083134                                              | 0.0544         | 0.3530       | 70.37             | 14.75             | ok     |
-| primecount   | sarif (stage0/native) | 50000                            | 5133                                                                     | 0.0422         | 0.0031       | 70.37             | 6.48              | ok     |
-| revcomp      | sarif (stage0/native) | fixture:knucleotide-250000.fasta | sha256:14899a73679b1d83                                                  | 0.0410         | 0.0044       | 70.37             | 8.32              | ok     |
-| sortuniq     | sarif (stage0/native) | fixture:words-250000.txt         | sha256:6b28b0e803b80ff3                                                  | 0.0345         | 0.0206       | 70.37             | 11.52             | ok     |
-| spectralnorm | sarif (stage0/native) | 5000                             | 1.274224153                                                              | 0.0537         | 1.4616       | 70.37             | 8.91              | ok     |
+| Benchmark    | Entry                 | Input                            | Output                                                                   | Build Time (s) | Run Time (s) | Peak Memory (MiB) | Binary Size (KiB) | Status     |
+| ------------ | --------------------- | -------------------------------- | ------------------------------------------------------------------------ | -------------- | ------------ | ----------------- | ----------------- | ---------- |
+| binarytrees  | sarif (stage0/native) | 20                               | -                                                                        | 0.0101         | 0.0000       | 0.00              | 0.00              | build-fail |
+| csvgroupby   | sarif (stage0/native) | fixture:orders-120000.csv        | sha256:b7ce6bd0a0cc01ea                                                  | 0.0369         | 0.0174       | 39.56             | 12.61             | ok         |
+| fasta        | sarif (stage0/native) | 250000                           | sha256:dfd37a44ede2e23f                                                  | 0.3130         | 0.0326       | 44.64             | 9.09              | ok         |
+| joinagg      | sarif (stage0/native) | fixture:users-events-180000.txt  | sha256:37c7ac2d5630fe43                                                  | 0.0448         | 0.0512       | 44.64             | 16.66             | ok         |
+| knucleotide  | sarif (stage0/native) | fixture:knucleotide-250000.fasta | A 30.328 / T 30.079 / C 19.799 / G 19.794 /  / AA 9.188 / TA 9.122 / ... | 0.0461         | 0.0055       | 48.64             | 13.07             | ok         |
+| mandelbrot   | sarif (stage0/native) | 512                              | sha256:e41a9386e912a316                                                  | 0.0339         | 0.0168       | 48.64             | 5.97              | ok         |
+| nbody        | sarif (stage0/native) | 5000000                          | -0.169075164 / -0.169083134                                              | 0.0486         | 0.3433       | 48.64             | 14.78             | ok         |
+| primecount   | sarif (stage0/native) | 50000                            | 5133                                                                     | 0.0379         | 0.0031       | 48.64             | 6.56              | ok         |
+| revcomp      | sarif (stage0/native) | fixture:knucleotide-250000.fasta | sha256:14899a73679b1d83                                                  | 0.0371         | 0.0044       | 48.64             | 8.35              | ok         |
+| sortuniq     | sarif (stage0/native) | fixture:words-250000.txt         | sha256:6b28b0e803b80ff3                                                  | 0.0410         | 0.0209       | 48.64             | 11.52             | ok         |
+| spectralnorm | sarif (stage0/native) | 5000                             | 1.274224153                                                              | 0.0353         | 1.3442       | 48.64             | 8.94              | ok         |
+
+## Mismatches
+
+| Benchmark   | Entry                 | Output | Reference | Status     |
+| ----------- | --------------------- | ------ | --------- | ---------- |
+| binarytrees | sarif (stage0/native) | -      | -         | build-fail |
