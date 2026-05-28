@@ -7,8 +7,8 @@ fn scan_row_cuts(source: Text, start: I32, end: I32) -> RowCuts {
     let comma1 = text_find_byte_range(source, start, end, 44);
     let comma2 = text_find_byte_range(source, comma1 + 1, end, 44);
     RowCuts {
-        comma1,
-        comma2,
+        comma1: comma1,
+        comma2: comma2,
         comma3: text_find_byte_range(source, comma2 + 1, end, 44),
     }
 }
@@ -89,7 +89,7 @@ fn aggregate_join(input: Text) -> AggregateList effects [alloc] {
         };
         index = text_next_line(input, index);
     };
-    AggregateList { rows, len }
+    AggregateList { rows: rows, len: len }
 }
 
 fn main() -> Text effects [alloc] {

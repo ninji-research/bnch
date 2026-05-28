@@ -74,7 +74,24 @@ WebAssembly.instantiate(wasmBytes, imports)
         wasmMemory = result.instance.exports.memory;
         if (result.instance.exports.main) {
             const exitCode = result.instance.exports.main();
-            process.exit(Number(exitCode || 0));
+            if (exitCode !== undefined) {
+                const val = BigInt(exitCode);
+                const upper = val >> 32n;
+                const lower = val & 0xFFFFFFFFn;
+                if (upper !== 0n && upper !== 0xFFFFFFFFn && upper !== -1n) {
+                    const ptr = Number(lower);
+                    const len = Number(upper);
+                    const mem = new Uint8Array(wasmMemory.buffer);
+                    const bytes = mem.slice(ptr, ptr + len);
+                    process.stdout.write(bytes);
+                    process.exit(0);
+                } else {
+                    console.log(val.toString());
+                    process.exit(0);
+                }
+            } else {
+                process.exit(0);
+            }
         } else if (result.instance.exports._start) {
             result.instance.exports._start();
         } else {

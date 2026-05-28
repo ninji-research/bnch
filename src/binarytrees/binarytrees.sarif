@@ -56,6 +56,17 @@ fn make_depth_line(builder: TextBuilder, prefix: Text, v: I32, check: I32) -> Te
     append_newline(b)
 }
 
+fn make_iter_depth_line(builder: TextBuilder, iter: I32, depth: I32, check: I32) -> TextBuilder {
+    let mut b = append_int(builder, iter);
+    b = append_tab(b);
+    b = append_str(b, " trees of depth ");
+    b = append_int(b, depth);
+    b = append_tab(b);
+    b = append_str(b, " check: ");
+    b = append_int(b, check);
+    append_newline(b)
+}
+
 fn main() -> Text effects [alloc, io] {
     let n = default_n();
     let min_depth = 4;
@@ -76,7 +87,7 @@ fn main() -> Text effects [alloc, io] {
             check = check + item_check(t);
             i = i + 1;
         };
-        builder = make_depth_line(builder, "trees of depth ", depth, check);
+        builder = make_iter_depth_line(builder, iter, depth, check);
         depth = depth + 2;
     };
     builder = make_depth_line(builder, "long lived tree of depth ", max_depth, item_check(tree));

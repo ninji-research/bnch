@@ -14,7 +14,7 @@ fn count_words(input: Text) -> WordCounts effects [alloc] {
         if word.len > 0 {
             let pos = text_index_get_or_insert(words, word, len);
             if pos == len {
-                rows = list_push(rows, len, WordCount { word, count: 1 });
+                rows = list_push(rows, len, WordCount { word: word, count: 1 });
                 len += 1;
             } else {
                 let current = rows[pos];
@@ -23,7 +23,7 @@ fn count_words(input: Text) -> WordCounts effects [alloc] {
         };
         index = text_next_line(input, index);
     };
-    WordCounts { rows, len }
+    WordCounts { rows: rows, len: len }
 }
 
 fn main() -> Text effects [alloc] {

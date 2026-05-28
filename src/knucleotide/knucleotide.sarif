@@ -10,9 +10,11 @@ const MASK9: I32 = 262143;
 const MASK12: I32 = 16777215;
 
 fn line_is_three_header(source: Text, start: I32, end: I32) -> Bool {
-    end - start >= 6 and
-        text_byte(source, start) == 62 and
-        text_eq_range(source, start + 1, start + 6, "THREE")
+    let diff = end - start;
+    let cond1 = diff >= 6;
+    let cond2 = text_byte(source, start) == 62;
+    let cond3 = text_eq_range(source, start + 1, start + 6, "THREE");
+    cond1 and cond2 and cond3
 }
 
 fn encode_base(byte: I32) -> I32 {

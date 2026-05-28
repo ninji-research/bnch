@@ -24,10 +24,10 @@ fn group_orders(input: Text) -> AggregateList effects [alloc] {
                 let pos = text_index_get_or_insert(customers, customer, len);
                 if pos == len {
                     rows = list_push(rows, len, AggregateRow {
-                        customer,
+                        customer: customer,
                         count: 1,
-                        qty,
-                        cents,
+                        qty: qty,
+                        cents: cents,
                     });
                     len += 1;
                 } else {
@@ -43,7 +43,7 @@ fn group_orders(input: Text) -> AggregateList effects [alloc] {
         };
         index = text_next_line(input, index);
     };
-    AggregateList { rows, len }
+    AggregateList { rows: rows, len: len }
 }
 
 fn main() -> Text effects [alloc] {
