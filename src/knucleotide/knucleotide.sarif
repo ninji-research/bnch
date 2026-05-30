@@ -73,7 +73,7 @@ fn append_sorted_percent_lines(builder: TextBuilder, counts: List[I32], bucket_c
         let mut best_count = -1;
         repeat i in bucket_count {
             let count = counts[i];
-            if not (used[i]) and (best == -1 or count > best_count or (count == best_count and i < best)) {
+            if not used[i] and (best == -1 or count > best_count or (count == best_count and i < best)) {
                 best = i;
                 best_count = count;
             };
@@ -117,11 +117,11 @@ fn main() -> Text effects [alloc] {
                 while pos < content_end {
                     let code = encode_base(text_byte(input, pos));
                     if code >= 0 {
-                        counts1[code] = counts1[code] + 1;
-                        total = total + 1;
+                        counts1[code] += 1;
+                        total += 1;
                         if total >= 2 {
                             rolling2 = ((rolling2 << 2) & MASK2) | code;
-                            counts2[rolling2] = counts2[rolling2] + 1;
+                            counts2[rolling2] += 1;
                         } else {
                             rolling2 = code;
                         };
@@ -141,30 +141,30 @@ fn main() -> Text effects [alloc] {
                             rolling12 = (rolling12 << 2) | code;
                         };
                         if total >= 3 and (rolling6 & 63) == CODE_GGT {
-                            count_ggt = count_ggt + 1;
+                            count_ggt += 1;
                         };
                         if total >= 4 and (rolling6 & 255) == CODE_GGTA {
-                            count_ggta = count_ggta + 1;
+                            count_ggta += 1;
                         };
                         if total >= 6 and rolling6 == CODE_GGTATT {
-                            count_ggtatt = count_ggtatt + 1;
+                            count_ggtatt += 1;
                         };
                         if total >= 12 and rolling12 == CODE_GGTATTTTAATT {
-                            count_ggtattttaatt = count_ggtattttaatt + 1;
+                            count_ggtattttaatt += 1;
                         };
                         if total >= 9 {
                             let high9 = lag9[lag9_index];
                             lag9[lag9_index] = rolling9;
-                            lag9_index = lag9_index + 1;
+                            lag9_index += 1;
                             if lag9_index == 9 {
                                 lag9_index = 0;
                             };
                             if total >= 18 and high9 == CODE_GGTATTTTA_HI9 and rolling9 == CODE_GGTATTTTA_LO9 {
-                                count_ggtattttaatttatagt = count_ggtattttaatttatagt + 1;
+                                count_ggtattttaatttatagt += 1;
                             };
                         };
                     };
-                    pos = pos + 1;
+                    pos += 1;
                 };
             };
         };

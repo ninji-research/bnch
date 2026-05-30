@@ -36,14 +36,14 @@ fn flush_record(
         let mut line_len = 0;
         let mut index = seq_end;
         while index > seq_start {
-            index = index - 1;
+            index -= 1;
             let byte = text_byte(source, index);
             if byte != 10 and byte != 13 {
                 builder = text_builder_append_ascii(builder, complement_ascii(byte));
-                line_len = line_len + 1;
+                line_len += 1;
                 if line_len == WIDTH {
                     builder = text_builder_append_ascii(builder, 10);
-                    chunk_lines = chunk_lines + 1;
+                    chunk_lines += 1;
                     if chunk_lines == CHUNK_LINES {
                         builder = stdout_write_builder(builder);
                         chunk_lines = 0;

@@ -4,8 +4,8 @@ fn eval_a_times_u(u: List[F64], out_buffer: List[F64], n: I32) -> List[F64] {
         let mut sum = 0.0;
         let mut denom = ((i * (i + 1)) / 2) + i + 1;
         repeat j in n {
-            sum = sum + (1.0 / f64_from_i32(denom)) * u[j];
-            denom = denom + i + j + 1;
+            sum += (1.0 / f64_from_i32(denom)) * u[j];
+            denom += i + j + 1;
         };
         out[i] = sum;
     };
@@ -18,8 +18,8 @@ fn eval_at_times_u(u: List[F64], out_buffer: List[F64], n: I32) -> List[F64] {
         let mut sum = 0.0;
         let mut denom = ((i * (i + 1)) / 2) + 1;
         repeat j in n {
-            sum = sum + (1.0 / f64_from_i32(denom)) * u[j];
-            denom = denom + i + j + 2;
+            sum += (1.0 / f64_from_i32(denom)) * u[j];
+            denom += i + j + 2;
         };
         out[i] = sum;
     };
@@ -43,8 +43,8 @@ fn main() -> Text effects [alloc] {
     repeat i in n {
         let ui = u[i];
         let vi = v[i];
-        v_bv = v_bv + ui * vi;
-        vv = vv + vi * vi;
+        v_bv += ui * vi;
+        vv += vi * vi;
     };
 
     text_from_f64_fixed(sqrt(v_bv / vv), 9)

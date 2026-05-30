@@ -31,40 +31,28 @@ fn pow2(n: I32) -> I32 {
     if n == 0 { 1 } else { 2 * pow2(n - 1) }
 }
 
-fn append_str(b: TextBuilder, s: Text) -> TextBuilder {
-    text_builder_append(b, s)
-}
-
-fn append_int(b: TextBuilder, v: I32) -> TextBuilder {
-    text_builder_append_i32(b, v)
-}
-
-fn append_tab(b: TextBuilder) -> TextBuilder {
-    text_builder_append_ascii(b, 9)
-}
-
-fn append_newline(b: TextBuilder) -> TextBuilder {
-    text_builder_append_ascii(b, 10)
-}
-
 fn make_depth_line(builder: TextBuilder, prefix: Text, v: I32, check: I32) -> TextBuilder {
-    let mut b = append_str(builder, prefix);
-    b = append_int(b, v);
-    b = append_tab(b);
-    b = append_str(b, " check: ");
-    b = append_int(b, check);
-    append_newline(b)
+    let mut b = builder;
+    b += prefix;
+    b += v;
+    b += "\t";
+    b += " check: ";
+    b += check;
+    b += "\n";
+    b
 }
 
 fn make_iter_depth_line(builder: TextBuilder, iter: I32, depth: I32, check: I32) -> TextBuilder {
-    let mut b = append_int(builder, iter);
-    b = append_tab(b);
-    b = append_str(b, " trees of depth ");
-    b = append_int(b, depth);
-    b = append_tab(b);
-    b = append_str(b, " check: ");
-    b = append_int(b, check);
-    append_newline(b)
+    let mut b = builder;
+    b += iter;
+    b += "\t";
+    b += " trees of depth ";
+    b += depth;
+    b += "\t";
+    b += " check: ";
+    b += check;
+    b += "\n";
+    b
 }
 
 fn main() -> Text effects [alloc, io] {
@@ -84,11 +72,11 @@ fn main() -> Text effects [alloc, io] {
         let mut i = 0;
         while i < iter {
             let t = bottom_up_tree(depth);
-            check = check + item_check(t);
-            i = i + 1;
+            check += item_check(t);
+            i += 1;
         };
         builder = make_iter_depth_line(builder, iter, depth, check);
-        depth = depth + 2;
+        depth += 2;
     };
     builder = make_depth_line(builder, "long lived tree of depth ", max_depth, item_check(tree));
     text_builder_finish(builder)
