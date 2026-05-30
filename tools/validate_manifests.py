@@ -48,6 +48,7 @@ def has_unique_strings(values: list[object]) -> bool:
     normalized = [item.strip() for item in values if isinstance(item, str)]
     return len(normalized) == len(set(normalized))
 
+
 def benchmark_specs() -> dict[str, dict[str, object]]:
     return run.benchmark_manifest_data().documents
 

@@ -43,8 +43,7 @@ FIXED_ENV = {
 }
 
 PROJECT_OBJECTIVE = (
-    "Build the strongest fixed-host benchmark harness for canonical, production-ready native-language "
-    "implementations, with correctness enforced before any ranking."
+    "Build the strongest fixed-host benchmark harness for canonical, production-ready native-language implementations, with correctness enforced before any ranking."
 )
 
 METRIC_WEIGHTS = {
@@ -543,9 +542,11 @@ def sh(command: list[str], cwd: Path | None = None, capture: bool = True, cpu_li
 def timed(command: list[str], cwd: Path | None = None, stdin_text: str | None = None, cpu_list: str | None = None) -> tuple[subprocess.CompletedProcess[str], float, int]:
     env = os.environ.copy()
     env.update(FIXED_ENV)
-    with tempfile.NamedTemporaryFile("w+", encoding="utf-8") as stdout_file, tempfile.NamedTemporaryFile(
-        "w+", encoding="utf-8"
-    ) as stderr_file, tempfile.NamedTemporaryFile("w+", encoding="utf-8") as stdin_file:
+    with (
+        tempfile.NamedTemporaryFile("w+", encoding="utf-8") as stdout_file,
+        tempfile.NamedTemporaryFile("w+", encoding="utf-8") as stderr_file,
+        tempfile.NamedTemporaryFile("w+", encoding="utf-8") as stdin_file,
+    ):
         if stdin_text is not None:
             stdin_file.write(stdin_text)
             stdin_file.flush()
@@ -642,9 +643,7 @@ def find_sarif_runtime() -> Path:
         runtime = repo / "runtime" / "sarif_runtime.c"
         if runtime.is_file():
             return runtime
-    raise ValueError(
-        "sarif runtime requires BNCH_SARIF_REPO, ~/sarif, or ~/sarif-main to have runtime/sarif_runtime.c"
-    )
+    raise ValueError("sarif runtime requires BNCH_SARIF_REPO, ~/sarif, or ~/sarif-main to have runtime/sarif_runtime.c")
 
 
 def sarif_binary_is_fresh(repo: Path, binary: Path) -> bool:
@@ -725,11 +724,7 @@ def benchmark_map() -> dict[str, BenchmarkSpec]:
 
 
 def canonical_entry_map() -> dict[str, EntrySpec]:
-    return {
-        entry.language: entry
-        for entry in entry_specs()
-        if entry.canonical and entry.track == "main"
-    }
+    return {entry.language: entry for entry in entry_specs() if entry.canonical and entry.track == "main"}
 
 
 def host_cpu_model() -> str:
@@ -796,9 +791,7 @@ def sarifc_driver_command(build: bool = False) -> list[str]:
     installed = tool("sarifc")
     if installed is not None:
         return [installed]
-    raise ValueError(
-        "sarif entry requires `sarifc` on PATH or a Sarif checkout via BNCH_SARIF_REPO, ~/sarif, or ~/sarif-main"
-    )
+    raise ValueError("sarif entry requires `sarifc` on PATH or a Sarif checkout via BNCH_SARIF_REPO, ~/sarif, or ~/sarif-main")
 
 
 @functools.cache
@@ -820,9 +813,7 @@ def sarifc_repo_driver_binary(repo: Path, manifest: Path, build: bool) -> Path |
     ]
     proc = sh(command, cwd=repo)
     if proc.returncode != 0:
-        raise ValueError(
-            f"sarifc build failed for {manifest}: {proc.stderr.strip() or proc.stdout.strip()}"
-        )
+        raise ValueError(f"sarifc build failed for {manifest}: {proc.stderr.strip() or proc.stdout.strip()}")
     release = repo / "target" / "release" / "sarifc"
     if os.access(release, os.X_OK):
         return release
@@ -940,22 +931,21 @@ def build_command(spec: BenchmarkSpec, entry: EntrySpec, binary: Path, build_dir
             "cmd/main",
         ]
     if entry.language == "sarif":
-        driver_cmd = ' '.join(f"'{arg}'" for arg in sarifc_driver_command(build=True))
-        if entry.backend == "wasm":
-            cmd_str = (
-                f"{driver_cmd} build '{source}' --target wasm --print-main -o '{binary}.wasm' && "
-                f"echo '#!/bin/bash' > '{binary}' && "
-                f"echo 'exec node {ROOT / "tools/run_wasm.js"} {binary}.wasm \"\\$@\"' >> '{binary}' && "
-                f"chmod +x '{binary}'"
-            )
-            return ["bash", "-c", cmd_str]
-        elif entry.backend == "c":
-            cmd_str = (
-                f"{driver_cmd} build '{source}' --target c --print-main -o '{binary}'"
-            )
-            return ["bash", "-c", cmd_str]
-        else:
-            return [*sarifc_driver_command(build=True), "build", str(source), "--print-main", "-o", str(binary)]
+        driver_cmd = " ".join(f"'{arg}'" for arg in sarifc_driver_command(build=True))
+    wasm_runner = str(ROOT / "tools/run_wasm.js")
+    if entry.backend == "wasm":
+        cmd_str = (
+            f"{driver_cmd} build '{source}' --target wasm --print-main -o '{binary}.wasm' && "
+            f"echo '#!/bin/bash' > '{binary}' && "
+            f"echo 'exec node {wasm_runner} {binary}.wasm \"\\$@\"' >> '{binary}' && "
+            f"chmod +x '{binary}'"
+        )
+        return ["bash", "-c", cmd_str]
+    elif entry.backend == "c":
+        cmd_str = f"{driver_cmd} build '{source}' --target c --print-main -o '{binary}'"
+        return ["bash", "-c", cmd_str]
+    else:
+        return [*sarifc_driver_command(build=True), "build", str(source), "--print-main", "-o", str(binary)]
     raise ValueError(f"unsupported language: {entry.language}")
 
 
@@ -1406,15 +1396,9 @@ def build_summary_data(
     valid_benchmarks = scored_benchmarks(results, benchmarks)
     composite_weights = metric_weights or METRIC_WEIGHTS
     overall_scores = metric_scores(results, valid_benchmarks, composite_weights)
-    metric_score_maps = {
-        label: metric_scores(results, valid_benchmarks, {metric: 1.0})
-        for label, metric in SUMMARY_METRICS
-    }
+    metric_score_maps = {label: metric_scores(results, valid_benchmarks, {metric: 1.0}) for label, metric in SUMMARY_METRICS}
     overall_order = [entry for entry, _ in sorted(overall_scores.items(), key=lambda item: item[1], reverse=True)]
-    metric_orders = {
-        label: [entry for entry, _ in sorted(scores.items(), key=lambda item: item[1], reverse=True)]
-        for label, scores in metric_score_maps.items()
-    }
+    metric_orders = {label: [entry for entry, _ in sorted(scores.items(), key=lambda item: item[1], reverse=True)] for label, scores in metric_score_maps.items()}
     return SummaryData(
         overall_scores=overall_scores,
         overall_order=overall_order,
@@ -1427,8 +1411,7 @@ def build_summary_data(
 
 def build_profile_summaries(results: list[Result], benchmarks: list[BenchmarkSpec]) -> list[ProfileSummary]:
     return [
-        ProfileSummary(label=label, description=description, summary=build_summary_data(results, benchmarks, weights))
-        for label, weights, description in PROFILE_WEIGHTS
+        ProfileSummary(label=label, description=description, summary=build_summary_data(results, benchmarks, weights)) for label, weights, description in PROFILE_WEIGHTS
     ]
 
 
@@ -1498,10 +1481,7 @@ def benchmark_unique_capabilities(benchmarks: list[BenchmarkSpec]) -> dict[str, 
     for spec in benchmarks:
         for capability in spec.capabilities:
             counts[capability] = counts.get(capability, 0) + 1
-    return {
-        spec.name: [capability for capability in spec.capabilities if counts.get(capability, 0) == 1]
-        for spec in benchmarks
-    }
+    return {spec.name: [capability for capability in spec.capabilities if counts.get(capability, 0) == 1] for spec in benchmarks}
 
 
 def benchmark_coverage_rows(benchmarks: list[BenchmarkSpec]) -> list[list[str]]:
@@ -1524,10 +1504,7 @@ def benchmark_coverage_rows(benchmarks: list[BenchmarkSpec]) -> list[list[str]]:
 def build_category_summary(results: list[Result], benchmarks: list[BenchmarkSpec]) -> CategorySummary:
     valid_benchmarks = scored_benchmarks(results, benchmarks)
     categories = [key for key in CATEGORY_LABELS if any(spec.category == key for spec in valid_benchmarks)]
-    scores = {
-        category: metric_scores(results, [spec for spec in valid_benchmarks if spec.category == category], METRIC_WEIGHTS)
-        for category in categories
-    }
+    scores = {category: metric_scores(results, [spec for spec in valid_benchmarks if spec.category == category], METRIC_WEIGHTS) for category in categories}
     return CategorySummary(labels=categories, scores=scores)
 
 
@@ -1691,9 +1668,7 @@ def entry_payloads(active_entries: list[EntrySpec]) -> list[dict[str, object]]:
             "backend": entry.backend,
             "track": entry.track,
             "canonical": entry.canonical,
-            "supported_benchmarks": list(entry.supported_benchmarks)
-            if entry.supported_benchmarks is not None
-            else None,
+            "supported_benchmarks": list(entry.supported_benchmarks) if entry.supported_benchmarks is not None else None,
             "build_profile": entry.build_profile,
             "optimization_notes": list(entry.optimization_notes),
         }
@@ -1776,13 +1751,9 @@ def render_report(
         for label, _ in SUMMARY_METRICS:
             content.extend(table_section(f"## {label} View", metric_view_headers(label), metric_view_rows(summary, active_entries, label)))
 
-    content.append(
-        "## Results"
-    )
+    content.append("## Results")
     content.append("")
-    content.append(
-        markdown_table(RESULT_TABLE_HEADERS, result_rows(results, active_entries))
-    )
+    content.append(markdown_table(RESULT_TABLE_HEADERS, result_rows(results, active_entries)))
     mismatches = mismatch_rows(results, active_entries)
     if mismatches:
         content.extend(
@@ -2146,9 +2117,7 @@ def resolve_selection(run_args: argparse.Namespace, available_entries: list[Entr
     selected_entry_keys = set(selected_keys(run_args.entry, available_entry_keys, "entry"))
     if compare_entry_overlap:
         if compare_entry_overlap not in available_entry_keys:
-            raise SystemExit(
-                f"unknown entry for --compare-entry-overlap: {compare_entry_overlap}"
-            )
+            raise SystemExit(f"unknown entry for --compare-entry-overlap: {compare_entry_overlap}")
         selected_entry_keys.add(compare_entry_overlap)
     chosen_entries = [entry for entry in available_entries if entry.key in selected_entry_keys]
     if not chosen_entries:
@@ -2158,19 +2127,12 @@ def resolve_selection(run_args: argparse.Namespace, available_entries: list[Entr
     available_benchmark_keys = [spec.name for spec in available_benchmark_specs]
     selected_benchmark_keys = set(selected_keys(run_args.benchmark, available_benchmark_keys, "benchmark"))
     if compare_entry_overlap:
-        overlap_entry = next(
-            entry for entry in chosen_entries if entry.key == compare_entry_overlap
-        )
-        overlap_keys = set(
-            supported_benchmark_names([overlap_entry], available_benchmark_keys)
-        )
+        overlap_entry = next(entry for entry in chosen_entries if entry.key == compare_entry_overlap)
+        overlap_keys = set(supported_benchmark_names([overlap_entry], available_benchmark_keys))
         if run_args.benchmark:
             unsupported = sorted(selected_benchmark_keys - overlap_keys)
             if unsupported:
-                raise SystemExit(
-                    "unsupported benchmark selection for --compare-entry-overlap: "
-                    + ", ".join(unsupported)
-                )
+                raise SystemExit("unsupported benchmark selection for --compare-entry-overlap: " + ", ".join(unsupported))
         selected_benchmark_keys &= overlap_keys
     compatible_benchmark_keys = set(supported_benchmark_names(chosen_entries, available_benchmark_keys))
     if run_args.benchmark:

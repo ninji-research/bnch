@@ -7,9 +7,10 @@ fn is_prime(n : Int) -> Bool {
     let mut i = 3
     let mut ok = true
     while n / i >= i {
-      if n % i == 0 {
-        ok = false
-      }
+        if n % i == 0 {
+          ok = false
+          break
+        }
       i = i + 2
     }
     ok
