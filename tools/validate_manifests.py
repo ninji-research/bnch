@@ -5,7 +5,6 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
@@ -89,9 +88,8 @@ def validate_benchmark_manifest_shape(name: str, manifest: dict[str, object]) ->
         "fairness_notes",
         "retained_for",
     ):
-        if key in manifest:
-            if not non_empty_string(manifest[key]):
-                errors.append(f"{name}.{key}: expected non-empty string")
+        if key in manifest and not non_empty_string(manifest[key]):
+            errors.append(f"{name}.{key}: expected non-empty string")
     capabilities = manifest.get("capabilities")
     if capabilities is not None:
         if not non_empty_string_list(capabilities):
@@ -209,9 +207,8 @@ def validate_entry_manifest_shape(language: str, manifest: dict[str, object]) ->
         errors.append(f"{language}: unexpected keys {', '.join(unexpected)}")
 
     for key in ("language", "canonical_entry"):
-        if key in manifest:
-            if not non_empty_string(manifest[key]):
-                errors.append(f"{language}.{key}: expected non-empty string")
+        if key in manifest and not non_empty_string(manifest[key]):
+            errors.append(f"{language}.{key}: expected non-empty string")
     if "track" in manifest:
         if not non_empty_string(manifest["track"]):
             errors.append(f"{language}.track: expected non-empty string")

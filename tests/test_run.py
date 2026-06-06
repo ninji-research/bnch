@@ -266,13 +266,12 @@ class RunHelpersTest(unittest.TestCase):
                 optimization_notes=("native build",),
             ),
         )
-        with mock.patch.object(run, "entry_specs", return_value=entries):
-            with mock.patch.object(run, "tool", return_value="/usr/bin/tool"):
-                self.assertEqual([entry.key for entry in run.entries()], ["rust__llvm"])
-                self.assertEqual(
-                    [entry.key for entry in run.entries(include_experimental=True)],
-                    ["rust__llvm", "sarif__stage0"],
-                )
+        with mock.patch.object(run, "entry_specs", return_value=entries), mock.patch.object(run, "tool", return_value="/usr/bin/tool"):
+            self.assertEqual([entry.key for entry in run.entries()], ["rust__llvm"])
+            self.assertEqual(
+                [entry.key for entry in run.entries(include_experimental=True)],
+                ["rust__llvm", "sarif__stage0"],
+            )
 
     def test_canonical_entry_map_excludes_experimental_track(self) -> None:
         entries = (
@@ -578,9 +577,8 @@ class RunHelpersTest(unittest.TestCase):
             fake_bin = Path(temp_dir) / "sarifc"
             fake_bin.write_text("", encoding="utf-8")
             fake_bin.chmod(0o755)
-            with mock.patch.object(run, "tool", return_value=None):
-                with mock.patch.object(run, "sarif_bin_candidates", return_value=(fake_bin,)):
-                    command = run.build_command(spec, entry, Path("/tmp/out"), Path("/tmp/build"), 1)
+            with mock.patch.object(run, "tool", return_value=None), mock.patch.object(run, "sarif_bin_candidates", return_value=(fake_bin,)):
+                command = run.build_command(spec, entry, Path("/tmp/out"), Path("/tmp/build"), 1)
         self.assertEqual(
             command,
             [str(fake_bin), "build", str(run.SRC / "mandelbrot" / "mandelbrot.sarif"), "--print-main", "-o", "/tmp/out"],
@@ -591,10 +589,12 @@ class RunHelpersTest(unittest.TestCase):
             fake_bin = Path(temp_dir) / "sarifc"
             fake_bin.write_text("", encoding="utf-8")
             fake_bin.chmod(0o755)
-            with mock.patch.object(run, "tool", side_effect=lambda name: "/usr/bin/sarifc" if name == "sarifc" else None):
-                with mock.patch.object(run, "sarif_manifest_candidates", return_value=()):
-                    with mock.patch.object(run, "sarif_bin_candidates", return_value=(fake_bin,)):
-                        self.assertEqual(run.sarifc_driver_command(), [str(fake_bin)])
+            with (
+                mock.patch.object(run, "tool", side_effect=lambda name: "/usr/bin/sarifc" if name == "sarifc" else None),
+                mock.patch.object(run, "sarif_manifest_candidates", return_value=()),
+                mock.patch.object(run, "sarif_bin_candidates", return_value=(fake_bin,)),
+            ):
+                self.assertEqual(run.sarifc_driver_command(), [str(fake_bin)])
 
     def test_sarifc_driver_command_builds_stale_repo_binary_once(self) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
@@ -631,16 +631,14 @@ class RunHelpersTest(unittest.TestCase):
                 run,
                 "tool",
                 side_effect=lambda name: "/usr/bin/fake" if name in {"cargo", "rustc"} else None,
-            ):
-                with mock.patch.object(run, "sarif_manifest_candidates", return_value=(manifest,)):
-                    with mock.patch.object(run, "sh", side_effect=fake_sh):
-                        run.sarifc_repo_driver_binary.cache_clear()
-                        try:
-                            self.assertEqual(run.sarifc_driver_command(build=True), [str(stale_bin)])
-                            self.assertEqual(run.sarifc_driver_command(build=True), [str(stale_bin)])
-                        finally:
-                            run.sarifc_repo_driver_binary.cache_clear()
-                        self.assertEqual(call_count, 1)
+            ), mock.patch.object(run, "sarif_manifest_candidates", return_value=(manifest,)), mock.patch.object(run, "sh", side_effect=fake_sh):
+                run.sarifc_repo_driver_binary.cache_clear()
+                try:
+                    self.assertEqual(run.sarifc_driver_command(build=True), [str(stale_bin)])
+                    self.assertEqual(run.sarifc_driver_command(build=True), [str(stale_bin)])
+                finally:
+                    run.sarifc_repo_driver_binary.cache_clear()
+                self.assertEqual(call_count, 1)
 
     def test_sarif_repo_candidates_default_to_sibling_checkouts(self) -> None:
         self.assertEqual(run.sarif_repo_candidates()[:2], (run.ROOT.parent / "sarif", run.ROOT.parent / "sarif-main"))
@@ -710,14 +708,12 @@ class RunHelpersTest(unittest.TestCase):
                 run,
                 "tool",
                 side_effect=lambda name: "/usr/bin/fake" if name in {"cargo", "rustc"} else None,
-            ):
-                with mock.patch.object(run, "sarif_manifest_candidates", return_value=(fake_manifest,)):
-                    with mock.patch.object(run, "sh", side_effect=fake_sh):
-                        run.sarifc_repo_driver_binary.cache_clear()
-                        try:
-                            command = run.build_command(spec, entry, Path("/tmp/out"), Path("/tmp/build"), 1)
-                        finally:
-                            run.sarifc_repo_driver_binary.cache_clear()
+            ), mock.patch.object(run, "sarif_manifest_candidates", return_value=(fake_manifest,)), mock.patch.object(run, "sh", side_effect=fake_sh):
+                run.sarifc_repo_driver_binary.cache_clear()
+                try:
+                    command = run.build_command(spec, entry, Path("/tmp/out"), Path("/tmp/build"), 1)
+                finally:
+                    run.sarifc_repo_driver_binary.cache_clear()
         self.assertEqual(
             command,
             [str(built_bin), "build", str(run.SRC / "mandelbrot" / "mandelbrot.sarif"), "--print-main", "-o", "/tmp/out"],
@@ -738,18 +734,19 @@ class RunHelpersTest(unittest.TestCase):
             build_profile="stage0-native",
             optimization_notes=("native build",),
         )
-        with mock.patch.object(run, "entry_specs", return_value=(sarif_entry,)):
-            with mock.patch.object(run, "sarifc_driver_command", side_effect=ValueError("missing sarifc")):
-                self.assertEqual(run.entries(include_experimental=True), [])
+        with (
+            mock.patch.object(run, "entry_specs", return_value=(sarif_entry,)),
+            mock.patch.object(run, "sarifc_driver_command", side_effect=ValueError("missing sarifc")),
+        ):
+            self.assertEqual(run.entries(include_experimental=True), [])
 
     def test_sarifc_version_or_dash_uses_driver_command(self) -> None:
-        with mock.patch.object(run, "sarifc_driver_command", return_value=["/tmp/sarifc"]):
-            with mock.patch.object(
-                run,
-                "sh",
-                return_value=mock.Mock(stdout="sarifc 0.1.0\n", stderr=""),
-            ):
-                self.assertEqual(run.sarifc_version_or_dash(), "sarifc 0.1.0")
+        with mock.patch.object(run, "sarifc_driver_command", return_value=["/tmp/sarifc"]), mock.patch.object(
+            run,
+            "sh",
+            return_value=mock.Mock(stdout="sarifc 0.1.0\n", stderr=""),
+        ):
+            self.assertEqual(run.sarifc_version_or_dash(), "sarifc 0.1.0")
 
     def test_environment_data_includes_sarifc_when_active(self) -> None:
         args = mock.Mock(
@@ -778,13 +775,15 @@ class RunHelpersTest(unittest.TestCase):
                 optimization_notes=("native build",),
             )
         ]
-        with mock.patch.object(run, "host_cpu_model", return_value="-"):
-            with mock.patch.object(run, "host_memory_gib", return_value="-"):
-                with mock.patch.object(run, "cpu_count", return_value=1):
-                    with mock.patch.object(run, "memory_measurement", return_value=run.MemoryMeasurement("ru_maxrss", "-")):
-                        with mock.patch.object(run, "version_or_dash", return_value="-"):
-                            with mock.patch.object(run, "sarifc_version_or_dash", return_value="sarifc 0.1.0"):
-                                data = run.environment_data(args, entries, [])
+        with (
+            mock.patch.object(run, "host_cpu_model", return_value="-"),
+            mock.patch.object(run, "host_memory_gib", return_value="-"),
+            mock.patch.object(run, "cpu_count", return_value=1),
+            mock.patch.object(run, "memory_measurement", return_value=run.MemoryMeasurement("ru_maxrss", "-")),
+            mock.patch.object(run, "version_or_dash", return_value="-"),
+            mock.patch.object(run, "sarifc_version_or_dash", return_value="sarifc 0.1.0"),
+        ):
+            data = run.environment_data(args, entries, [])
         self.assertEqual(data["tool_versions"]["sarifc"], "sarifc 0.1.0")
         self.assertEqual(data["experimental_entries"], True)
         self.assertEqual(data["selected_benchmarks"], "")

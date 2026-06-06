@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parent.parent
 OUTPUT = ROOT / "fixtures" / "joinagg" / "users-events-180000.txt"
 USERS = 40_000

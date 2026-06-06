@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from pathlib import Path
 
-
 ROOT = Path(__file__).resolve().parent.parent
 OUTPUT = ROOT / "fixtures" / "sortuniq" / "words-250000.txt"
 COUNT = 250_000
@@ -93,10 +92,7 @@ def make_word(state: int) -> tuple[str, int]:
     state = lcg(state)
     suffix = SUFFIXES[state % len(SUFFIXES)]
     state = lcg(state)
-    if state & 3 == 0:
-        word = prefix + suffix
-    else:
-        word = prefix + middle + suffix
+    word = prefix + suffix if state & 3 == 0 else prefix + middle + suffix
     return word, state
 
 
