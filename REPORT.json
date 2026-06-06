@@ -426,94 +426,94 @@
   ],
   "category_scores": {
     "numeric_compute": {
-      "ocaml__native": 0.5890541074004841,
-      "c__clang": 0.9236863767033632,
-      "sarif__stage0": 0.8522518422615745,
-      "rust__llvm": 0.8364310355541489,
-      "go__gc": 0.6861013361653161,
-      "moonbit__native": 0.644286764645805,
-      "nim__clang": 0.7829704834552164
+      "ocaml__native": 0.5679351146925585,
+      "go__gc": 0.5759094843455718,
+      "c__clang": 0.8465696247886961,
+      "sarif__stage0": 0.807135213028264,
+      "rust__llvm": 0.6863566753354482,
+      "nim__clang": 0.7860421818772274,
+      "moonbit__native": 0.6120122346514855
     }
   },
   "overall_scores": {
-    "ocaml__native": 0.5890541074004841,
-    "c__clang": 0.9236863767033632,
-    "sarif__stage0": 0.8522518422615745,
-    "rust__llvm": 0.8364310355541489,
-    "go__gc": 0.6861013361653161,
-    "moonbit__native": 0.644286764645805,
-    "nim__clang": 0.7829704834552164
+    "ocaml__native": 0.5679351146925585,
+    "go__gc": 0.5759094843455718,
+    "c__clang": 0.8465696247886961,
+    "sarif__stage0": 0.807135213028264,
+    "rust__llvm": 0.6863566753354482,
+    "nim__clang": 0.7860421818772274,
+    "moonbit__native": 0.6120122346514855
   },
   "overall_ranks": {
     "c__clang": 1,
     "sarif__stage0": 2,
-    "rust__llvm": 3,
-    "nim__clang": 4,
-    "go__gc": 5,
-    "moonbit__native": 6,
+    "nim__clang": 3,
+    "rust__llvm": 4,
+    "moonbit__native": 5,
+    "go__gc": 6,
     "ocaml__native": 7
   },
   "metric_scores": {
     "Speed": {
-      "ocaml__native": 0.5509681738717278,
-      "c__clang": 0.9713612589868754,
-      "sarif__stage0": 0.7947810348356344,
-      "rust__llvm": 0.9746870009892166,
-      "go__gc": 0.6777601044093623,
-      "moonbit__native": 0.674053671569485,
-      "nim__clang": 0.8688188272339964
+      "ocaml__native": 0.5111136597854302,
+      "go__gc": 0.5045387297846231,
+      "c__clang": 0.8438068232400134,
+      "sarif__stage0": 0.7253708360151568,
+      "rust__llvm": 0.743642314617417,
+      "nim__clang": 0.8728751243610134,
+      "moonbit__native": 0.6244245296311549
     },
     "Memory": {
       "ocaml__native": 1.0,
+      "go__gc": 1.0,
       "c__clang": 1.0,
       "sarif__stage0": 1.0,
       "rust__llvm": 1.0,
-      "go__gc": 1.0,
-      "moonbit__native": 1.0,
-      "nim__clang": 1.0
+      "nim__clang": 1.0,
+      "moonbit__native": 1.0
     },
     "Build": {
-      "ocaml__native": 0.3057213338749095,
-      "c__clang": 0.4230155836189411,
+      "ocaml__native": 0.3535857483565896,
+      "go__gc": 0.47730975767135864,
+      "c__clang": 0.48095189682687445,
       "sarif__stage0": 1.0,
-      "rust__llvm": 0.018583152653173732,
-      "go__gc": 0.45328934080799743,
-      "moonbit__native": 0.04981716186402618,
-      "nim__clang": 0.03896471928702388
+      "rust__llvm": 0.019630011882863698,
+      "nim__clang": 0.043315772181522744,
+      "moonbit__native": 0.0496612845199751
     },
     "Size": {
       "ocaml__native": 0.0070532199273982705,
+      "go__gc": 0.004566684368615058,
       "c__clang": 1.0,
       "sarif__stage0": 0.7128833923682371,
       "rust__llvm": 0.020523392916814702,
-      "go__gc": 0.004566684368615058,
-      "moonbit__native": 0.02340323878474341,
-      "nim__clang": 0.2868354764883234
+      "nim__clang": 0.2868354764883234,
+      "moonbit__native": 0.02340323878474341
     }
   },
   "metric_ranks": {
     "Speed": {
-      "rust__llvm": 1,
+      "nim__clang": 1,
       "c__clang": 2,
-      "nim__clang": 3,
+      "rust__llvm": 3,
       "sarif__stage0": 4,
-      "go__gc": 5,
-      "moonbit__native": 6,
-      "ocaml__native": 7
+      "moonbit__native": 5,
+      "ocaml__native": 6,
+      "go__gc": 7
     },
     "Memory": {
       "ocaml__native": 1,
+      "go__gc": 1,
       "c__clang": 1,
       "sarif__stage0": 1,
       "rust__llvm": 1,
-      "go__gc": 1,
-      "moonbit__native": 1,
-      "nim__clang": 1
+      "nim__clang": 1,
+      "moonbit__native": 1
     },
     "Build": {
       "sarif__stage0": 1,
-      "go__gc": 2,
-      "c__clang": 3,
+      "c__clang": 2,
+      "go__gc": 3,
       "ocaml__native": 4,
       "moonbit__native": 5,
       "nim__clang": 6,
@@ -534,94 +534,94 @@
       "label": "Balanced",
       "description": "Default composite across speed, memory, build time, and binary size.",
       "overall_scores": {
-        "ocaml__native": 0.5890541074004841,
-        "c__clang": 0.9236863767033632,
-        "sarif__stage0": 0.8522518422615745,
-        "rust__llvm": 0.8364310355541489,
-        "go__gc": 0.6861013361653161,
-        "moonbit__native": 0.644286764645805,
-        "nim__clang": 0.7829704834552164
+        "ocaml__native": 0.5679351146925585,
+        "go__gc": 0.5759094843455718,
+        "c__clang": 0.8465696247886961,
+        "sarif__stage0": 0.807135213028264,
+        "rust__llvm": 0.6863566753354482,
+        "nim__clang": 0.7860421818772274,
+        "moonbit__native": 0.6120122346514855
       },
       "overall_ranks": {
         "c__clang": 1,
         "sarif__stage0": 2,
-        "rust__llvm": 3,
-        "nim__clang": 4,
-        "go__gc": 5,
-        "moonbit__native": 6,
+        "nim__clang": 3,
+        "rust__llvm": 4,
+        "moonbit__native": 5,
+        "go__gc": 6,
         "ocaml__native": 7
       },
       "leaders": [
         "c__clang",
         "sarif__stage0",
-        "rust__llvm"
+        "nim__clang"
       ]
     },
     {
       "label": "Speed First",
       "description": "Throughput or latency matters most.",
       "overall_scores": {
-        "ocaml__native": 0.5776356522057638,
-        "c__clang": 0.9583475376474123,
-        "sarif__stage0": 0.819821547457654,
-        "rust__llvm": 0.9294519132787654,
-        "go__gc": 0.68978610265957,
-        "moonbit__native": 0.6749082004656778,
-        "nim__clang": 0.8454016542572742
+        "ocaml__native": 0.5451952476668613,
+        "go__gc": 0.5432685467344427,
+        "c__clang": 0.8516643566588177,
+        "sarif__stage0": 0.760822878460248,
+        "rust__llvm": 0.7330953356396267,
+        "nim__clang": 0.8489800384020738,
+        "moonbit__native": 0.6327187534977758
       },
       "overall_ranks": {
         "c__clang": 1,
-        "rust__llvm": 2,
-        "nim__clang": 3,
-        "sarif__stage0": 4,
-        "go__gc": 5,
-        "moonbit__native": 6,
-        "ocaml__native": 7
+        "nim__clang": 2,
+        "sarif__stage0": 3,
+        "rust__llvm": 4,
+        "moonbit__native": 5,
+        "ocaml__native": 6,
+        "go__gc": 7
       },
       "leaders": [
         "c__clang",
-        "rust__llvm",
-        "nim__clang"
+        "nim__clang",
+        "sarif__stage0"
       ]
     },
     {
       "label": "Memory First",
       "description": "RAM pressure matters most.",
       "overall_scores": {
-        "ocaml__native": 0.8258323624644609,
-        "c__clang": 0.965423030978322,
-        "sarif__stage0": 0.9446003765855387,
-        "rust__llvm": 0.8968927274763427,
-        "go__gc": 0.8584448221407031,
-        "moonbit__native": 0.8384717543463355,
-        "nim__clang": 0.8900537752355668
+        "ocaml__native": 0.8202546803712855,
+        "go__gc": 0.8250015680589232,
+        "c__clang": 0.9428089594893465,
+        "sarif__stage0": 0.930718336821443,
+        "rust__llvm": 0.8507361331634673,
+        "nim__clang": 0.891082587305695,
+        "moonbit__native": 0.8285381320914669
       },
       "overall_ranks": {
         "c__clang": 1,
         "sarif__stage0": 2,
-        "rust__llvm": 3,
-        "nim__clang": 4,
-        "go__gc": 5,
-        "moonbit__native": 6,
+        "nim__clang": 3,
+        "rust__llvm": 4,
+        "moonbit__native": 5,
+        "go__gc": 6,
         "ocaml__native": 7
       },
       "leaders": [
         "c__clang",
         "sarif__stage0",
-        "rust__llvm"
+        "nim__clang"
       ]
     },
     {
       "label": "Build First",
       "description": "Build and iteration cost matter most.",
       "overall_scores": {
-        "ocaml__native": 0.36228888748331134,
-        "c__clang": 0.5629658765622372,
-        "sarif__stage0": 0.9548613248437572,
-        "rust__llvm": 0.21116658428410362,
-        "go__gc": 0.4918593554858332,
-        "moonbit__native": 0.18964108407267963,
-        "nim__clang": 0.2238881373747836
+        "ocaml__native": 0.39220902123162676,
+        "go__gc": 0.48389146193964333,
+        "c__clang": 0.5872849461061579,
+        "sarif__stage0": 0.9444497950206855,
+        "rust__llvm": 0.1772950257506011,
+        "nim__clang": 0.22775987161471037,
+        "moonbit__native": 0.18207980477389174
       },
       "overall_ranks": {
         "sarif__stage0": 1,
@@ -629,8 +629,8 @@
         "go__gc": 3,
         "ocaml__native": 4,
         "nim__clang": 5,
-        "rust__llvm": 6,
-        "moonbit__native": 7
+        "moonbit__native": 6,
+        "rust__llvm": 7
       },
       "leaders": [
         "sarif__stage0",
@@ -642,13 +642,13 @@
       "label": "Deploy First",
       "description": "Artifact footprint matters alongside runtime.",
       "overall_scores": {
-        "ocaml__native": 0.39116568791093054,
-        "c__clang": 0.9034287781882476,
-        "sarif__stage0": 0.8276825495213548,
-        "rust__llvm": 0.501111110765087,
-        "go__gc": 0.4568077771934916,
-        "moonbit__native": 0.4015824929035838,
-        "nim__clang": 0.5603237141958655
+        "ocaml__native": 0.38439627015297834,
+        "go__gc": 0.3997833586043371,
+        "c__clang": 0.8674751726580358,
+        "sarif__stage0": 0.8033889799341877,
+        "rust__llvm": 0.42040249941941066,
+        "nim__clang": 0.5623960761244963,
+        "moonbit__native": 0.3841889116235607
       },
       "overall_ranks": {
         "c__clang": 1,
@@ -656,8 +656,8 @@
         "nim__clang": 3,
         "rust__llvm": 4,
         "go__gc": 5,
-        "moonbit__native": 6,
-        "ocaml__native": 7
+        "ocaml__native": 6,
+        "moonbit__native": 7
       },
       "leaders": [
         "c__clang",
@@ -674,11 +674,11 @@
       "output": "stretch tree of depth 21\t check: 4194303 / 1048576\t trees of depth 4\t...",
       "reference": "stretch tree of depth 21\t check: 4194303 / 1048576\t trees of depth 4\t...",
       "status": "ok",
-      "build_time_s": 0.19707125399145298,
-      "run_time_s": 8.800708976981696,
+      "build_time_s": 0.09950597898568958,
+      "run_time_s": 8.459344050002983,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 133096,
+      "peak_memory_kib": 133396,
       "binary_size_bytes": 5864
     },
     {
@@ -688,11 +688,11 @@
       "output": "stretch tree of depth 21\t check: 4194303 / 1048576\t trees of depth 4\t...",
       "reference": "stretch tree of depth 21\t check: 4194303 / 1048576\t trees of depth 4\t...",
       "status": "ok",
-      "build_time_s": 4.159139221999794,
-      "run_time_s": 9.131702398997732,
+      "build_time_s": 3.5550805249949917,
+      "run_time_s": 9.206420378992334,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 140244,
+      "peak_memory_kib": 141160,
       "binary_size_bytes": 1597566
     },
     {
@@ -702,11 +702,11 @@
       "output": "stretch tree of depth 21\t check: 4194303 / 1048576\t trees of depth 4\t...",
       "reference": "stretch tree of depth 21\t check: 4194303 / 1048576\t trees of depth 4\t...",
       "status": "ok",
-      "build_time_s": 0.9264795989729464,
-      "run_time_s": 1.8761027689906769,
+      "build_time_s": 0.883990668982733,
+      "run_time_s": 1.8837291540112346,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 100580,
+      "peak_memory_kib": 100532,
       "binary_size_bytes": 309688
     },
     {
@@ -716,11 +716,11 @@
       "output": "stretch tree of depth 21\t check: 4194303 / 1048576\t trees of depth 4\t...",
       "reference": "stretch tree of depth 21\t check: 4194303 / 1048576\t trees of depth 4\t...",
       "status": "ok",
-      "build_time_s": 1.2290544100105762,
-      "run_time_s": 4.748943393991794,
+      "build_time_s": 1.1771876550046727,
+      "run_time_s": 4.891761189996032,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 267880,
+      "peak_memory_kib": 268372,
       "binary_size_bytes": 26624
     },
     {
@@ -730,11 +730,11 @@
       "output": "stretch tree of depth 21\t check: 4194303 / 1048576\t trees of depth 4\t...",
       "reference": "stretch tree of depth 21\t check: 4194303 / 1048576\t trees of depth 4\t...",
       "status": "ok",
-      "build_time_s": 0.18426971300505102,
-      "run_time_s": 2.394647356995847,
+      "build_time_s": 0.17809314699843526,
+      "run_time_s": 2.630696881999029,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 131428,
+      "peak_memory_kib": 131316,
       "binary_size_bytes": 1030512
     },
     {
@@ -744,11 +744,11 @@
       "output": "stretch tree of depth 21\t check: 4194303 / 1048576\t trees of depth 4\t...",
       "reference": "stretch tree of depth 21\t check: 4194303 / 1048576\t trees of depth 4\t...",
       "status": "ok",
-      "build_time_s": 2.370396714017261,
-      "run_time_s": 9.901850203983486,
+      "build_time_s": 2.4270547550113406,
+      "run_time_s": 10.75505500897998,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 264032,
+      "peak_memory_kib": 264224,
       "binary_size_bytes": 337696
     },
     {
@@ -758,11 +758,11 @@
       "output": "stretch tree of depth 21\\t check: 4194303 / 1048576\\t trees of depth ...",
       "reference": "stretch tree of depth 21\t check: 4194303 / 1048576\t trees of depth 4\t...",
       "status": "mismatch",
-      "build_time_s": 0.06623632300761528,
-      "run_time_s": 22.674983828008408,
+      "build_time_s": 0.04238119299407117,
+      "run_time_s": 18.494954199995846,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 4133224,
+      "peak_memory_kib": 4031212,
       "binary_size_bytes": 10528
     },
     {
@@ -772,11 +772,11 @@
       "output": "sha256:b7ce6bd0a0cc01ea",
       "reference": "sha256:b7ce6bd0a0cc01ea",
       "status": "ok",
-      "build_time_s": 0.3427525000006426,
-      "run_time_s": 0.052693104022182524,
+      "build_time_s": 0.11713516598683782,
+      "run_time_s": 0.04501685401191935,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 41700,
+      "peak_memory_kib": 41816,
       "binary_size_bytes": 6456
     },
     {
@@ -786,11 +786,11 @@
       "output": "sha256:b7ce6bd0a0cc01ea",
       "reference": "sha256:b7ce6bd0a0cc01ea",
       "status": "ok",
-      "build_time_s": 0.4110795400047209,
-      "run_time_s": 0.018256222014315426,
+      "build_time_s": 0.2673674690013286,
+      "run_time_s": 0.02039573699585162,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 41700,
+      "peak_memory_kib": 41816,
       "binary_size_bytes": 1622142
     },
     {
@@ -800,11 +800,11 @@
       "output": "sha256:b7ce6bd0a0cc01ea",
       "reference": "sha256:b7ce6bd0a0cc01ea",
       "status": "ok",
-      "build_time_s": 0.8719073950196616,
-      "run_time_s": 0.3038107219908852,
+      "build_time_s": 0.9463032819912769,
+      "run_time_s": 0.3141536399780307,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 41700,
+      "peak_memory_kib": 41816,
       "binary_size_bytes": 308448
     },
     {
@@ -814,11 +814,11 @@
       "output": "sha256:b7ce6bd0a0cc01ea",
       "reference": "sha256:b7ce6bd0a0cc01ea",
       "status": "ok",
-      "build_time_s": 1.1378552509995643,
-      "run_time_s": 0.05886158798239194,
+      "build_time_s": 1.2086996809812263,
+      "run_time_s": 0.08029384800465778,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 41700,
+      "peak_memory_kib": 41816,
       "binary_size_bytes": 32384
     },
     {
@@ -828,11 +828,11 @@
       "output": "sha256:b7ce6bd0a0cc01ea",
       "reference": "sha256:b7ce6bd0a0cc01ea",
       "status": "ok",
-      "build_time_s": 0.18349523696815595,
-      "run_time_s": 0.12831299600657076,
+      "build_time_s": 0.24902722603292204,
+      "run_time_s": 0.22188011300750077,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 41700,
+      "peak_memory_kib": 41816,
       "binary_size_bytes": 1034384
     },
     {
@@ -842,11 +842,11 @@
       "output": "sha256:b7ce6bd0a0cc01ea",
       "reference": "sha256:b7ce6bd0a0cc01ea",
       "status": "ok",
-      "build_time_s": 2.9053930430090986,
-      "run_time_s": 0.0202031210064888,
+      "build_time_s": 2.7920987060060725,
+      "run_time_s": 0.020574040012434125,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 41700,
+      "peak_memory_kib": 41816,
       "binary_size_bytes": 353512
     },
     {
@@ -856,7 +856,7 @@
       "output": "-",
       "reference": "sha256:b7ce6bd0a0cc01ea",
       "status": "build-fail",
-      "build_time_s": 0.014148240006761625,
+      "build_time_s": 0.00966862600762397,
       "run_time_s": 0.0,
       "run_time_relative_spread": 0.0,
       "measured_runs": 0,
@@ -870,11 +870,11 @@
       "output": "sha256:37c7ac2d5630fe43",
       "reference": "sha256:37c7ac2d5630fe43",
       "status": "ok",
-      "build_time_s": 0.09915172299952246,
-      "run_time_s": 0.10683973398408853,
+      "build_time_s": 0.11907441099174321,
+      "run_time_s": 0.13903353898786008,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 41700,
+      "peak_memory_kib": 41816,
       "binary_size_bytes": 8216
     },
     {
@@ -884,11 +884,11 @@
       "output": "sha256:37c7ac2d5630fe43",
       "reference": "sha256:37c7ac2d5630fe43",
       "status": "ok",
-      "build_time_s": 0.1260579189984128,
-      "run_time_s": 0.1007384370022919,
+      "build_time_s": 0.15843982002115808,
+      "run_time_s": 0.14501847798237577,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 41700,
+      "peak_memory_kib": 41816,
       "binary_size_bytes": 1630334
     },
     {
@@ -898,11 +898,11 @@
       "output": "sha256:37c7ac2d5630fe43",
       "reference": "sha256:37c7ac2d5630fe43",
       "status": "ok",
-      "build_time_s": 0.946348282013787,
-      "run_time_s": 0.7462851490126923,
+      "build_time_s": 1.1856964039907325,
+      "run_time_s": 0.8158244389924221,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 53512,
+      "peak_memory_kib": 53520,
       "binary_size_bytes": 321664
     },
     {
@@ -912,11 +912,11 @@
       "output": "sha256:37c7ac2d5630fe43",
       "reference": "sha256:37c7ac2d5630fe43",
       "status": "ok",
-      "build_time_s": 1.1581085810030345,
-      "run_time_s": 0.15545762900728732,
+      "build_time_s": 1.3269351359922439,
+      "run_time_s": 0.17935366701567546,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 41700,
+      "peak_memory_kib": 41816,
       "binary_size_bytes": 41872
     },
     {
@@ -926,11 +926,11 @@
       "output": "sha256:37c7ac2d5630fe43",
       "reference": "sha256:37c7ac2d5630fe43",
       "status": "ok",
-      "build_time_s": 0.14158387199859135,
-      "run_time_s": 0.26753405801719055,
+      "build_time_s": 0.1933773679775186,
+      "run_time_s": 0.29247406497597694,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 41700,
+      "peak_memory_kib": 41816,
       "binary_size_bytes": 1034768
     },
     {
@@ -940,11 +940,11 @@
       "output": "sha256:37c7ac2d5630fe43",
       "reference": "sha256:37c7ac2d5630fe43",
       "status": "ok",
-      "build_time_s": 2.495060926012229,
-      "run_time_s": 0.08729096900788136,
+      "build_time_s": 2.8118736100150272,
+      "run_time_s": 0.1104275300167501,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 41700,
+      "peak_memory_kib": 41816,
       "binary_size_bytes": 371784
     },
     {
@@ -954,7 +954,7 @@
       "output": "-",
       "reference": "sha256:37c7ac2d5630fe43",
       "status": "build-fail",
-      "build_time_s": 0.011313979019178078,
+      "build_time_s": 0.010048255993751809,
       "run_time_s": 0.0,
       "run_time_relative_spread": 0.0,
       "measured_runs": 0,
@@ -968,11 +968,11 @@
       "output": "sha256:dfd37a44ede2e23f",
       "reference": "sha256:dfd37a44ede2e23f",
       "status": "ok",
-      "build_time_s": 0.0976747740060091,
-      "run_time_s": 0.0327081719879061,
+      "build_time_s": 0.10710135402041487,
+      "run_time_s": 0.03407615298056044,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 41700,
+      "peak_memory_kib": 41816,
       "binary_size_bytes": 7688
     },
     {
@@ -982,11 +982,11 @@
       "output": "sha256:dfd37a44ede2e23f",
       "reference": "sha256:dfd37a44ede2e23f",
       "status": "ok",
-      "build_time_s": 0.10069282099721022,
-      "run_time_s": 0.03632824801024981,
+      "build_time_s": 0.10296456899959594,
+      "run_time_s": 0.03543549100868404,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 41700,
+      "peak_memory_kib": 41816,
       "binary_size_bytes": 1593470
     },
     {
@@ -996,11 +996,11 @@
       "output": "sha256:dfd37a44ede2e23f",
       "reference": "sha256:dfd37a44ede2e23f",
       "status": "ok",
-      "build_time_s": 0.8567048110126052,
-      "run_time_s": 0.06801551699754782,
+      "build_time_s": 1.0959070529788733,
+      "run_time_s": 0.07105990700074472,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 41700,
+      "peak_memory_kib": 41816,
       "binary_size_bytes": 312024
     },
     {
@@ -1010,11 +1010,11 @@
       "output": "sha256:dfd37a44ede2e23f",
       "reference": "sha256:dfd37a44ede2e23f",
       "status": "ok",
-      "build_time_s": 1.1475720059825107,
-      "run_time_s": 0.03422247100388631,
+      "build_time_s": 1.212375155009795,
+      "run_time_s": 0.03453593500307761,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 41700,
+      "peak_memory_kib": 43948,
       "binary_size_bytes": 28328
     },
     {
@@ -1024,11 +1024,11 @@
       "output": "sha256:dfd37a44ede2e23f",
       "reference": "sha256:dfd37a44ede2e23f",
       "status": "ok",
-      "build_time_s": 0.16211489698616788,
-      "run_time_s": 0.04859251799643971,
+      "build_time_s": 0.16258042200934142,
+      "run_time_s": 0.05660008901031688,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 43952,
+      "peak_memory_kib": 46528,
       "binary_size_bytes": 1039920
     },
     {
@@ -1038,11 +1038,11 @@
       "output": "sha256:dfd37a44ede2e23f",
       "reference": "sha256:dfd37a44ede2e23f",
       "status": "ok",
-      "build_time_s": 2.402252126019448,
-      "run_time_s": 0.029952636978123337,
+      "build_time_s": 2.9989368639944587,
+      "run_time_s": 0.033622592978645116,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 46308,
+      "peak_memory_kib": 49036,
       "binary_size_bytes": 340704
     },
     {
@@ -1052,7 +1052,7 @@
       "output": "-",
       "reference": "sha256:dfd37a44ede2e23f",
       "status": "build-fail",
-      "build_time_s": 0.01142090797657147,
+      "build_time_s": 0.012733862007735297,
       "run_time_s": 0.0,
       "run_time_relative_spread": 0.0,
       "measured_runs": 0,
@@ -1066,11 +1066,11 @@
       "output": "sha256:e41a9386e912a316",
       "reference": "sha256:e41a9386e912a316",
       "status": "ok",
-      "build_time_s": 0.08191328798420727,
-      "run_time_s": 0.014157568977680057,
+      "build_time_s": 0.11660944900359027,
+      "run_time_s": 0.02042452001478523,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 48780,
+      "peak_memory_kib": 51508,
       "binary_size_bytes": 5976
     },
     {
@@ -1080,11 +1080,11 @@
       "output": "sha256:e41a9386e912a316",
       "reference": "sha256:e41a9386e912a316",
       "status": "ok",
-      "build_time_s": 0.08326720600598492,
-      "run_time_s": 0.018080773006659,
+      "build_time_s": 0.11566149201826192,
+      "run_time_s": 0.022865626990096644,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 48780,
+      "peak_memory_kib": 51508,
       "binary_size_bytes": 1585278
     },
     {
@@ -1094,11 +1094,11 @@
       "output": "sha256:e41a9386e912a316",
       "reference": "sha256:e41a9386e912a316",
       "status": "ok",
-      "build_time_s": 0.8087630000372883,
-      "run_time_s": 0.015766423981403932,
+      "build_time_s": 1.009356892987853,
+      "run_time_s": 0.018084854003973305,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 48780,
+      "peak_memory_kib": 51508,
       "binary_size_bytes": 307448
     },
     {
@@ -1108,11 +1108,11 @@
       "output": "sha256:e41a9386e912a316",
       "reference": "sha256:e41a9386e912a316",
       "status": "ok",
-      "build_time_s": 1.059357173013268,
-      "run_time_s": 0.014415151003049687,
+      "build_time_s": 1.2598541019833647,
+      "run_time_s": 0.014250095002353191,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 48780,
+      "peak_memory_kib": 51508,
       "binary_size_bytes": 24344
     },
     {
@@ -1122,11 +1122,11 @@
       "output": "sha256:e41a9386e912a316",
       "reference": "sha256:e41a9386e912a316",
       "status": "ok",
-      "build_time_s": 0.12803745898418128,
-      "run_time_s": 0.01752429999760352,
+      "build_time_s": 0.15703682901221327,
+      "run_time_s": 0.021930253016762435,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 48780,
+      "peak_memory_kib": 51508,
       "binary_size_bytes": 1029424
     },
     {
@@ -1136,11 +1136,11 @@
       "output": "sha256:e41a9386e912a316",
       "reference": "sha256:e41a9386e912a316",
       "status": "ok",
-      "build_time_s": 2.2324573780060746,
-      "run_time_s": 0.015241109009366482,
+      "build_time_s": 2.977850257011596,
+      "run_time_s": 0.018910070997662842,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 48780,
+      "peak_memory_kib": 51508,
       "binary_size_bytes": 337952
     },
     {
@@ -1150,11 +1150,11 @@
       "output": "sha256:e41a9386e912a316",
       "reference": "sha256:e41a9386e912a316",
       "status": "ok",
-      "build_time_s": 0.05230093898717314,
-      "run_time_s": 0.016207520995521918,
+      "build_time_s": 0.04523884999798611,
+      "run_time_s": 0.019537137006409466,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 48780,
+      "peak_memory_kib": 51508,
       "binary_size_bytes": 7400
     },
     {
@@ -1164,11 +1164,11 @@
       "output": "5133",
       "reference": "5133",
       "status": "ok",
-      "build_time_s": 0.07274294798844494,
-      "run_time_s": 0.0024469470081385225,
+      "build_time_s": 0.0891213660070207,
+      "run_time_s": 0.0027594130078796297,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 48780,
+      "peak_memory_kib": 51508,
       "binary_size_bytes": 5160
     },
     {
@@ -1178,11 +1178,11 @@
       "output": "5133",
       "reference": "5133",
       "status": "ok",
-      "build_time_s": 0.08213650700054131,
-      "run_time_s": 0.0048833939945325255,
+      "build_time_s": 0.11134323599981144,
+      "run_time_s": 0.006284301984123886,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 48780,
+      "peak_memory_kib": 51508,
       "binary_size_bytes": 1585278
     },
     {
@@ -1192,11 +1192,11 @@
       "output": "5133",
       "reference": "5133",
       "status": "ok",
-      "build_time_s": 0.8339157569862437,
-      "run_time_s": 0.0024837950186338276,
+      "build_time_s": 0.9516073269769549,
+      "run_time_s": 0.0024308070132974535,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 48780,
+      "peak_memory_kib": 51508,
       "binary_size_bytes": 307192
     },
     {
@@ -1206,11 +1206,11 @@
       "output": "5133",
       "reference": "5133",
       "status": "ok",
-      "build_time_s": 1.053403690981213,
-      "run_time_s": 0.0025117580080404878,
+      "build_time_s": 1.2592397079861257,
+      "run_time_s": 0.0026362219941802323,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 48780,
+      "peak_memory_kib": 51508,
       "binary_size_bytes": 23320
     },
     {
@@ -1220,11 +1220,11 @@
       "output": "5133",
       "reference": "5133",
       "status": "ok",
-      "build_time_s": 0.1409160690382123,
-      "run_time_s": 0.004152253008214757,
+      "build_time_s": 0.14350405798177235,
+      "run_time_s": 0.004448149004019797,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 48780,
+      "peak_memory_kib": 51508,
       "binary_size_bytes": 1029392
     },
     {
@@ -1234,11 +1234,11 @@
       "output": "5133",
       "reference": "5133",
       "status": "ok",
-      "build_time_s": 2.220792284992058,
-      "run_time_s": 0.0023312400153372437,
+      "build_time_s": 3.114986840984784,
+      "run_time_s": 0.010999249992892146,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 48780,
+      "peak_memory_kib": 51508,
       "binary_size_bytes": 337000
     },
     {
@@ -1248,11 +1248,11 @@
       "output": "5133",
       "reference": "5133",
       "status": "ok",
-      "build_time_s": 0.03182228101650253,
-      "run_time_s": 0.0026726999785751104,
+      "build_time_s": 0.08718554701772518,
+      "run_time_s": 0.003970964025938883,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 48780,
+      "peak_memory_kib": 51508,
       "binary_size_bytes": 8000
     },
     {
@@ -1262,11 +1262,11 @@
       "output": "1.274224153",
       "reference": "1.274224153",
       "status": "ok",
-      "build_time_s": 0.14521991601213813,
-      "run_time_s": 1.1767717839975376,
+      "build_time_s": 0.2902582089882344,
+      "run_time_s": 1.5710635139839724,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 48780,
+      "peak_memory_kib": 51508,
       "binary_size_bytes": 9232
     },
     {
@@ -1276,11 +1276,11 @@
       "output": "1.274224153",
       "reference": "1.274224153",
       "status": "ok",
-      "build_time_s": 0.09573533799266443,
-      "run_time_s": 1.3072057430108543,
+      "build_time_s": 0.1468240109970793,
+      "run_time_s": 3.0344552030146588,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 48780,
+      "peak_memory_kib": 51508,
       "binary_size_bytes": 1597566
     },
     {
@@ -1290,11 +1290,11 @@
       "output": "1.274224153",
       "reference": "1.274224153",
       "status": "ok",
-      "build_time_s": 0.8629869789874647,
-      "run_time_s": 3.098130016005598,
+      "build_time_s": 3.352534603996901,
+      "run_time_s": 6.699525380012346,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 48780,
+      "peak_memory_kib": 51508,
       "binary_size_bytes": 312704
     },
     {
@@ -1304,11 +1304,11 @@
       "output": "1.274224153",
       "reference": "1.274224153",
       "status": "ok",
-      "build_time_s": 1.112497688998701,
-      "run_time_s": 1.2589135730231646,
+      "build_time_s": 1.4020370910002384,
+      "run_time_s": 1.424407920014346,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 48780,
+      "peak_memory_kib": 51508,
       "binary_size_bytes": 25224
     },
     {
@@ -1318,11 +1318,11 @@
       "output": "1.274224153",
       "reference": "1.274224153",
       "status": "ok",
-      "build_time_s": 0.1332574780099094,
-      "run_time_s": 3.97317460301565,
+      "build_time_s": 0.16439846801222302,
+      "run_time_s": 4.4186941380030476,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 48780,
+      "peak_memory_kib": 51508,
       "binary_size_bytes": 1034224
     },
     {
@@ -1332,11 +1332,11 @@
       "output": "1.274224153",
       "reference": "1.274224153",
       "status": "ok",
-      "build_time_s": 2.2703091349976603,
-      "run_time_s": 1.2133653569908347,
+      "build_time_s": 2.4428956450137775,
+      "run_time_s": 1.2871675510250498,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 48780,
+      "peak_memory_kib": 51508,
       "binary_size_bytes": 366360
     },
     {
@@ -1346,11 +1346,11 @@
       "output": "1.274224153",
       "reference": "1.274224153",
       "status": "ok",
-      "build_time_s": 0.039950923004653305,
-      "run_time_s": 1.3663871719909366,
+      "build_time_s": 0.040322312008356676,
+      "run_time_s": 1.3627292669843882,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 48780,
+      "peak_memory_kib": 51508,
       "binary_size_bytes": 10448
     },
     {
@@ -1360,11 +1360,11 @@
       "output": "-0.169075164 / -0.169083134",
       "reference": "-0.169075164 / -0.169083134",
       "status": "ok",
-      "build_time_s": 0.126020672993036,
-      "run_time_s": 0.19697066899971105,
+      "build_time_s": 0.10809537599561736,
+      "run_time_s": 0.20655308500863612,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 48780,
+      "peak_memory_kib": 51508,
       "binary_size_bytes": 8728
     },
     {
@@ -1374,11 +1374,11 @@
       "output": "-0.169075164 / -0.169083134",
       "reference": "-0.169075164 / -0.169083134",
       "status": "ok",
-      "build_time_s": 0.11299554599099793,
-      "run_time_s": 0.33378145899041556,
+      "build_time_s": 0.09828574600396678,
+      "run_time_s": 0.3456923390040174,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 48780,
+      "peak_memory_kib": 51508,
       "binary_size_bytes": 1597566
     },
     {
@@ -1388,11 +1388,11 @@
       "output": "-0.169075164 / -0.169083134",
       "reference": "-0.169075164 / -0.169083134",
       "status": "ok",
-      "build_time_s": 0.8569477559940424,
-      "run_time_s": 0.38287511200178415,
+      "build_time_s": 0.9018714670091867,
+      "run_time_s": 0.3899993200029712,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 48780,
+      "peak_memory_kib": 51508,
       "binary_size_bytes": 313336
     },
     {
@@ -1402,11 +1402,11 @@
       "output": "-0.169075164 / -0.169083134",
       "reference": "-0.169075164 / -0.169083134",
       "status": "ok",
-      "build_time_s": 1.0645293460111134,
-      "run_time_s": 0.29149918400798924,
+      "build_time_s": 1.1498118489980698,
+      "run_time_s": 0.30321071899379604,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 48780,
+      "peak_memory_kib": 51508,
       "binary_size_bytes": 27744
     },
     {
@@ -1416,11 +1416,11 @@
       "output": "-0.169075164 / -0.169083134",
       "reference": "-0.169075164 / -0.169083134",
       "status": "ok",
-      "build_time_s": 0.14881156699266285,
-      "run_time_s": 0.3412526339816395,
+      "build_time_s": 0.16549913099152036,
+      "run_time_s": 0.3624949380173348,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 48780,
+      "peak_memory_kib": 51508,
       "binary_size_bytes": 1030640
     },
     {
@@ -1430,11 +1430,11 @@
       "output": "-0.169075164 / -0.169083134",
       "reference": "-0.169075164 / -0.169083134",
       "status": "ok",
-      "build_time_s": 2.2642918709898368,
-      "run_time_s": 0.18372070899931714,
+      "build_time_s": 2.402930335025303,
+      "run_time_s": 0.20186853199265897,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 48780,
+      "peak_memory_kib": 51508,
       "binary_size_bytes": 365192
     },
     {
@@ -1444,11 +1444,11 @@
       "output": "-0.169075164 / -0.169083134",
       "reference": "-0.169075164 / -0.169083134",
       "status": "ok",
-      "build_time_s": 0.04297335000592284,
-      "run_time_s": 0.3211140119819902,
+      "build_time_s": 0.045255008997628465,
+      "run_time_s": 0.32802719101891853,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 48780,
+      "peak_memory_kib": 51508,
       "binary_size_bytes": 16936
     },
     {
@@ -1458,11 +1458,11 @@
       "output": "A 30.328 / T 30.079 / C 19.799 / G 19.794 /  / AA 9.188 / TA 9.122 / ...",
       "reference": "A 30.328 / T 30.079 / C 19.799 / G 19.794 /  / AA 9.188 / TA 9.122 / ...",
       "status": "ok",
-      "build_time_s": 0.11241514698485844,
-      "run_time_s": 0.006244946998776868,
+      "build_time_s": 0.1264539230032824,
+      "run_time_s": 0.005913355998927727,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 48780,
+      "peak_memory_kib": 51508,
       "binary_size_bytes": 9408
     },
     {
@@ -1472,11 +1472,11 @@
       "output": "A 30.328 / T 30.079 / C 19.799 / G 19.794 /  / AA 9.188 / TA 9.122 / ...",
       "reference": "A 30.328 / T 30.079 / C 19.799 / G 19.794 /  / AA 9.188 / TA 9.122 / ...",
       "status": "ok",
-      "build_time_s": 0.09914666399708949,
-      "run_time_s": 0.011726111988537014,
+      "build_time_s": 0.10327444798895158,
+      "run_time_s": 0.011712436971720308,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 48780,
+      "peak_memory_kib": 51508,
       "binary_size_bytes": 1618046
     },
     {
@@ -1486,11 +1486,11 @@
       "output": "A 30.328 / T 30.079 / C 19.799 / G 19.794 /  / AA 9.188 / TA 9.122 / ...",
       "reference": "A 30.328 / T 30.079 / C 19.799 / G 19.794 /  / AA 9.188 / TA 9.122 / ...",
       "status": "ok",
-      "build_time_s": 0.9002822689944878,
-      "run_time_s": 0.02072330898954533,
+      "build_time_s": 0.9211579710245132,
+      "run_time_s": 0.015937849006149918,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 48780,
+      "peak_memory_kib": 51508,
       "binary_size_bytes": 313440
     },
     {
@@ -1500,11 +1500,11 @@
       "output": "A 30.328 / T 30.079 / C 19.799 / G 19.794 /  / AA 9.188 / TA 9.122 / ...",
       "reference": "A 30.328 / T 30.079 / C 19.799 / G 19.794 /  / AA 9.188 / TA 9.122 / ...",
       "status": "ok",
-      "build_time_s": 1.1117663549957797,
-      "run_time_s": 0.007962717005284503,
+      "build_time_s": 1.1240285110252444,
+      "run_time_s": 0.008955689001595601,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 48780,
+      "peak_memory_kib": 51508,
       "binary_size_bytes": 33240
     },
     {
@@ -1514,11 +1514,11 @@
       "output": "A 30.328 / T 30.079 / C 19.799 / G 19.794 /  / AA 9.188 / TA 9.122 / ...",
       "reference": "A 30.328 / T 30.079 / C 19.799 / G 19.794 /  / AA 9.188 / TA 9.122 / ...",
       "status": "ok",
-      "build_time_s": 0.17605914501473308,
-      "run_time_s": 0.029087719012750313,
+      "build_time_s": 0.16437428101198748,
+      "run_time_s": 0.026164871000219136,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 48780,
+      "peak_memory_kib": 51508,
       "binary_size_bytes": 1091152
     },
     {
@@ -1528,11 +1528,11 @@
       "output": "A 30.328 / T 30.079 / C 19.799 / G 19.794 /  / AA 9.188 / TA 9.122 / ...",
       "reference": "A 30.328 / T 30.079 / C 19.799 / G 19.794 /  / AA 9.188 / TA 9.122 / ...",
       "status": "ok",
-      "build_time_s": 2.54367708900827,
-      "run_time_s": 0.006117857992649078,
+      "build_time_s": 2.6095109060115647,
+      "run_time_s": 0.0063737090094946325,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 48780,
+      "peak_memory_kib": 51508,
       "binary_size_bytes": 383424
     },
     {
@@ -1542,7 +1542,7 @@
       "output": "-",
       "reference": "A 30.328 / T 30.079 / C 19.799 / G 19.794 /  / AA 9.188 / TA 9.122 / ...",
       "status": "build-fail",
-      "build_time_s": 0.011806512979092076,
+      "build_time_s": 0.012631140009034425,
       "run_time_s": 0.0,
       "run_time_relative_spread": 0.0,
       "measured_runs": 0,
@@ -1556,11 +1556,11 @@
       "output": "sha256:14899a73679b1d83",
       "reference": "sha256:14899a73679b1d83",
       "status": "ok",
-      "build_time_s": 0.09513923100894317,
-      "run_time_s": 0.0015712149906903505,
+      "build_time_s": 0.09795386297628284,
+      "run_time_s": 0.0014867869904264808,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 48780,
+      "peak_memory_kib": 51508,
       "binary_size_bytes": 6856
     },
     {
@@ -1570,11 +1570,11 @@
       "output": "sha256:14899a73679b1d83",
       "reference": "sha256:14899a73679b1d83",
       "status": "ok",
-      "build_time_s": 0.08073027900536545,
-      "run_time_s": 0.0048474069917574525,
+      "build_time_s": 0.09446235801442526,
+      "run_time_s": 0.005151176999788731,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 48780,
+      "peak_memory_kib": 51508,
       "binary_size_bytes": 1503358
     },
     {
@@ -1584,11 +1584,11 @@
       "output": "sha256:14899a73679b1d83",
       "reference": "sha256:14899a73679b1d83",
       "status": "ok",
-      "build_time_s": 0.7216458400071133,
-      "run_time_s": 0.011479640001198277,
+      "build_time_s": 0.7886721880058758,
+      "run_time_s": 0.011854662996483967,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 48780,
+      "peak_memory_kib": 51508,
       "binary_size_bytes": 303456
     },
     {
@@ -1598,11 +1598,11 @@
       "output": "sha256:14899a73679b1d83",
       "reference": "sha256:14899a73679b1d83",
       "status": "ok",
-      "build_time_s": 1.0049134719884023,
-      "run_time_s": 0.002962564001791179,
+      "build_time_s": 1.038641403982183,
+      "run_time_s": 0.0028967499965801835,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 48780,
+      "peak_memory_kib": 51508,
       "binary_size_bytes": 26312
     },
     {
@@ -1612,11 +1612,11 @@
       "output": "sha256:14899a73679b1d83",
       "reference": "sha256:14899a73679b1d83",
       "status": "ok",
-      "build_time_s": 0.11730407198774628,
-      "run_time_s": 0.005720093002310023,
+      "build_time_s": 0.11910199001431465,
+      "run_time_s": 0.006208638980751857,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 48780,
+      "peak_memory_kib": 51508,
       "binary_size_bytes": 793328
     },
     {
@@ -1626,11 +1626,11 @@
       "output": "sha256:14899a73679b1d83",
       "reference": "sha256:14899a73679b1d83",
       "status": "ok",
-      "build_time_s": 2.179622224997729,
-      "run_time_s": 0.0026823680091183633,
+      "build_time_s": 2.4793693349929526,
+      "run_time_s": 0.00329809301183559,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 48780,
+      "peak_memory_kib": 51508,
       "binary_size_bytes": 340832
     },
     {
@@ -1640,7 +1640,7 @@
       "output": "-",
       "reference": "sha256:14899a73679b1d83",
       "status": "build-fail",
-      "build_time_s": 0.007593525981064886,
+      "build_time_s": 0.007711135986028239,
       "run_time_s": 0.0,
       "run_time_relative_spread": 0.0,
       "measured_runs": 0,
@@ -1654,11 +1654,11 @@
       "output": "sha256:6b28b0e803b80ff3",
       "reference": "sha256:6b28b0e803b80ff3",
       "status": "ok",
-      "build_time_s": 0.07517159901908599,
-      "run_time_s": 0.06442785897525027,
+      "build_time_s": 0.0968052210228052,
+      "run_time_s": 0.07569376300671138,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 48780,
+      "peak_memory_kib": 51508,
       "binary_size_bytes": 6112
     },
     {
@@ -1668,11 +1668,11 @@
       "output": "sha256:6b28b0e803b80ff3",
       "reference": "sha256:6b28b0e803b80ff3",
       "status": "ok",
-      "build_time_s": 0.0928138610033784,
-      "run_time_s": 0.03756824598531239,
+      "build_time_s": 0.0933359969931189,
+      "run_time_s": 0.04249334201449528,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 48780,
+      "peak_memory_kib": 51508,
       "binary_size_bytes": 1613950
     },
     {
@@ -1682,11 +1682,11 @@
       "output": "sha256:6b28b0e803b80ff3",
       "reference": "sha256:6b28b0e803b80ff3",
       "status": "ok",
-      "build_time_s": 0.7510321359732188,
-      "run_time_s": 0.2850615039933473,
+      "build_time_s": 0.7890745819895528,
+      "run_time_s": 0.29101502301637083,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 48780,
+      "peak_memory_kib": 51508,
       "binary_size_bytes": 306208
     },
     {
@@ -1696,11 +1696,11 @@
       "output": "sha256:6b28b0e803b80ff3",
       "reference": "sha256:6b28b0e803b80ff3",
       "status": "ok",
-      "build_time_s": 1.0253635960107204,
-      "run_time_s": 0.08037861998309381,
+      "build_time_s": 1.0616340159904212,
+      "run_time_s": 0.08227673301007599,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 48780,
+      "peak_memory_kib": 51508,
       "binary_size_bytes": 28328
     },
     {
@@ -1710,11 +1710,11 @@
       "output": "sha256:6b28b0e803b80ff3",
       "reference": "sha256:6b28b0e803b80ff3",
       "status": "ok",
-      "build_time_s": 0.12575122702401131,
-      "run_time_s": 0.16979288798756897,
+      "build_time_s": 0.14027152696507983,
+      "run_time_s": 0.23635409100097604,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 48780,
+      "peak_memory_kib": 51508,
       "binary_size_bytes": 1029584
     },
     {
@@ -1724,11 +1724,11 @@
       "output": "sha256:6b28b0e803b80ff3",
       "reference": "sha256:6b28b0e803b80ff3",
       "status": "ok",
-      "build_time_s": 2.2480851520085707,
-      "run_time_s": 0.04202878798241727,
+      "build_time_s": 2.6447111669986043,
+      "run_time_s": 0.05131107199122198,
       "run_time_relative_spread": 0.0,
       "measured_runs": 1,
-      "peak_memory_kib": 48780,
+      "peak_memory_kib": 51508,
       "binary_size_bytes": 349360
     },
     {
@@ -1738,7 +1738,7 @@
       "output": "-",
       "reference": "sha256:6b28b0e803b80ff3",
       "status": "build-fail",
-      "build_time_s": 0.008600772998761386,
+      "build_time_s": 0.007883660000516102,
       "run_time_s": 0.0,
       "run_time_relative_spread": 0.0,
       "measured_runs": 0,
