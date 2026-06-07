@@ -1,5 +1,9 @@
 name: CI
-on: [push, pull_request]
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
 jobs:
   check:
     runs-on: ubuntu-latest
@@ -16,4 +20,5 @@ jobs:
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
       - run: pip install -e .
-      - run: python3 -m unittest tests.test_run -v
+      - run: pip install pytest
+      - run: python -m pytest tests/ -q
