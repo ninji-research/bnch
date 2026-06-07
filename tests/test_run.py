@@ -627,11 +627,15 @@ class RunHelpersTest(unittest.TestCase):
                 os.utime(stale_bin, None)
                 return subprocess.CompletedProcess(command, 0, "", "")
 
-            with mock.patch.object(
-                run,
-                "tool",
-                side_effect=lambda name: "/usr/bin/fake" if name in {"cargo", "rustc"} else None,
-            ), mock.patch.object(run, "sarif_manifest_candidates", return_value=(manifest,)), mock.patch.object(run, "sh", side_effect=fake_sh):
+            with (
+                mock.patch.object(
+                    run,
+                    "tool",
+                    side_effect=lambda name: "/usr/bin/fake" if name in {"cargo", "rustc"} else None,
+                ),
+                mock.patch.object(run, "sarif_manifest_candidates", return_value=(manifest,)),
+                mock.patch.object(run, "sh", side_effect=fake_sh),
+            ):
                 run.sarifc_repo_driver_binary.cache_clear()
                 try:
                     self.assertEqual(run.sarifc_driver_command(build=True), [str(stale_bin)])
@@ -704,11 +708,15 @@ class RunHelpersTest(unittest.TestCase):
                 os.utime(built_bin, None)
                 return subprocess.CompletedProcess(command, 0, "", "")
 
-            with mock.patch.object(
-                run,
-                "tool",
-                side_effect=lambda name: "/usr/bin/fake" if name in {"cargo", "rustc"} else None,
-            ), mock.patch.object(run, "sarif_manifest_candidates", return_value=(fake_manifest,)), mock.patch.object(run, "sh", side_effect=fake_sh):
+            with (
+                mock.patch.object(
+                    run,
+                    "tool",
+                    side_effect=lambda name: "/usr/bin/fake" if name in {"cargo", "rustc"} else None,
+                ),
+                mock.patch.object(run, "sarif_manifest_candidates", return_value=(fake_manifest,)),
+                mock.patch.object(run, "sh", side_effect=fake_sh),
+            ):
                 run.sarifc_repo_driver_binary.cache_clear()
                 try:
                     command = run.build_command(spec, entry, Path("/tmp/out"), Path("/tmp/build"), 1)
@@ -741,10 +749,13 @@ class RunHelpersTest(unittest.TestCase):
             self.assertEqual(run.entries(include_experimental=True), [])
 
     def test_sarifc_version_or_dash_uses_driver_command(self) -> None:
-        with mock.patch.object(run, "sarifc_driver_command", return_value=["/tmp/sarifc"]), mock.patch.object(
-            run,
-            "sh",
-            return_value=mock.Mock(stdout="sarifc 0.1.0\n", stderr=""),
+        with (
+            mock.patch.object(run, "sarifc_driver_command", return_value=["/tmp/sarifc"]),
+            mock.patch.object(
+                run,
+                "sh",
+                return_value=mock.Mock(stdout="sarifc 0.1.0\n", stderr=""),
+            ),
         ):
             self.assertEqual(run.sarifc_version_or_dash(), "sarifc 0.1.0")
 
