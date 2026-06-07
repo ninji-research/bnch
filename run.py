@@ -1331,7 +1331,9 @@ def environment_rows(run_args: argparse.Namespace, active_entries: list[EntrySpe
         "kernel",
     )
     rows = [[key, display_env_value(data[key])] for key in row_keys]
-    rows.extend([[name, version] for name, version in data["tool_versions"].items()])
+    tool_versions = data["tool_versions"]
+    assert isinstance(tool_versions, dict)
+    rows.extend([[name, version] for name, version in tool_versions.items()])
     return rows
 
 

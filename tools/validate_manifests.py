@@ -92,10 +92,11 @@ def validate_benchmark_manifest_shape(name: str, manifest: dict[str, object]) ->
             errors.append(f"{name}.{key}: expected non-empty string")
     capabilities = manifest.get("capabilities")
     if capabilities is not None:
-        if not non_empty_string_list(capabilities):
+        if not isinstance(capabilities, list) or not non_empty_string_list(capabilities):
             errors.append(f"{name}.capabilities: expected non-empty list[str]")
-        elif not has_unique_strings(capabilities):
-            errors.append(f"{name}.capabilities: duplicate capability names")
+        else:
+            if not has_unique_strings(capabilities):
+                errors.append(f"{name}.capabilities: duplicate capability names")
     if "order" in manifest:
         if not isinstance(manifest["order"], int) or isinstance(manifest["order"], bool):
             errors.append(f"{name}.order: expected int")
@@ -122,6 +123,7 @@ def validate_benchmark_manifest_shape(name: str, manifest: dict[str, object]) ->
         if error:
             errors.append(error)
         else:
+            assert isinstance(input_spec, dict)
             kind = input_spec.get("kind")
             if kind not in {"args", "fixture"}:
                 errors.append(f"{name}.input.kind: expected 'args' or 'fixture'")
@@ -131,7 +133,7 @@ def validate_benchmark_manifest_shape(name: str, manifest: dict[str, object]) ->
                 path = input_spec.get("path")
                 if not non_empty_string(path):
                     errors.append(f"{name}.input.path: expected non-empty str for fixture input")
-                elif not (ROOT / path).exists():
+                elif not isinstance(path, str) or not (ROOT / path).exists():
                     errors.append(f"{name}.input.path: missing fixture {path}")
 
     return errors
@@ -182,7 +184,8 @@ def validate_benchmarks() -> list[str]:
             errors.append(f"{name}: manifest output_contract mismatch")
         if manifest.get("fairness_notes") != spec.fairness_notes:
             errors.append(f"{name}: manifest fairness_notes mismatch")
-        if tuple(manifest.get("capabilities", [])) != spec.capabilities:
+        caps = manifest.get("capabilities", [])
+        if not isinstance(caps, list) or tuple(caps) != spec.capabilities:
             errors.append(f"{name}: manifest capabilities mismatch")
         if manifest.get("retained_for") != spec.retained_for:
             errors.append(f"{name}: manifest retained_for mismatch")
@@ -216,21 +219,24 @@ def validate_entry_manifest_shape(language: str, manifest: dict[str, object]) ->
             errors.append(f"{language}.track: expected one of {sorted(run.ENTRY_TRACKS)!r}")
     if "benchmarks" in manifest:
         benchmarks = manifest.get("benchmarks")
-        if not non_empty_string_list(benchmarks):
+        if not isinstance(benchmarks, list) or not non_empty_string_list(benchmarks):
             errors.append(f"{language}.benchmarks: expected non-empty list[str]")
-        elif not has_unique_strings(benchmarks):
-            errors.append(f"{language}.benchmarks: duplicate benchmark ids")
         else:
-            known = {spec.name for spec in run.benchmark_specs()}
-            unknown = sorted(set(benchmarks) - known)
-            if unknown:
-                errors.append(f"{language}.benchmarks: unknown benchmark ids {', '.join(unknown)}")
+            assert isinstance(benchmarks, list)
+            if not has_unique_strings(benchmarks):
+                errors.append(f"{language}.benchmarks: duplicate benchmark ids")
+            else:
+                known = {spec.name for spec in run.benchmark_specs()}
+                unknown = sorted(set(benchmarks) - known)
+                if unknown:
+                    errors.append(f"{language}.benchmarks: unknown benchmark ids {', '.join(unknown)}")
     variants = manifest.get("variants")
     if variants is not None:
         error = expect_type(f"{language}.variants", variants, list)
         if error:
             errors.append(error)
         else:
+            assert isinstance(variants, list)
             if not variants:
                 errors.append(f"{language}.variants: must not be empty")
             for index, variant in enumerate(variants):
@@ -244,10 +250,12 @@ def validate_entry_manifest_shape(language: str, manifest: dict[str, object]) ->
                     elif not non_empty_string(variant[key]):
                         errors.append(f"{variant_path}.{key}: expected non-empty string")
                 required_tools = variant.get("required_tools")
-                if not non_empty_string_list(required_tools):
+                if not isinstance(required_tools, list) or not non_empty_string_list(required_tools):
                     errors.append(f"{variant_path}.required_tools: expected non-empty list")
-                elif not has_unique_strings(required_tools):
-                    errors.append(f"{variant_path}.required_tools: duplicate tools")
+                else:
+                    assert isinstance(required_tools, list)
+                    if not has_unique_strings(required_tools):
+                        errors.append(f"{variant_path}.required_tools: duplicate tools")
     build = manifest.get("build")
     if build is not None:
         error = expect_type(f"{language}.build", build, dict)
@@ -256,20 +264,24 @@ def validate_entry_manifest_shape(language: str, manifest: dict[str, object]) ->
         elif not build:
             errors.append(f"{language}.build: must not be empty")
         else:
+            assert isinstance(build, dict)
             profile_label = build.get("profile_label")
             if not non_empty_string(profile_label):
                 errors.append(f"{language}.build.profile_label: expected non-empty string")
             low_burden = build.get("low_burden_optimizations")
-            if not non_empty_string_list(low_burden):
+            if not isinstance(low_burden, list) or not non_empty_string_list(low_burden):
                 errors.append(f"{language}.build.low_burden_optimizations: expected non-empty list")
-            elif not has_unique_strings(low_burden):
-                errors.append(f"{language}.build.low_burden_optimizations: duplicate optimizations")
+            else:
+                assert isinstance(low_burden, list)
+                if not has_unique_strings(low_burden):
+                    errors.append(f"{language}.build.low_burden_optimizations: duplicate optimizations")
     policies = manifest.get("policies")
     if policies is not None:
         error = expect_type(f"{language}.policies", policies, dict)
         if error:
             errors.append(error)
         else:
+            assert isinstance(policies, dict)
             missing_policy_keys = sorted(REQUIRED_ENTRY_POLICY_KEYS - set(policies))
             if missing_policy_keys:
                 errors.append(f"{language}: missing policy keys {', '.join(missing_policy_keys)}")

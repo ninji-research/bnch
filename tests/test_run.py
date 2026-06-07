@@ -203,7 +203,7 @@ class RunHelpersTest(unittest.TestCase):
             )
 
     def test_entry_specs_parse_track_metadata(self) -> None:
-        manifest = {
+        manifest: dict[str, object] = {
             "language": "demo",
             "track": "experimental",
             "canonical_entry": "demo__stage0",
@@ -795,9 +795,11 @@ class RunHelpersTest(unittest.TestCase):
             mock.patch.object(run, "sarifc_version_or_dash", return_value="sarifc 0.1.0"),
         ):
             data = run.environment_data(args, entries, [])
-        self.assertEqual(data["tool_versions"]["sarifc"], "sarifc 0.1.0")
-        self.assertEqual(data["experimental_entries"], True)
-        self.assertEqual(data["selected_benchmarks"], "")
+            tool_versions = data["tool_versions"]
+            assert isinstance(tool_versions, dict)
+            self.assertEqual(tool_versions["sarifc"], "sarifc 0.1.0")
+            self.assertEqual(data["experimental_entries"], True)
+            self.assertEqual(data["selected_benchmarks"], "")
 
     def test_benchmark_specs_are_manifest_driven(self) -> None:
         specs = list(run.benchmark_specs())
@@ -1053,7 +1055,10 @@ class RunHelpersTest(unittest.TestCase):
         )
         summary = run.build_summary_data([result], [spec])
         self.assertFalse(run.comparative_report(summary))
-        self.assertIn("non-comparative", run.comparative_report_note(summary))
+        note = run.comparative_report_note(summary)
+        self.assertIsNotNone(note)
+        assert note is not None
+        self.assertIn("non-comparative", note)
 
     def test_benchmark_coverage_rows_include_weights_and_unique_coverage(self) -> None:
         specs = [run.benchmark_map()["binarytrees"], run.benchmark_map()["mandelbrot"]]
