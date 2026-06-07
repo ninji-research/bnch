@@ -57,12 +57,14 @@ fn write_repeat_section(header: Text, source: Text, length: I32) effects [alloc,
         chunk = text_builder_append_ascii(chunk, 10);
         chunk_lines += 1;
         if chunk_lines == CHUNK_LINES {
-            chunk = stdout_write_builder(chunk); chunk_lines = 0;
+            let u1 = perform SystemIO.stdout_write_builder(chunk);
+            chunk = text_builder_new();
+            chunk_lines = 0;
         };
         let next_offset = offset + line_len;
         offset = next_offset - (next_offset / source_len) * source_len; remaining -= line_len;
     };
-    stdout_write_builder(chunk);
+    perform SystemIO.stdout_write_builder(chunk)
 }
 
 fn write_random_section(seed: I32, header: Text, length: I32, use_homo: Bool) -> I32 effects [alloc, io] {
@@ -87,11 +89,13 @@ fn write_random_section(seed: I32, header: Text, length: I32, use_homo: Bool) ->
         chunk = text_builder_append_ascii(chunk, 10);
         chunk_lines += 1;
         if chunk_lines == CHUNK_LINES {
-            chunk = stdout_write_builder(chunk); chunk_lines = 0;
+            let u2 = perform SystemIO.stdout_write_builder(chunk);
+            chunk = text_builder_new();
+            chunk_lines = 0;
         };
         remaining -= line_len;
     };
-    stdout_write_builder(chunk);
+    let u3 = perform SystemIO.stdout_write_builder(chunk);
     current_seed
 }
 

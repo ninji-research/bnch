@@ -9,7 +9,7 @@ fn group_orders(input: Text) -> AggregateList effects [alloc] {
     let mut customers = text_index_new();
     let mut index = 0;
     let mut skip_header = true;
-    while index < input.len {
+    while index < text_len(input) {
         let content_end = text_line_end(input, index);
         if content_end > index {
             if skip_header {
@@ -46,7 +46,7 @@ fn group_orders(input: Text) -> AggregateList effects [alloc] {
     AggregateList { rows: rows, len: len }
 }
 
-fn main() -> Text effects [alloc] {
+fn main() -> Text effects [alloc, io] {
     let data = group_orders(stdin_text());
     let rows = list_sort_by_text_field(data.rows, data.len, "customer");
     let mut builder = text_builder_new();

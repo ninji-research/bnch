@@ -84,7 +84,7 @@ fn append_sorted_percent_lines(builder: TextBuilder, counts: List[I32], bucket_c
     current
 }
 
-fn main() -> Text effects [alloc] {
+fn main() -> Text effects [alloc, io] {
     let input = stdin_text();
     let mut counts1 = list_new(4, 0);
     let mut counts2 = list_new(16, 0);
@@ -103,7 +103,7 @@ fn main() -> Text effects [alloc] {
     let mut count_ggtatt = 0;
     let mut count_ggtattttaatt = 0;
     let mut count_ggtattttaatttatagt = 0;
-    while index < input.len and not done {
+    while index < text_len(input) and not done {
         let content_end = text_line_end(input, index);
         if content_end > index and text_byte(input, index) == 62 {
             if in_three {

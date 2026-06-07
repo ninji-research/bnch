@@ -43,7 +43,7 @@ fn aggregate_join(input: Text) -> AggregateList effects [alloc] {
     let mut rows = list_new(8, empty_aggregate); let mut len = 0;
     let mut aggregates = text_index_new(); let mut section = 0;
     let mut skip_header = false; let mut index = 0;
-    while index < input.len {
+    while index < text_len(input) {
         let content_end = text_line_end(input, index);
         if content_end > index {
             if text_eq_range(input, index, content_end, "[users]") {
@@ -92,16 +92,16 @@ fn aggregate_join(input: Text) -> AggregateList effects [alloc] {
     AggregateList { rows: rows, len: len }
 }
 
-fn main() -> Text effects [alloc] {
+fn main() -> Text effects [alloc, io] {
     let data = aggregate_join(stdin_text());
     let rows = list_sort_by_text_field(data.rows, data.len, "key");
     let mut builder = text_builder_new(); let mut index = 0;
     while index < data.len {
         let row = rows[index];
-        let tab = text_find_byte_range(row.key, 0, row.key.len, 9);
+        let tab = text_find_byte_range(row.key, 0, text_len(row.key), 9);
         builder += text_slice(row.key, 0, tab);
         builder += ",";
-        builder += text_slice(row.key, tab + 1, row.key.len);
+        builder += text_slice(row.key, tab + 1, text_len(row.key));
         builder += ",";
         builder += row.count;
         builder += ",";

@@ -27,7 +27,7 @@ fn flush_record(
     header_end: I32,
     seq_start: I32,
     seq_end: I32,
-) effects [alloc] {
+) effects [alloc, io] {
     if header_end > header_start {
         let mut builder = text_builder_new();
         builder = text_builder_append_slice(builder, source, header_start, header_end);
@@ -45,7 +45,8 @@ fn flush_record(
                     builder = text_builder_append_ascii(builder, 10);
                     chunk_lines += 1;
                     if chunk_lines == CHUNK_LINES {
-                        builder = stdout_write_builder(builder);
+                        let u1 = perform SystemIO.stdout_write_builder(builder);
+                        builder = text_builder_new();
                         chunk_lines = 0;
                     };
                     line_len = 0;
@@ -55,17 +56,17 @@ fn flush_record(
         if line_len > 0 {
             builder = text_builder_append_ascii(builder, 10);
         };
-        stdout_write_builder(builder);
+        let u2 = perform SystemIO.stdout_write_builder(builder);
     };
 }
 
-fn main() effects [alloc] {
+fn main() effects [alloc, io] {
     let input = stdin_text();
     let mut header_start = 0;
     let mut header_end = 0;
     let mut seq_start = 0;
     let mut index = 0;
-    while index < input.len {
+    while index < text_len(input) {
         let line_end = text_next_line(input, index);
         let content_end = text_line_end(input, index);
         if content_end > index and text_byte(input, index) == 62 {
@@ -76,5 +77,5 @@ fn main() effects [alloc] {
         };
         index = line_end;
     };
-    flush_record(input, header_start, header_end, seq_start, input.len);
+    flush_record(input, header_start, header_end, seq_start, text_len(input));
 }
