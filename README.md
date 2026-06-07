@@ -156,6 +156,19 @@ Use the full `python3 run.py` before treating a benchmark-harness change as comp
 - `tools/`: validation and fixture helpers
 - `tests/`: harness tests
 
+## Ecosystem
+
+NINJI is an integrated ecosystem of tools:
+- **[Sarif](https://github.com/ninji-research/sarif)** — Systems language compiler/toolchain
+- **[Inu](https://github.com/ninji-research/inu)** — Adaptive analytics engine
+- **[CellForge](https://github.com/ninji-research/cellforge)** — Single-cell CRISPR database
+- **[bnch](https://github.com/ninji-research/bnch)** — Benchmark harness
+- **[Blackbox Foundry](https://github.com/ninji-research/blackbox-foundry)** — Security audit orchestrator
+- **[RGRW](https://github.com/ninji-research/rgrw)** — Reversible graph rewriting engine
+- **[API](https://github.com/ninji-research/api)** — Cloud coordination backend
+- **[ninji-cli](https://github.com/ninji-research/ninji-cli)** — Ecosystem CLI
+- **[Website](https://github.com/ninji-research/website)** — ninji.org public site
+
 ## Legal
 
 Source code, including but not limited to implementation files, scripts, and configurations, is licensed under the [MPL-2.0](LICENSE.md) license. Documentation and informational content, such as but not limited to specifications, guides, and reports, are licensed under the [CC-BY-4.0](LICENSE-CONTENT.md) license.

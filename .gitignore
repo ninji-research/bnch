@@ -7,6 +7,10 @@
 /tools/__pycache__/
 /tests/__pycache__/
 /.failures/
+/.ruff_cache/
+/.pytest_cache/
+/.agents/
+/.codex/
 /src/**/_build/
 /src/**/*.cmi
 /src/**/*.cmx
