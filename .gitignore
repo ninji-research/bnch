@@ -20,3 +20,4 @@
 /src/**/binarytrees_c
 /src/**/binarytrees_c_debug
 /src/**/binarytrees_c_dump.c
+/target/
