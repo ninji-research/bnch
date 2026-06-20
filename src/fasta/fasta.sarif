@@ -46,7 +46,7 @@ fn write_repeat_section(header: Text, source: Text, length: I32) effects [alloc,
     let mut chunk = text_builder_new(); let mut chunk_lines = 0;
     let mut offset = 0; let mut remaining = length;
     while remaining > 0 {
-        let line_len = if remaining < WIDTH { remaining } else { WIDTH };
+        let line_len = if (remaining < WIDTH) { remaining } else { WIDTH };
         let end = offset + line_len;
         if end <= source_len {
             chunk = text_builder_append_slice(chunk, source, offset, end);
@@ -72,7 +72,7 @@ fn write_random_section(seed: I32, header: Text, length: I32, use_homo: Bool) ->
     let mut current_seed = seed;
     let mut chunk = text_builder_new(); let mut chunk_lines = 0; let mut remaining = length;
     while remaining > 0 {
-        let line_len = if remaining < WIDTH { remaining } else { WIDTH };
+        let line_len = if (remaining < WIDTH) { remaining } else { WIDTH };
         let mut i = 0;
         while i < line_len {
             current_seed = next_seed(current_seed);
